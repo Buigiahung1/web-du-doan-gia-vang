@@ -1,0 +1,13 @@
+fastapi
+uvicorn[standard]
+sqlalchemy>=2.0
+pymysql
+cryptography
+alembic
+pydantic-settings
+pandas
+numpy
+pyjwt>=2.8,<3
+bcrypt>=4.1,<6
+email-validator>=2,<3
+python-multipart>=0.0.12

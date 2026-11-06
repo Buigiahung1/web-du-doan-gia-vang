@@ -1,0 +1,1815 @@
+<!doctype html>
+<html lang="vi" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AURUM QUANT - Hệ Thống Dự Báo Giá Vàng (FastAPI Connected)</title>
+
+    <!-- Tailwind CSS 3.4.17 -->
+    <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+    <!-- Chart.js 4.4.1 -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1"></script>
+    <!-- FontAwesome 6.5.1 Icons -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    />
+
+    <script>
+      window.tailwind = window.tailwind || {};
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              brand: {
+                gold: "#C5A059",
+                goldLight: "#E8D5B5",
+                goldDark: "#9A7836",
+                bg: "#0B0F17",
+                surface: "#111827",
+                card: "#161F33",
+                border: "#1F293D",
+                borderLight: "#2B3852",
+                textPrimary: "#F1F5F9",
+                textSecondary: "#94A3B8",
+                profit: "#10B981",
+                loss: "#F43F5E",
+              },
+            },
+            fontFamily: {
+              sans: [
+                "Inter",
+                "system-ui",
+                "-apple-system",
+                "BlinkMacSystemFont",
+                "Segoe UI",
+                "Roboto",
+                "sans-serif",
+              ],
+              mono: ["JetBrains Mono", "Fira Code", "Menlo", "monospace"],
+            },
+            boxShadow: {
+              subtle: "0 4px 20px -2px rgba(0, 0, 0, 0.05)",
+              card: "0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1)",
+            },
+          },
+        },
+      };
+    </script>
+
+    <style>
+      :where(.hidden) {
+        display: none;
+      }
+      [hidden] {
+        display: none !important;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .ticker-move {
+          animation: none;
+        }
+      }
+      /* Clean Minimalist Scrollbar */
+      ::-webkit-scrollbar {
+        width: 5px;
+        height: 5px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #0b0f17;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #1f293d;
+        border-radius: 2px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #c5a059;
+      }
+
+      .ticker-wrap {
+        width: 100%;
+        overflow: hidden;
+        white-space: nowrap;
+      }
+      .ticker-move {
+        display: inline-block;
+        white-space: nowrap;
+        animation: ticker 40s linear infinite;
+      }
+      .ticker-move:hover {
+        animation-play-state: paused;
+      }
+      @keyframes ticker {
+        0% {
+          transform: translate3d(0, 0, 0);
+        }
+        100% {
+          transform: translate3d(-50%, 0, 0);
+        }
+      }
+    </style>
+  </head>
+  <body
+    class="bg-brand-bg text-brand-textPrimary min-h-screen flex flex-col font-sans antialiased selection:bg-brand-gold selection:text-slate-950"
+  >
+    <!-- ========================================================================= -->
+    <!-- 1. KHUNG ỨNG DỤNG & RESPONSIVE LAYOUT (Mục 4.2, 4.5) -->
+    <!-- ========================================================================= -->
+    <p id="chartDependencyNotice" role="status" hidden>
+      Không tải được thư viện biểu đồ từ CDN. Dữ liệu dạng số vẫn có thể xem;
+      cần kết nối mạng để tải biểu đồ và giao diện đầy đủ.
+    </p>
+    <p role="note">
+      Bản ghép local: xem nguồn/đơn vị dữ liệu trước khi sử dụng. DEV-SEED và
+      model Naive là mô phỏng.
+      <a href="research/">Mở công cụ nghiên cứu TV2 (offline)</a>.
+    </p>
+    <header
+      class="sticky top-0 z-40 bg-brand-bg/95 backdrop-blur border-b border-brand-border"
+    >
+      <!-- Top Status Bar & Live Backend Connection Badge -->
+      <div
+        class="bg-slate-950 border-b border-brand-border text-xs py-1.5 px-4 overflow-hidden"
+      >
+        <div class="max-w-7xl mx-auto flex items-center justify-between">
+          <!-- Live Market Ticker Tape -->
+          <div class="ticker-wrap flex-1 mr-4 overflow-hidden">
+            <div
+              class="ticker-move text-brand-textSecondary text-[11px] font-mono"
+            >
+              <span class="mr-8"
+                >Chuỗi giá API:
+                <strong class="text-white font-mono" id="topTickerPrice"
+                  >—</strong
+                >
+                <span id="topTickerDelta"
+                  >Đơn vị và nguồn theo dữ liệu bên dưới</span
+                ></span
+              >
+            </div>
+          </div>
+
+          <!-- Real-time Backend Connection Indicator -->
+          <div class="flex items-center gap-2 shrink-0">
+            <button
+              id="btnOpenApiConfig"
+              class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded text-[11px] font-mono transition border"
+              title="Bấm để cấu hình địa chỉ Backend API"
+            >
+              <span
+                id="backendStatusDot"
+                class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"
+              ></span>
+              <span id="backendStatusText" class="text-slate-300"
+                >FastAPI: 127.0.0.1:8000</span
+              >
+              <i
+                class="fa-solid fa-gear text-[10px] text-brand-textSecondary ml-0.5"
+              ></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Navigation Bar -->
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center justify-between h-16">
+          <!-- Logo & Website Name -->
+          <div class="flex items-center gap-3 cursor-pointer" id="navLogoBtn">
+            <div
+              class="w-8 h-8 rounded-lg bg-brand-gold flex items-center justify-center text-slate-950 font-bold text-sm"
+            >
+              <i class="fa-solid fa-coins"></i>
+            </div>
+            <div>
+              <span class="text-base font-bold tracking-tight text-white"
+                >AURUM <span class="text-brand-gold">QUANT</span></span
+              >
+              <p class="text-[10px] text-brand-textSecondary hidden sm:block">
+                Hệ Thống Phân Tích & Dự Báo Giá Vàng Đa Mô Hình
+              </p>
+            </div>
+          </div>
+
+          <!-- Desktop Navigation Items -->
+          <nav
+            class="hidden md:flex items-center gap-1 text-xs sm:text-sm font-medium"
+          >
+            <button
+              id="navBtnHome"
+              class="nav-item px-3.5 py-1.5 rounded-lg text-white bg-slate-800/80 border border-brand-gold/40 text-brand-gold transition"
+            >
+              Trang chủ
+            </button>
+            <button
+              id="navBtnPrices"
+              class="nav-item px-3.5 py-1.5 rounded-lg text-brand-textSecondary hover:text-white hover:bg-slate-800/50 transition"
+            >
+              Giá vàng
+            </button>
+            <button
+              id="navBtnPredict"
+              class="nav-item px-3.5 py-1.5 rounded-lg text-brand-textSecondary hover:text-white hover:bg-slate-800/50 transition"
+            >
+              Dự đoán
+            </button>
+            <button
+              id="navBtnHistory"
+              class="nav-item px-3.5 py-1.5 rounded-lg text-brand-textSecondary hover:text-white hover:bg-slate-800/50 transition"
+            >
+              Lịch sử
+            </button>
+            <button
+              id="navBtnIntro"
+              class="nav-item px-3.5 py-1.5 rounded-lg text-brand-textSecondary hover:text-white hover:bg-slate-800/50 transition"
+            >
+              Giới thiệu
+            </button>
+            <button
+              id="navBtnAdmin"
+              class="nav-item hidden px-3.5 py-1.5 rounded-lg text-amber-300 hover:text-amber-100 hover:bg-amber-950/40 border border-amber-600/30 transition"
+            >
+              Quản trị Admin
+            </button>
+          </nav>
+
+          <!-- Right Side: Session Management & Auth -->
+          <div class="flex items-center gap-2.5">
+            <!-- Role Toggle for Testing & Client RBAC Demonstration -->
+            <div
+              class="hidden lg:flex items-center gap-1 bg-slate-900 border border-brand-border rounded-lg p-1 text-xs"
+            >
+              <span class="text-brand-textSecondary text-[11px] px-1 font-mono"
+                >Vai trò:</span
+              >
+              <button
+                id="btnRoleUser"
+                class="px-2 py-0.5 rounded text-[11px] font-semibold bg-brand-gold text-slate-950 transition"
+              >
+                User
+              </button>
+              <button
+                id="btnRoleAdmin"
+                class="px-2 py-0.5 rounded text-[11px] font-semibold text-brand-textSecondary hover:text-white transition"
+              >
+                Admin
+              </button>
+            </div>
+
+            <!-- Unauthenticated State: Đăng nhập / Đăng ký -->
+            <div id="unauthBlock" class="flex items-center gap-2">
+              <button
+                id="btnOpenLogin"
+                class="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-200 hover:text-white hover:bg-slate-800 border border-slate-700 transition"
+              >
+                Đăng nhập
+              </button>
+              <button
+                id="btnOpenRegister"
+                class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-brand-gold hover:bg-brand-goldLight text-slate-950 transition"
+              >
+                Đăng ký
+              </button>
+            </div>
+
+            <!-- Authenticated State: User Dropdown Panel -->
+            <div id="authBlock" class="hidden relative">
+              <button
+                id="btnUserMenu"
+                class="flex items-center gap-2 px-2.5 py-1 rounded-lg hover:bg-slate-800/60 border border-brand-border transition"
+              >
+                <div
+                  id="userAvatar"
+                  class="w-6 h-6 rounded-full bg-brand-gold flex items-center justify-center font-bold text-slate-950 text-xs"
+                >
+                  U
+                </div>
+                <div class="text-left hidden sm:block">
+                  <p
+                    id="userNameDisplay"
+                    class="text-xs font-semibold text-white leading-tight"
+                  >
+                    user1
+                  </p>
+                  <div class="flex items-center gap-1">
+                    <span
+                      id="userRoleBadge"
+                      class="text-[9px] uppercase px-1 py-0.2 rounded font-semibold bg-blue-500/20 text-blue-400"
+                      >User</span
+                    >
+                    <span
+                      id="userJwtStatus"
+                      class="text-[9px] text-emerald-400 font-mono"
+                      >● JWT Active</span
+                    >
+                  </div>
+                </div>
+                <i
+                  class="fa-solid fa-chevron-down text-brand-textSecondary text-[9px] ml-1"
+                ></i>
+              </button>
+
+              <!-- Dropdown Menu -->
+              <div
+                id="userDropdownPanel"
+                class="hidden absolute right-0 mt-2 w-56 bg-slate-900 border border-brand-border rounded-xl shadow-2xl py-2 z-50"
+              >
+                <div class="px-4 py-2 border-b border-brand-border">
+                  <p class="text-[11px] text-brand-textSecondary">
+                    Đang đăng nhập với email:
+                  </p>
+                  <p
+                    id="userEmailDisplay"
+                    class="text-xs font-medium text-white truncate"
+                  >
+                    user1@example.com
+                  </p>
+                </div>
+                <button
+                  id="btnMenuProfile"
+                  class="w-full text-left px-4 py-2 text-xs text-slate-200 hover:bg-slate-800 flex items-center gap-2"
+                >
+                  <i class="fa-solid fa-id-card text-brand-gold w-4"></i> Thông
+                  tin cá nhân
+                </button>
+                <button
+                  id="btnMenuPassword"
+                  class="w-full text-left px-4 py-2 text-xs text-slate-200 hover:bg-slate-800 flex items-center gap-2"
+                >
+                  <i class="fa-solid fa-key text-slate-400 w-4"></i> Đổi mật
+                  khẩu
+                </button>
+                <button
+                  id="btnMenuHistory"
+                  class="w-full text-left px-4 py-2 text-xs text-slate-200 hover:bg-slate-800 flex items-center gap-2"
+                >
+                  <i
+                    class="fa-solid fa-clock-rotate-left text-brand-gold w-4"
+                  ></i>
+                  Lịch sử dự đoán cá nhân
+                </button>
+                <div class="border-t border-brand-border my-1"></div>
+                <button
+                  id="btnLogout"
+                  class="w-full text-left px-4 py-2 text-xs text-rose-400 hover:bg-rose-950/20 flex items-center gap-2"
+                >
+                  <i class="fa-solid fa-arrow-right-from-bracket w-4"></i> Đăng
+                  xuất phiên làm việc
+                </button>
+              </div>
+            </div>
+
+            <!-- Mobile Hamburger Toggle Button -->
+            <button
+              id="btnMobileNavToggle"
+              class="md:hidden p-2 rounded-lg text-brand-textSecondary hover:text-white hover:bg-slate-800"
+              aria-label="Menu"
+            >
+              <i class="fa-solid fa-bars text-base"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mobile Collapsible Navigation Menu (Mục 4.5) -->
+      <div
+        id="mobileNavMenu"
+        class="hidden md:hidden bg-slate-900 border-b border-brand-border px-4 py-3 space-y-1"
+      >
+        <button
+          id="mNavHome"
+          class="w-full text-left px-3 py-2 rounded-lg text-sm font-medium text-brand-gold bg-slate-800/80"
+        >
+          Trang chủ
+        </button>
+        <button
+          id="mNavPrices"
+          class="w-full text-left px-3 py-2 rounded-lg text-sm font-medium text-brand-textSecondary hover:text-white"
+        >
+          Giá vàng trực tuyến
+        </button>
+        <button
+          id="mNavPredict"
+          class="w-full text-left px-3 py-2 rounded-lg text-sm font-medium text-brand-textSecondary hover:text-white"
+        >
+          Dự đoán
+        </button>
+        <button
+          id="mNavHistory"
+          class="w-full text-left px-3 py-2 rounded-lg text-sm font-medium text-brand-textSecondary hover:text-white"
+        >
+          Lịch sử dự đoán
+        </button>
+        <button
+          id="mNavIntro"
+          class="w-full text-left px-3 py-2 rounded-lg text-sm font-medium text-brand-textSecondary hover:text-white"
+        >
+          Giới thiệu mô hình
+        </button>
+        <button
+          id="mNavAdmin"
+          class="hidden w-full text-left px-3 py-2 rounded-lg text-sm font-medium text-amber-300 bg-amber-950/40 border border-amber-600/30"
+        >
+          Quản trị Admin
+        </button>
+
+        <div
+          class="pt-2.5 border-t border-brand-border flex items-center justify-between text-xs"
+        >
+          <span class="text-brand-textSecondary">Chuyển quyền:</span>
+          <div class="flex gap-1">
+            <button
+              id="mBtnRoleUser"
+              class="px-2.5 py-1 rounded bg-brand-gold text-slate-950 font-bold"
+            >
+              User
+            </button>
+            <button
+              id="mBtnRoleAdmin"
+              class="px-2.5 py-1 rounded text-brand-textSecondary font-medium"
+            >
+              Admin
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- ========================================================================= -->
+    <!-- MAIN TABS CONTAINER -->
+    <!-- ========================================================================= -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <!-- Notification Toast Container -->
+      <div
+        id="toastContainer"
+        class="fixed top-24 right-5 z-50 flex flex-col gap-2 max-w-sm pointer-events-none"
+      ></div>
+
+      <!-- ----------------------------------------------------------------------- -->
+      <!-- TAB 1: TRANG CHỦ (Mục 2.1) -->
+      <!-- ----------------------------------------------------------------------- -->
+      <section id="tabHome" class="tab-content space-y-8">
+        <!-- Minimalist Hero Section -->
+        <div
+          class="rounded-xl bg-brand-surface border border-brand-border p-8 md:p-10 shadow-subtle space-y-6"
+        >
+          <div class="max-w-3xl space-y-4">
+            <div
+              class="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-brand-gold/10 border border-brand-gold/20 text-brand-gold text-xs font-semibold"
+            >
+              HỆ THỐNG PHÂN TÍCH & DỰ BÁO GIÁ VÀNG
+            </div>
+
+            <h1
+              class="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-white leading-tight"
+            >
+              Nền Tảng Phân Tích Định Lượng & <br />
+              <span class="text-brand-gold">Dự Báo Giá Vàng Trực Tuyến</span>
+            </h1>
+
+            <p
+              class="text-brand-textSecondary text-sm sm:text-base leading-relaxed"
+            >
+              Hệ thống cung cấp dữ liệu thị trường vàng cập nhật thời gian thực,
+              trực quan hóa chuỗi thời gian OHLCV, và tích hợp luồng suy luận mô
+              hình học máy (Machine Learning / Deep Learning) kết nối trực tiếp
+              với máy chủ FastAPI Backend và cơ sở dữ liệu MySQL.
+            </p>
+
+            <!-- Call To Action Buttons (Mục 2.1) -->
+            <div class="flex flex-wrap items-center gap-3 pt-2">
+              <button
+                id="heroBtnPredict"
+                class="px-6 py-2.5 rounded-lg font-bold text-xs sm:text-sm bg-brand-gold hover:bg-brand-goldLight text-slate-950 transition flex items-center gap-2 shadow-sm"
+              >
+                <i class="fa-solid fa-calculator"></i> Truy Cập Chức Năng Dự
+                Đoán
+              </button>
+              <button
+                id="heroBtnHistory"
+                class="px-5 py-2.5 rounded-lg font-semibold text-xs sm:text-sm text-slate-200 bg-slate-800 hover:bg-slate-700 border border-brand-border transition flex items-center gap-2"
+              >
+                <i class="fa-solid fa-clock-rotate-left text-brand-gold"></i>
+                Xem Lịch Sử Dự Đoán Cá Nhân
+              </button>
+              <button
+                id="heroBtnIntro"
+                class="px-4 py-2.5 rounded-lg font-medium text-xs sm:text-sm text-brand-textSecondary hover:text-white transition flex items-center gap-1.5"
+              >
+                <i class="fa-solid fa-circle-info"></i> Giới Thiệu Mô Hình
+              </button>
+            </div>
+          </div>
+
+          <!-- Real Live Data Fetched from Backend API (/api/gold/current & /api/model/evaluation) -->
+          <div class="pt-6 border-t border-brand-border">
+            <div class="flex items-center justify-between mb-3">
+              <p
+                class="text-xs font-semibold text-brand-textSecondary uppercase tracking-wider"
+              >
+                Dữ liệu thị trường kết nối trực tiếp từ Backend API (GET
+                /api/gold/current):
+              </p>
+              <span
+                id="homeApiSyncTag"
+                class="text-[11px] font-mono text-emerald-400"
+                >● Đã đồng bộ API</span
+              >
+            </div>
+
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              <div
+                class="p-4 rounded-lg bg-slate-950 border border-brand-border"
+              >
+                <span class="text-xs text-brand-textSecondary block"
+                  >Giá đóng cửa gần nhất (Close)</span
+                >
+                <p
+                  id="homeLiveClosePrice"
+                  class="text-2xl font-bold font-mono text-white mt-1"
+                >
+                  —
+                </p>
+                <span
+                  id="homeLiveDate"
+                  class="text-[11px] text-slate-500 font-mono mt-0.5 block"
+                  >—</span
+                >
+              </div>
+
+              <div
+                class="p-4 rounded-lg bg-slate-950 border border-brand-border"
+              >
+                <span class="text-xs text-brand-textSecondary block"
+                  >Mức giá cao nhất (High)</span
+                >
+                <p
+                  id="homeLiveHighPrice"
+                  class="text-2xl font-bold font-mono text-emerald-400 mt-1"
+                >
+                  —
+                </p>
+                <span class="text-[11px] text-slate-500 mt-0.5 block"
+                  >Đơn vị theo chuỗi giá API</span
+                >
+              </div>
+
+              <div
+                class="p-4 rounded-lg bg-slate-950 border border-brand-border"
+              >
+                <span class="text-xs text-brand-textSecondary block"
+                  >Mức giá thấp nhất (Low)</span
+                >
+                <p
+                  id="homeLiveLowPrice"
+                  class="text-2xl font-bold font-mono text-rose-400 mt-1"
+                >
+                  —
+                </p>
+                <span class="text-[11px] text-slate-500 mt-0.5 block"
+                  >Khung thời gian 1D</span
+                >
+              </div>
+
+              <div
+                class="p-4 rounded-lg bg-slate-950 border border-brand-border"
+              >
+                <span class="text-xs text-brand-textSecondary block"
+                  >Mô hình AI dự báo</span
+                >
+                <p
+                  id="homeLiveModelName"
+                  class="text-lg font-bold text-brand-gold mt-1"
+                >
+                  —
+                </p>
+                <span
+                  id="homeLiveMAPE"
+                  class="text-[11px] text-emerald-400 font-mono mt-0.5 block"
+                  >—</span
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ----------------------------------------------------------------------- -->
+      <!-- TAB 2: GIÁ VÀNG TRỰC TUYẾN & BIỂU ĐỒ (Mục 4.1) -->
+      <!-- ----------------------------------------------------------------------- -->
+      <section id="tabPrices" class="tab-content hidden space-y-6">
+        <div
+          class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-brand-border"
+        >
+          <div>
+            <h2 class="text-xl font-bold text-white">
+              Bảng Giá Vàng & Biểu Đồ Trực Tuyến
+            </h2>
+            <p class="text-xs text-brand-textSecondary">
+              Dữ liệu tham chiếu chuỗi thời gian kết nối qua GET
+              /api/gold/current & /api/gold/history
+            </p>
+          </div>
+          <button
+            id="btnRefreshGoldData"
+            class="px-3 py-1.5 rounded-lg text-xs font-medium text-slate-200 bg-slate-800 hover:bg-slate-700 border border-brand-border flex items-center gap-1.5 transition"
+          >
+            <i class="fa-solid fa-arrows-rotate text-brand-gold"></i> Làm mới dữ
+            liệu
+          </button>
+        </div>
+
+        <div
+          class="rounded-xl bg-brand-surface border border-brand-border p-5 space-y-4 shadow-subtle"
+        >
+          <div class="flex items-center justify-between">
+            <h3 class="text-sm font-bold text-white flex items-center gap-2">
+              <i class="fa-solid fa-chart-line text-brand-gold"></i> Lịch Sử
+              Biến Động Chuỗi Giá Đã Chọn
+            </h3>
+            <span class="text-xs font-mono text-brand-textSecondary"
+              >GET /api/gold/history?page_size=365</span
+            >
+          </div>
+          <div class="relative h-72 w-full">
+            <canvas id="priceChartCanvas"></canvas>
+          </div>
+        </div>
+      </section>
+
+      <!-- ----------------------------------------------------------------------- -->
+      <!-- TAB 3: DỰ ĐOÁN GIÁ VÀNG (Mục 2.1, API Integration) -->
+      <!-- ----------------------------------------------------------------------- -->
+      <section id="tabPredict" class="tab-content hidden space-y-6">
+        <div class="space-y-1">
+          <h2 class="text-xl font-bold text-white">Dự Đoán Giá Vàng</h2>
+          <p class="text-xs text-brand-textSecondary">
+            Gửi tham số dự đoán đến FastAPI Endpoint POST /api/predict; khách có
+            thể thử, đăng nhập để lưu lịch sử
+          </p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <!-- Prediction Form -->
+          <div
+            class="rounded-xl bg-brand-surface border border-brand-border p-5 space-y-4 shadow-subtle"
+          >
+            <h3 class="text-sm font-bold text-white flex items-center gap-2">
+              <i class="fa-solid fa-calculator text-brand-gold"></i> Tham Số Dự
+              Báo
+            </h3>
+
+            <form id="predictionForm" class="space-y-3.5">
+              <div>
+                <label
+                  for="predictDays"
+                  class="block text-xs font-semibold text-slate-300 mb-1"
+                  >Số ngày muốn dự đoán</label
+                >
+                <select
+                  id="predictDays"
+                  class="w-full bg-slate-950 border border-brand-border rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-brand-gold"
+                >
+                  <option value="1">1 ngày tiếp theo (T+1)</option>
+                  <option value="3">3 ngày tiếp theo (T+3)</option>
+                  <option value="7" selected>7 ngày tiếp theo (1 tuần)</option>
+                </select>
+              </div>
+
+              <div>
+                <label
+                  for="predictModel"
+                  class="block text-xs font-semibold text-slate-300 mb-1"
+                  >Mô hình AI dự báo</label
+                >
+                <select
+                  id="predictModel"
+                  class="w-full bg-slate-950 border border-brand-border rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-brand-gold"
+                >
+                  <option value="">Đang tải mô hình từ API...</option>
+                </select>
+              </div>
+
+              <div
+                class="p-3 bg-slate-950 rounded-lg border border-brand-border text-xs text-brand-textSecondary space-y-1"
+              >
+                <span class="text-slate-300 font-semibold block"
+                  >Trạng thái gửi yêu cầu API:</span
+                >
+                <p id="predictAuthNotice">
+                  ● Sẵn sàng gửi payload đến
+                  <code class="text-brand-gold">POST /api/predict</code>
+                </p>
+              </div>
+
+              <button
+                type="submit"
+                id="btnRunPrediction"
+                class="w-full py-2.5 rounded-lg font-bold text-xs bg-brand-gold hover:bg-brand-goldLight text-slate-950 transition flex items-center justify-center gap-2 shadow-sm"
+              >
+                <i class="fa-solid fa-play text-[10px]"></i> Kích Hoạt Dự Đoán
+                Qua API
+              </button>
+            </form>
+          </div>
+
+          <!-- Prediction Result Cards & Visual Chart -->
+          <div
+            class="lg:col-span-2 rounded-xl bg-brand-surface border border-brand-border p-5 space-y-4 shadow-subtle flex flex-col justify-between"
+          >
+            <div class="space-y-4">
+              <div
+                class="flex items-center justify-between pb-3 border-b border-brand-border"
+              >
+                <div>
+                  <h3
+                    class="text-sm font-bold text-white flex items-center gap-2"
+                  >
+                    <i
+                      class="fa-solid fa-square-poll-vertical text-brand-gold"
+                    ></i>
+                    Kết Quả Suy Luận Thời Gian Thực
+                  </h3>
+                  <p
+                    id="predictResponseTime"
+                    class="text-xs text-brand-textSecondary"
+                  >
+                    Phản hồi từ FastAPI: Sẵn sàng
+                  </p>
+                </div>
+                <span
+                  id="predictResultBadge"
+                  class="px-2.5 py-0.5 rounded text-xs font-mono font-semibold bg-emerald-950 text-emerald-400 border border-emerald-500/20"
+                  >—</span
+                >
+              </div>
+
+              <!-- Forecast Output Cards Grid -->
+              <div
+                id="forecastCardsContainer"
+                class="grid grid-cols-2 sm:grid-cols-4 gap-3"
+              >
+                <!-- Dynamically rendered -->
+              </div>
+
+              <!-- Forecast Trend Chart -->
+              <div
+                class="rounded-lg bg-slate-950 p-3 border border-brand-border"
+              >
+                <span class="text-xs font-semibold text-slate-300 block mb-2"
+                  >Đường Dự Báo Giá Vàng Các Phiên Kế Tiếp (đơn vị theo chuỗi
+                  giá):</span
+                >
+                <div class="relative h-56 w-full">
+                  <canvas id="forecastChartCanvas"></canvas>
+                </div>
+              </div>
+            </div>
+
+            <div
+              class="pt-3 border-t border-brand-border flex items-center justify-between"
+            >
+              <span class="text-xs text-brand-textSecondary"
+                >Đăng nhập để lưu kết quả vào lịch sử cá nhân.</span
+              >
+              <button
+                id="btnJumpToHistory"
+                class="px-3.5 py-1.5 rounded-lg text-xs font-semibold text-brand-gold hover:text-white bg-slate-800 hover:bg-slate-700 border border-brand-border transition"
+              >
+                Mở Trang Lịch Sử Cá Nhân &rarr;
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ----------------------------------------------------------------------- -->
+      <!-- TAB 4: TRANG LỊCH SỬ DỰ ĐOÁN CÁ NHÂN (Mục 2.8) -->
+      <!-- ----------------------------------------------------------------------- -->
+      <section id="tabHistory" class="tab-content hidden space-y-6">
+        <div
+          class="flex flex-col md:flex-row md:items-center justify-between gap-4"
+        >
+          <div>
+            <h2 class="text-xl font-bold text-white">
+              Lịch Sử Dự Đoán Cá Nhân
+            </h2>
+            <p class="text-xs text-brand-textSecondary">
+              Truy vấn từ CSDL qua GET /api/predictions/history với Header
+              Authorization: Bearer &lt;token&gt;
+            </p>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <button
+              id="btnRefreshHistory"
+              class="px-3 py-1.5 rounded-lg text-xs font-medium text-slate-200 bg-slate-800 hover:bg-slate-700 border border-brand-border flex items-center gap-1.5 transition"
+            >
+              <i class="fa-solid fa-arrows-rotate text-brand-gold"></i> Tải Lại
+              Từ API
+            </button>
+            <button
+              id="btnExportCSV"
+              class="px-3 py-1.5 rounded-lg text-xs font-medium text-slate-200 bg-slate-800 hover:bg-slate-700 border border-brand-border flex items-center gap-1.5 transition"
+            >
+              <i class="fa-solid fa-file-csv text-emerald-400"></i> Xuất File
+              CSV
+            </button>
+          </div>
+        </div>
+
+        <!-- Filters & Search Toolbar -->
+        <div
+          class="rounded-xl bg-brand-surface border border-brand-border p-3 flex flex-wrap items-center justify-between gap-3 shadow-subtle"
+        >
+          <div class="relative flex-1 min-w-[200px]">
+            <i
+              class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-xs"
+            ></i>
+            <input
+              id="historySearchInput"
+              type="text"
+              placeholder="Tìm theo ngày dự đoán hoặc mã..."
+              class="w-full bg-slate-950 border border-brand-border rounded-lg pl-8 pr-3 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-brand-gold"
+            />
+          </div>
+
+          <select
+            id="filterTrend"
+            class="bg-slate-950 border border-brand-border rounded-lg px-2.5 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-brand-gold"
+          >
+            <option value="ALL">Tất cả xu hướng</option>
+            <option value="up">Tăng (Up)</option>
+            <option value="down">Giảm (Down)</option>
+          </select>
+        </div>
+
+        <!-- History Data Table (Mục 2.8) -->
+        <div
+          class="overflow-x-auto rounded-xl border border-brand-border bg-brand-surface shadow-subtle"
+        >
+          <table class="w-full text-left text-xs text-slate-300">
+            <thead
+              class="bg-slate-950 text-brand-textSecondary uppercase font-semibold text-[11px] border-b border-brand-border"
+            >
+              <tr>
+                <th class="py-3 px-3">Mã GD</th>
+                <th class="py-3 px-3">Thời gian dự đoán (Predict Date)</th>
+                <th class="py-3 px-3">Loại vàng</th>
+                <th class="py-3 px-3">Khoảng thời gian</th>
+                <th class="py-3 px-3 text-right">Kết quả dự đoán (Price)</th>
+                <th class="py-3 px-3 text-center">Xu hướng</th>
+                <th class="py-3 px-3">Mô hình đã dùng</th>
+                <th class="py-3 px-3 text-center">Thao tác</th>
+              </tr>
+            </thead>
+            <tbody
+              id="historyTableBody"
+              class="divide-y divide-brand-border font-mono"
+            >
+              <!-- Dynamically populated from API GET /api/predictions/history -->
+            </tbody>
+          </table>
+        </div>
+
+        <div
+          class="flex items-center justify-between text-xs text-brand-textSecondary px-1"
+        >
+          <span id="historyRowCount">Đang tải lịch sử từ API...</span>
+        </div>
+      </section>
+
+      <!-- ----------------------------------------------------------------------- -->
+      <!-- TAB 5: GIỚI THIỆU MÔ HÌNH (Mục 1.2) -->
+      <!-- ----------------------------------------------------------------------- -->
+      <section id="tabIntro" class="tab-content hidden space-y-6">
+        <div class="space-y-1">
+          <h2 class="text-xl font-bold text-white">
+            Giới Thiệu Mô Hình Machine Learning & Deep Learning
+          </h2>
+          <p class="text-xs text-brand-textSecondary">
+            Thông tin trực quan về các mô hình được huấn luyện và triển khai
+            trong hệ thống
+          </p>
+        </div>
+
+        <!-- Model 1: Tree-based Gradient Boosting / LightGBM -->
+        <div
+          class="rounded-xl bg-brand-surface border border-brand-border p-6 space-y-4 shadow-subtle"
+        >
+          <div
+            class="flex items-center justify-between pb-3 border-b border-brand-border"
+          >
+            <h3 class="text-sm font-bold text-white flex items-center gap-2">
+              <i class="fa-solid fa-tree text-brand-gold"></i> 1. Mô Hình
+              LightGBM & Random Forest Regressor
+            </h3>
+            <span
+              class="px-2 py-0.5 rounded text-[11px] font-mono text-brand-gold bg-brand-gold/10 border border-brand-gold/20"
+            >
+              Tree-based Ensemble
+            </span>
+          </div>
+
+          <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+            Baseline TV5 dùng LightGBM với SMA7/SMA21, RSI14, độ biến động và
+            các giá trễ. Chưa nghiệm thu chất lượng trên dữ liệu thật trong bản
+            ghép này; chỉ số bên dưới lấy từ báo cáo API khi có dữ liệu.
+          </p>
+
+          <!-- Metric Scorecard from GET /api/model/evaluation -->
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
+            <div class="p-3 bg-slate-950 rounded-lg border border-brand-border">
+              <span class="text-xs text-brand-textSecondary block">MAE</span>
+              <span
+                id="introMae"
+                class="text-base font-bold text-white font-mono"
+                >—</span
+              >
+            </div>
+            <div class="p-3 bg-slate-950 rounded-lg border border-brand-border">
+              <span class="text-xs text-brand-textSecondary block">RMSE</span>
+              <span
+                id="introRmse"
+                class="text-base font-bold text-white font-mono"
+                >—</span
+              >
+            </div>
+            <div class="p-3 bg-slate-950 rounded-lg border border-brand-border">
+              <span class="text-xs text-brand-textSecondary block">MAPE</span>
+              <span
+                id="introMape"
+                class="text-base font-bold text-brand-profit font-mono"
+                >—</span
+              >
+            </div>
+            <div class="p-3 bg-slate-950 rounded-lg border border-brand-border">
+              <span class="text-xs text-brand-textSecondary block"
+                >Hệ số R²</span
+              >
+              <span
+                id="introR2"
+                class="text-base font-bold text-brand-gold font-mono"
+                >—</span
+              >
+            </div>
+          </div>
+        </div>
+
+        <!-- Model 2: LSTM Deep Learning -->
+        <div
+          class="rounded-xl bg-brand-surface border border-brand-border p-6 space-y-4 shadow-subtle"
+        >
+          <div
+            class="flex items-center justify-between pb-3 border-b border-brand-border"
+          >
+            <h3 class="text-sm font-bold text-white flex items-center gap-2">
+              <i class="fa-solid fa-network-wired text-blue-400"></i> 2. Mạng
+              Nơ-ron Chuỗi Thời Gian LSTM (Long Short-Term Memory)
+            </h3>
+            <span
+              class="px-2 py-0.5 rounded text-[11px] font-mono text-blue-300 bg-blue-950 border border-blue-500/30"
+            >
+              Deep Recurrent Neural Net
+            </span>
+          </div>
+
+          <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+            Mạng nơ-ron chuỗi thời gian xử lý cửa sổ trượt (Sliding Window
+            Tensor) theo số phiên ghi trong metadata của mô hình. Với cơ chế
+            cổng quên (Forget Gate), cổng nạp (Input Gate) và cổng xuất (Output
+            Gate), LSTM duy trì khả năng lưu giữ thông tin chu kỳ dài hạn mà
+            không bị triệt tiêu đạo hàm (vanishing gradient).
+          </p>
+
+          <div
+            class="bg-slate-950 p-4 rounded-lg border border-brand-border text-xs font-mono space-y-1"
+          >
+            <p class="text-slate-400">
+              Cấu trúc Tensor:
+              <span class="text-white"
+                >Theo metadata.json của artifact được chọn</span
+              >
+            </p>
+            <p class="text-slate-400">
+              Hàm tối ưu hóa:
+              <span class="text-white"
+                >Theo cấu hình huấn luyện trong báo cáo model</span
+              >
+            </p>
+            <p class="text-slate-400">
+              Khoảng dự báo theo mô hình:
+              <span class="text-brand-gold"
+                >Chỉ hiển thị khi API có đủ dữ liệu</span
+              >
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ----------------------------------------------------------------------- -->
+      <!-- TAB 6: QUẢN TRỊ ADMIN (Ẩn/Hiện theo vai trò User / Admin) -->
+      <!-- ----------------------------------------------------------------------- -->
+      <section id="tabAdmin" class="tab-content hidden space-y-6">
+        <div
+          class="flex items-center justify-between pb-3 border-b border-brand-border"
+        >
+          <div>
+            <h2 class="text-xl font-bold text-white">
+              Quản Trị Hệ Thống (Admin Portal)
+            </h2>
+            <p class="text-xs text-brand-textSecondary">
+              Chỉ hiển thị cho tài khoản có quyền Admin (Xác thực qua GET
+              /api/auth/me)
+            </p>
+          </div>
+          <span
+            class="px-2.5 py-1 rounded text-xs font-mono font-semibold bg-amber-500/20 text-amber-300 border border-amber-600/30"
+          >
+            Role: ADMIN
+          </span>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+          <div
+            class="rounded-xl bg-brand-surface border border-brand-border p-4 space-y-3 shadow-subtle"
+          >
+            <h3 class="text-xs font-bold text-white flex items-center gap-2">
+              <i class="fa-solid fa-users text-brand-gold"></i> Danh Sách Người
+              Dùng (Admin API)
+            </h3>
+            <p class="text-xs text-brand-textSecondary">
+              Gọi endpoint
+              <code class="text-brand-gold">GET /api/admin/users</code> kiểm tra
+              tài khoản hệ thống.
+            </p>
+            <button
+              id="btnFetchAdminUsers"
+              class="w-full py-2 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-white transition border border-brand-border"
+            >
+              Tải Danh Sách Users
+            </button>
+          </div>
+
+          <div
+            class="rounded-xl bg-brand-surface border border-brand-border p-4 space-y-3 shadow-subtle"
+          >
+            <h3 class="text-xs font-bold text-white flex items-center gap-2">
+              <i class="fa-solid fa-shield-halved text-brand-gold"></i> Kiểm Tra
+              Quyền Admin Token
+            </h3>
+            <p class="text-xs text-brand-textSecondary">
+              Gọi endpoint
+              <code class="text-brand-gold">GET /api/auth/admin/test</code> với
+              JWT Header.
+            </p>
+            <button
+              id="btnTestAdminToken"
+              class="w-full py-2 rounded-lg text-xs font-semibold bg-amber-600 hover:bg-amber-500 text-slate-950 transition font-bold"
+            >
+              Kiểm Tra Token Admin
+            </button>
+          </div>
+
+          <div
+            class="rounded-xl bg-brand-surface border border-brand-border p-4 space-y-3 shadow-subtle"
+          >
+            <h3 class="text-xs font-bold text-white flex items-center gap-2">
+              <i class="fa-solid fa-database text-brand-gold"></i> Sức Khỏe Cơ
+              Sở Dữ Liệu
+            </h3>
+            <p class="text-xs text-brand-textSecondary">
+              Gọi endpoint
+              <code class="text-brand-gold">GET /api/health</code> kiểm tra kết
+              nối MySQL.
+            </p>
+            <button
+              id="btnCheckHealth"
+              class="w-full py-2 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-white transition border border-brand-border"
+            >
+              Ping Kiểm Tra Database
+            </button>
+          </div>
+        </div>
+
+        <!-- Admin Output Log Console -->
+        <div
+          class="rounded-xl bg-slate-950 border border-brand-border p-4 space-y-2"
+        >
+          <span class="text-xs font-mono text-brand-textSecondary"
+            >Console Phản Hồi Từ Backend:</span
+          >
+          <pre
+            id="adminConsoleLog"
+            class="text-xs font-mono text-emerald-400 bg-black/60 p-3 rounded-lg overflow-x-auto max-h-48"
+          >
+// Sẵn sàng nhận kết quả API...</pre>
+        </div>
+      </section>
+    </main>
+
+    <!-- ========================================================================= -->
+    <!-- MODALS: AUTHENTICATION, PROFILE, PASSWORD & API CONFIG (Mục 2.7, 3.2) -->
+    <!-- ========================================================================= -->
+    <div
+      id="modalBackdrop"
+      class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden transition-opacity"
+    ></div>
+
+    <!-- MODAL: LOGIN (KẾT NỐI POST /api/auth/login) -->
+    <div
+      id="modalLogin"
+      class="fixed inset-0 z-50 hidden flex items-center justify-center p-4"
+    >
+      <div
+        class="bg-slate-900 border border-brand-border rounded-xl w-full max-w-sm p-6 space-y-4 shadow-2xl relative"
+      >
+        <button
+          id="btnCloseLogin"
+          class="absolute top-4 right-4 text-brand-textSecondary hover:text-white p-1"
+        >
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+
+        <div class="space-y-1 text-center">
+          <h3 class="text-lg font-bold text-white">Đăng Nhập Hệ Thống</h3>
+          <p class="text-xs text-brand-textSecondary">
+            Kết nối trực tiếp API POST /api/auth/login
+          </p>
+        </div>
+
+        <!-- Quick Demo Login Presets -->
+        <div
+          class="bg-slate-950 p-2.5 rounded-lg border border-brand-border space-y-1.5"
+        >
+          <span
+            class="text-[10px] text-brand-textSecondary uppercase font-mono block"
+            >Điền nhanh tài khoản kiểm thử:</span
+          >
+          <div class="grid grid-cols-2 gap-2">
+            <button
+              id="btnQuickUserLogin"
+              class="px-2 py-1 rounded text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-brand-gold border border-brand-gold/30"
+            >
+              Tài Khoản User
+            </button>
+            <button
+              id="btnQuickAdminLogin"
+              class="px-2 py-1 rounded text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-amber-300 border border-amber-600/30"
+            >
+              Tài Khoản Admin
+            </button>
+          </div>
+        </div>
+
+        <form id="formLogin" class="space-y-3">
+          <div>
+            <label
+              for="loginUsername"
+              class="block text-xs font-medium text-slate-300 mb-1"
+              >Tên đăng nhập (Username)</label
+            >
+            <input
+              id="loginUsername"
+              type="text"
+              placeholder="user1 hoặc admin"
+              class="w-full bg-slate-950 border border-brand-border rounded-lg px-3 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-brand-gold"
+            />
+            <p
+              id="errLoginUsername"
+              class="text-[11px] text-rose-400 mt-0.5 hidden"
+            ></p>
+          </div>
+
+          <div>
+            <div class="flex justify-between items-center mb-1">
+              <label
+                for="loginPassword"
+                class="block text-xs font-medium text-slate-300"
+                >Mật khẩu</label
+              >
+              <button
+                type="button"
+                id="btnForgotPass"
+                class="text-[11px] text-brand-gold hover:underline"
+              >
+                Quên mật khẩu?
+              </button>
+            </div>
+            <div class="relative">
+              <input
+                id="loginPassword"
+                type="password"
+                placeholder="••••••••"
+                class="w-full bg-slate-950 border border-brand-border rounded-lg px-3 pr-9 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-brand-gold"
+              />
+              <button
+                type="button"
+                id="btnToggleLoginPass"
+                class="absolute right-2.5 top-1/2 -translate-y-1/2 text-brand-textSecondary hover:text-white text-xs"
+              >
+                <i class="fa-solid fa-eye"></i>
+              </button>
+            </div>
+            <p
+              id="errLoginPassword"
+              class="text-[11px] text-rose-400 mt-0.5 hidden"
+            ></p>
+          </div>
+
+          <button
+            type="submit"
+            id="btnSubmitLogin"
+            class="w-full py-2.5 rounded-lg font-bold text-xs bg-brand-gold hover:bg-brand-goldLight text-slate-950 transition shadow-sm"
+          >
+            Xác Nhận Đăng Nhập
+          </button>
+        </form>
+
+        <div
+          class="text-center text-xs text-brand-textSecondary pt-2 border-t border-brand-border"
+        >
+          Chưa có tài khoản?
+          <button
+            id="btnSwitchToRegister"
+            class="text-brand-gold font-semibold hover:underline ml-1"
+          >
+            Đăng ký mới
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL: REGISTER (KẾT NỐI POST /api/auth/register & REGEX VALIDATION) -->
+    <div
+      id="modalRegister"
+      class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 overflow-y-auto"
+    >
+      <div
+        class="bg-slate-900 border border-brand-border rounded-xl w-full max-w-md p-6 space-y-4 shadow-2xl relative my-6"
+      >
+        <button
+          id="btnCloseRegister"
+          class="absolute top-4 right-4 text-brand-textSecondary hover:text-white p-1"
+        >
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+
+        <div class="space-y-1 text-center">
+          <h3 class="text-lg font-bold text-white">Đăng Ký Thành Viên Mới</h3>
+          <p class="text-xs text-brand-textSecondary">
+            Client-side RegEx Validation & Gửi API POST /api/auth/register
+          </p>
+        </div>
+
+        <form id="formRegister" class="space-y-3">
+          <!-- Username -->
+          <div>
+            <label
+              for="regUsername"
+              class="block text-xs font-medium text-slate-300 mb-1"
+              >Tên đăng nhập (Username)
+              <span class="text-rose-400">*</span></label
+            >
+            <input
+              id="regUsername"
+              type="text"
+              placeholder="nguyenvana"
+              class="w-full bg-slate-950 border border-brand-border rounded-lg px-3 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-brand-gold"
+            />
+            <p
+              id="errRegUsername"
+              class="text-[11px] text-rose-400 mt-0.5 hidden"
+            ></p>
+          </div>
+
+          <!-- Email with RegEx validation -->
+          <div>
+            <label
+              for="regEmail"
+              class="block text-xs font-medium text-slate-300 mb-1"
+              >Địa chỉ Email <span class="text-rose-400">*</span></label
+            >
+            <input
+              id="regEmail"
+              type="text"
+              placeholder="nguyenvana@gmail.com"
+              class="w-full bg-slate-950 border border-brand-border rounded-lg px-3 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-brand-gold"
+            />
+            <p
+              id="errRegEmail"
+              class="text-[11px] text-rose-400 mt-0.5 hidden"
+            ></p>
+          </div>
+
+          <!-- Phone with Vietnam RegEx (03|05|07|08|09) -->
+          <div>
+            <label
+              for="regPhone"
+              class="block text-xs font-medium text-slate-300 mb-1"
+              >Số điện thoại (chưa được API hỗ trợ)</label
+            >
+            <input
+              id="regPhone"
+              disabled
+              type="text"
+              placeholder="0912345678"
+              class="w-full bg-slate-950 border border-brand-border rounded-lg px-3 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-brand-gold"
+            />
+            <p
+              id="errRegPhone"
+              class="text-[11px] text-rose-400 mt-0.5 hidden"
+            ></p>
+          </div>
+
+          <!-- Password with Strength Evaluator -->
+          <div>
+            <label
+              for="regPassword"
+              class="block text-xs font-medium text-slate-300 mb-1"
+              >Mật khẩu <span class="text-rose-400">*</span></label
+            >
+            <div class="relative">
+              <input
+                id="regPassword"
+                type="password"
+                placeholder="Tối thiểu 8 ký tự, chữ hoa, số, ký tự đặc biệt"
+                class="w-full bg-slate-950 border border-brand-border rounded-lg px-3 pr-9 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-brand-gold"
+              />
+              <button
+                type="button"
+                id="btnToggleRegPass"
+                class="absolute right-2.5 top-1/2 -translate-y-1/2 text-brand-textSecondary hover:text-white text-xs"
+              >
+                <i class="fa-solid fa-eye"></i>
+              </button>
+            </div>
+
+            <!-- Real-time Password Strength Meter -->
+            <div class="mt-1.5 space-y-1">
+              <div class="flex items-center justify-between text-[11px]">
+                <span class="text-brand-textSecondary">Độ mạnh mật khẩu:</span>
+                <span id="passStrengthLabel" class="font-bold text-slate-500"
+                  >Chưa nhập</span
+                >
+              </div>
+              <div
+                class="w-full bg-slate-800 h-1 rounded-full overflow-hidden flex"
+              >
+                <div
+                  id="passStrengthBar"
+                  class="h-full w-0 transition-all duration-300 bg-rose-500"
+                ></div>
+              </div>
+              <div
+                class="grid grid-cols-2 gap-x-2 gap-y-0.5 text-[10px] text-brand-textSecondary pt-0.5"
+              >
+                <span id="ruleLen" class="flex items-center gap-1"
+                  ><i class="fa-solid fa-circle text-[6px] text-slate-600"></i>
+                  &ge; 8 ký tự</span
+                >
+                <span id="ruleUpper" class="flex items-center gap-1"
+                  ><i class="fa-solid fa-circle text-[6px] text-slate-600"></i>
+                  Chữ hoa (A-Z)</span
+                >
+                <span id="ruleNum" class="flex items-center gap-1"
+                  ><i class="fa-solid fa-circle text-[6px] text-slate-600"></i>
+                  Chữ số (0-9)</span
+                >
+                <span id="ruleSpecial" class="flex items-center gap-1"
+                  ><i class="fa-solid fa-circle text-[6px] text-slate-600"></i>
+                  Ký tự đặc biệt</span
+                >
+              </div>
+            </div>
+            <p
+              id="errRegPassword"
+              class="text-[11px] text-rose-400 mt-0.5 hidden"
+            ></p>
+          </div>
+
+          <!-- Confirm Password -->
+          <div>
+            <label
+              for="regConfirmPassword"
+              class="block text-xs font-medium text-slate-300 mb-1"
+              >Xác nhận mật khẩu <span class="text-rose-400">*</span></label
+            >
+            <input
+              id="regConfirmPassword"
+              type="password"
+              placeholder="Nhập lại mật khẩu"
+              class="w-full bg-slate-950 border border-brand-border rounded-lg px-3 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-brand-gold"
+            />
+            <p
+              id="errRegConfirmPassword"
+              class="text-[11px] text-rose-400 mt-0.5 hidden"
+            ></p>
+          </div>
+
+          <button
+            type="submit"
+            id="btnSubmitRegister"
+            class="w-full py-2.5 rounded-lg font-bold text-xs bg-brand-gold hover:bg-brand-goldLight text-slate-950 transition shadow-sm"
+          >
+            Hoàn Tất Đăng Ký Tài Khoản
+          </button>
+        </form>
+
+        <div
+          class="text-center text-xs text-brand-textSecondary pt-2 border-t border-brand-border"
+        >
+          Đã có tài khoản?
+          <button
+            id="btnSwitchToLogin"
+            class="text-brand-gold font-semibold hover:underline ml-1"
+          >
+            Đăng nhập
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL: PROFILE UPDATE -->
+    <div
+      id="modalProfile"
+      class="fixed inset-0 z-50 hidden flex items-center justify-center p-4"
+    >
+      <div
+        class="bg-slate-900 border border-brand-border rounded-xl w-full max-w-sm p-6 space-y-4 shadow-2xl relative"
+      >
+        <button
+          id="btnCloseProfile"
+          class="absolute top-4 right-4 text-brand-textSecondary hover:text-white p-1"
+        >
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+
+        <div class="flex items-center gap-3 pb-3 border-b border-brand-border">
+          <div
+            class="w-8 h-8 rounded-full bg-brand-gold flex items-center justify-center text-slate-950 font-bold text-sm"
+          >
+            <i class="fa-solid fa-user"></i>
+          </div>
+          <div>
+            <h3 class="text-sm font-bold text-white">Hồ Sơ Cá Nhân</h3>
+            <p class="text-xs text-brand-textSecondary">
+              Cập nhật thông tin định danh
+            </p>
+          </div>
+        </div>
+
+        <form id="formProfile" class="space-y-3">
+          <div>
+            <label
+              for="profFullName"
+              class="block text-xs font-medium text-slate-300 mb-1"
+              >Tên người dùng (Username)</label
+            >
+            <input
+              id="profFullName"
+              type="text"
+              class="w-full bg-slate-950 border border-brand-border rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-brand-gold"
+            />
+          </div>
+          <div>
+            <label
+              for="profEmail"
+              class="block text-xs font-medium text-slate-300 mb-1"
+              >Email</label
+            >
+            <input
+              id="profEmail"
+              type="text"
+              class="w-full bg-slate-950 border border-brand-border rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-brand-gold"
+            />
+          </div>
+          <div>
+            <label
+              for="profPhone"
+              class="block text-xs font-medium text-slate-300 mb-1"
+              >Số điện thoại</label
+            >
+            <input
+              id="profPhone"
+              type="text"
+              class="w-full bg-slate-950 border border-brand-border rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-brand-gold"
+            />
+          </div>
+
+          <button
+            type="submit"
+            id="btnSaveProfile"
+            class="w-full py-2 rounded-lg font-bold text-xs bg-brand-gold hover:bg-brand-goldLight text-slate-950 transition"
+          >
+            Lưu Cập Nhật
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- MODAL: CHANGE PASSWORD -->
+    <div
+      id="modalPassword"
+      class="fixed inset-0 z-50 hidden flex items-center justify-center p-4"
+    >
+      <div
+        class="bg-slate-900 border border-brand-border rounded-xl w-full max-w-sm p-6 space-y-4 shadow-2xl relative"
+      >
+        <button
+          id="btnClosePassword"
+          class="absolute top-4 right-4 text-brand-textSecondary hover:text-white p-1"
+        >
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+
+        <div class="flex items-center gap-3 pb-3 border-b border-brand-border">
+          <div
+            class="w-8 h-8 rounded-full bg-slate-800 text-brand-gold flex items-center justify-center text-xs"
+          >
+            <i class="fa-solid fa-key"></i>
+          </div>
+          <div>
+            <h3 class="text-sm font-bold text-white">Đổi Mật Khẩu</h3>
+            <p class="text-xs text-brand-textSecondary">
+              Đảm bảo an toàn tài khoản
+            </p>
+          </div>
+        </div>
+
+        <form id="formChangePassword" class="space-y-3">
+          <div>
+            <label
+              for="pwdOld"
+              class="block text-xs font-medium text-slate-300 mb-1"
+              >Mật khẩu hiện tại</label
+            >
+            <input
+              id="pwdOld"
+              type="password"
+              class="w-full bg-slate-950 border border-brand-border rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-brand-gold"
+            />
+          </div>
+          <div>
+            <label
+              for="pwdNew"
+              class="block text-xs font-medium text-slate-300 mb-1"
+              >Mật khẩu mới</label
+            >
+            <input
+              id="pwdNew"
+              type="password"
+              placeholder="Tối thiểu 8 ký tự"
+              class="w-full bg-slate-950 border border-brand-border rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-brand-gold"
+            />
+          </div>
+          <div>
+            <label
+              for="pwdConfirm"
+              class="block text-xs font-medium text-slate-300 mb-1"
+              >Xác nhận mật khẩu mới</label
+            >
+            <input
+              id="pwdConfirm"
+              type="password"
+              class="w-full bg-slate-950 border border-brand-border rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-brand-gold"
+            />
+          </div>
+
+          <button
+            type="submit"
+            id="btnSavePassword"
+            class="w-full py-2 rounded-lg font-bold text-xs bg-brand-gold hover:bg-brand-goldLight text-slate-950 transition"
+          >
+            Xác Nhận Thay Đổi
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- MODAL: BACKEND API CONFIGURATION -->
+    <div
+      id="modalApiConfig"
+      class="fixed inset-0 z-50 hidden flex items-center justify-center p-4"
+    >
+      <div
+        class="bg-slate-900 border border-brand-border rounded-xl w-full max-w-sm p-6 space-y-4 shadow-2xl relative"
+      >
+        <button
+          id="btnCloseApiConfig"
+          class="absolute top-4 right-4 text-brand-textSecondary hover:text-white p-1"
+        >
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+
+        <div class="space-y-1">
+          <h3 class="text-sm font-bold text-white flex items-center gap-2">
+            <i class="fa-solid fa-server text-brand-gold"></i> Cấu Hình Backend
+            API Endpoint
+          </h3>
+          <p class="text-xs text-brand-textSecondary">
+            Thiết lập địa chỉ máy chủ FastAPI (Mặc định: 127.0.0.1:8000)
+          </p>
+        </div>
+
+        <div class="space-y-3">
+          <div>
+            <label
+              for="inputApiBaseUrl"
+              class="block text-xs font-medium text-slate-300 mb-1"
+              >Base URL của FastAPI</label
+            >
+            <input
+              id="inputApiBaseUrl"
+              type="text"
+              value="http://127.0.0.1:8000"
+              class="w-full bg-slate-950 border border-brand-border rounded-lg px-3 py-1.5 text-xs font-mono text-brand-gold focus:outline-none focus:border-brand-gold"
+            />
+          </div>
+
+          <div
+            class="p-3 bg-slate-950 rounded-lg border border-brand-border text-xs space-y-1"
+          >
+            <div class="flex justify-between">
+              <span class="text-brand-textSecondary">Trạng thái kết nối:</span>
+              <span id="apiConfigStatus" class="font-mono text-emerald-400"
+                >Kiểm tra kết nối...</span
+              >
+            </div>
+            <div class="flex justify-between">
+              <span class="text-brand-textSecondary">Token hiện tại:</span>
+              <span id="apiConfigToken" class="font-mono text-slate-300"
+                >Chưa có JWT</span
+              >
+            </div>
+          </div>
+
+          <div class="flex gap-2">
+            <button
+              id="btnTestApiConnection"
+              class="flex-1 py-2 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-white transition border border-brand-border"
+            >
+              Test Kết Nối (Ping)
+            </button>
+            <button
+              id="btnSaveApiConfig"
+              class="flex-1 py-2 rounded-lg text-xs font-bold bg-brand-gold hover:bg-brand-goldLight text-slate-950 transition"
+            >
+              Lưu Cấu Hình
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL: PREDICTION DETAIL (Mục 2.8) -->
+    <div
+      id="modalDetail"
+      class="fixed inset-0 z-50 hidden flex items-center justify-center p-4"
+    >
+      <div
+        class="bg-slate-900 border border-brand-border rounded-xl w-full max-w-md p-6 space-y-4 shadow-2xl relative"
+      >
+        <button
+          id="btnCloseDetail"
+          class="absolute top-4 right-4 text-brand-textSecondary hover:text-white p-1"
+        >
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+
+        <div class="flex items-center gap-3 pb-3 border-b border-brand-border">
+          <div
+            class="w-8 h-8 rounded-lg bg-slate-800 text-brand-gold flex items-center justify-center font-bold text-sm"
+          >
+            <i class="fa-solid fa-file-invoice"></i>
+          </div>
+          <div>
+            <h3 id="detModalTitle" class="text-sm font-bold text-white">
+              Chi Tiết Lượt Dự Đoán
+            </h3>
+            <p id="detModalDate" class="text-xs text-brand-textSecondary">
+              Thời gian dự đoán
+            </p>
+          </div>
+        </div>
+
+        <div class="space-y-2.5 text-xs">
+          <div class="grid grid-cols-2 gap-2.5">
+            <div
+              class="p-2.5 bg-slate-950 rounded-lg border border-brand-border"
+            >
+              <span class="text-brand-textSecondary block text-[11px]"
+                >Sản phẩm vàng</span
+              >
+              <span id="detAsset" class="font-bold text-white text-xs"
+                >XAU/USD</span
+              >
+            </div>
+            <div
+              class="p-2.5 bg-slate-950 rounded-lg border border-brand-border"
+            >
+              <span class="text-brand-textSecondary block text-[11px]"
+                >Khoảng thời gian</span
+              >
+              <span id="detHorizon" class="font-bold text-brand-gold text-xs"
+                >7 Ngày</span
+              >
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2.5">
+            <div
+              class="p-2.5 bg-slate-950 rounded-lg border border-brand-border"
+            >
+              <span class="text-brand-textSecondary block text-[11px]"
+                >Giá dự đoán (Predicted)</span
+              >
+              <span
+                id="detPredPrice"
+                class="font-bold font-mono text-brand-gold text-xs"
+                >$2,648.50</span
+              >
+            </div>
+            <div
+              class="p-2.5 bg-slate-950 rounded-lg border border-brand-border"
+            >
+              <span class="text-brand-textSecondary block text-[11px]"
+                >Xu hướng (Trend)</span
+              >
+              <span id="detTrend" class="font-bold text-brand-profit text-xs"
+                >TĂNG (UP)</span
+              >
+            </div>
+          </div>
+
+          <div
+            class="p-2.5 bg-slate-950 rounded-lg border border-brand-border space-y-1 font-mono text-xs"
+          >
+            <div class="flex justify-between">
+              <span class="text-brand-textSecondary font-sans"
+                >Mô hình đã dùng:</span
+              >
+              <span id="detModel" class="text-slate-200">LightGBM / RF</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-brand-textSecondary font-sans"
+                >Khoảng sai số (Margin):</span
+              >
+              <span id="detMargin" class="text-slate-200">±18.4 USD/oz</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-brand-textSecondary font-sans"
+                >Nguồn dữ liệu:</span
+              >
+              <span class="text-emerald-400 font-sans"
+                >FastAPI / MySQL Backend</span
+              >
+            </div>
+          </div>
+        </div>
+
+        <div class="pt-2 border-t border-brand-border flex justify-end">
+          <button
+            id="btnCloseDetailBottom"
+            class="px-3.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs text-white"
+          >
+            Đóng cửa sổ
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="bg-slate-950 border-t border-brand-border mt-auto py-5">
+      <div
+        class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-brand-textSecondary"
+      >
+        <div class="flex items-center gap-2">
+          <div
+            class="w-4 h-4 rounded bg-brand-gold flex items-center justify-center text-slate-950 font-bold text-[9px]"
+          >
+            <i class="fa-solid fa-coins"></i>
+          </div>
+          <span
+            ><strong>AURUM QUANT</strong> &copy; 2026. Phụ trách:
+            <strong>Thành viên 1</strong> (Frontend Core & User Auth).</span
+          >
+        </div>
+        <div class="flex items-center gap-4 text-[11px] text-slate-500">
+          <span
+            >FastAPI Connected: <code class="text-slate-400">/api/auth</code>,
+            <code class="text-slate-400">/api/gold</code>,
+            <code class="text-slate-400">/api/predict</code></span
+          >
+          <span>Client JWT Authentication</span>
+        </div>
+      </div>
+    </footer>
+
+    <!-- ========================================================================= -->
+    <!-- JAVASCRIPT: FRONTEND LOGIC & FASTAPI BACKEND API CLIENT -->
+    <!-- ========================================================================= -->
+    <script src="app.js"></script>
+    <script src="data.js"></script>
+  </body>
+</html>

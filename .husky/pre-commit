@@ -1,0 +1,4 @@
+npx --no-install lint-staged
+npm run typecheck
+npm run check:js
+npm run test

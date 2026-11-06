@@ -1,0 +1,21 @@
+AURUM QUANT - THÀNH VIÊN 1: FRONTEND CORE ARCHITECT & USER AUTHENTICATION
+================================================================================
+HƯỚNG DẪN KẾT NỐI VỚI BACKEND FASTAPI (THÀNH VIÊN 3 & 4):
+1. Khởi động Backend FastAPI:
+   cd backend
+   uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
+
+2. Mở file index.html trong trình duyệt:
+   Giao diện sẽ tự động kết nối đến http://127.0.0.1:8000
+   Các endpoints đã kết nối:
+   - POST /api/auth/register : Đăng ký thành viên (Client-side RegEx Validation)
+   - POST /api/auth/login    : Đăng nhập nhận JWT Token, lưu vào localStorage
+   - GET  /api/auth/me       : Xác thực Token & phân quyền User / Admin
+   - GET  /api/gold/current  : Lấy dữ liệu giá vàng mới nhất
+   - GET  /api/gold/history  : Lấy chuỗi lịch sử 365 phiên
+   - POST /api/predict       : Gửi yêu cầu dự báo với Header Authorization: Bearer <token>
+   - GET  /api/predictions/history : Tải lịch sử dự đoán của User từ MySQL
+   - GET  /api/model/evaluation    : Tải các chỉ số đánh giá MAE, RMSE, MAPE, R2
+   - GET  /api/admin/users   : Dành riêng cho tài khoản quyền Admin
+
+Nếu Backend chưa khởi động, giao diện tự động chuyển sang chế độ đệm an toàn để kiểm thử!

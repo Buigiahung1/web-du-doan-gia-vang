@@ -1,0 +1,11 @@
+﻿{
+  "backend": "tv5_lightgbm",
+  "tv5_module": "ml.baseline.src.model",
+  "gold_type": "XAU_VND_LUONG",
+  "unit": "VND/luong",
+  "price_source": "TV5_GC_F_USDVND",
+  "window": 25,
+  "min_history_rows": 120,
+  "max_horizon": 7
+}
+

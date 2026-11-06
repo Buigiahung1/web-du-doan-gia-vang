@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VàngSố Pro Analytics - Hệ Thống Dự Báo Định Lượng Giá Vàng</title>
+  
+  <!-- CSS Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+
+  <!-- Chart.js 4.4.1 CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <!-- jQuery 3.7.1 CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
+</head>
+<body>
+<aside style="padding:16px;background:#fff3cd;color:#3a2b00" role="note">CÔNG CỤ NGHIÊN CỨU TV2: dữ liệu/thuật toán cục bộ, chưa nối model API và không phải báo giá trực tuyến đã xác thực. <a href="/">Về ứng dụng đã ghép</a>.</aside>
+
+  <!-- Navigation & Live Ribbon -->
+  <header class="terminal-nav">
+    <div class="nav-inner">
+      <div class="brand-unit">
+        <div class="gold-ingot-icon">Au</div>
+        <div class="brand-text">
+          <h1>VÀNGSỐ PRO ANALYTICS</h1>
+          <div class="subtext">Hệ thống phân tích kinh tế lượng & chuỗi thời gian giá vàng</div>
+        </div>
+      </div>
+
+      <!-- Live Market Ribbon -->
+      <div class="live-ribbon">
+        <div class="market-pulse">
+          <span class="pulse-dot"></span>
+          <span>PHIÊN GIAO DỊCH CHÍNH</span>
+        </div>
+        <div class="ribbon-item">
+          <span class="ribbon-label">Thời gian:</span>
+          <span class="ribbon-val num-mono" id="live-time">04/11/2026 21:12:00</span>
+        </div>
+        <div class="ribbon-item">
+          <span class="ribbon-label">VCB USD/VND:</span>
+          <span class="ribbon-val num-mono" id="ribbon-usdvnd">25,960</span>
+        </div>
+        <div class="ribbon-item">
+          <span class="ribbon-label">Chênh lệch SJC vs TG:</span>
+          <span class="ribbon-val num-mono" style="color: var(--gold-primary);" id="ribbon-premium">+7.25 Tr</span>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="nav-actions">
+        <button class="btn-ui" id="btn-toggle-theme" title="Chuyển chế độ Dark Terminal">
+          <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+          <span>Terminal Dark</span>
+        </button>
+        <button class="btn-ui" id="btn-refresh-data" title="Chạy lại mô hình">
+          <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+          <span>Chạy Lại</span>
+        </button>
+        <button class="btn-ui btn-primary-dark" id="btn-export-csv" title="Tải xuống dữ liệu">
+          <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+          <span>Xuất CSV</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Workstation -->
+  <main class="main-wrapper">
+
+    <!-- KPI Row -->
+    <section class="kpi-row">
+      <!-- KPI 1 -->
+      <div class="kpi-tile">
+        <div class="kpi-tile-top">
+          <span class="kpi-name">SJC Miếng 999.9 (Bán ra)</span>
+          <span class="badge-tag badge-up num-mono">+0.50 Tr (+0.48%)</span>
+        </div>
+        <div class="kpi-price num-mono" id="card-sjc-sell">
+          104.80 <span class="kpi-unit">Tr/Lượng</span>
+        </div>
+        <div class="kpi-subline">
+          <span>Mua vào: <strong class="num-mono" id="card-sjc-buy">102.30</strong> Tr</span>
+          <span>Spread: <strong class="num-mono" id="card-sjc-spread">2.50</strong> Tr</span>
+        </div>
+      </div>
+
+      <!-- KPI 2 -->
+      <div class="kpi-tile">
+        <div class="kpi-tile-top">
+          <span class="kpi-name">Vàng Nhẫn Trơn 24K</span>
+          <span class="badge-tag badge-up num-mono">+0.45 Tr (+0.46%)</span>
+        </div>
+        <div class="kpi-price num-mono" id="card-ring-gold">
+          98.20 <span class="kpi-unit">Tr/Lượng</span>
+        </div>
+        <div class="kpi-subline">
+          <span>Quy đổi: <strong class="num-mono">9.82 Tr/Chỉ</strong></span>
+          <span>Biên độ: <span class="num-mono">0.90 Tr</span></span>
+        </div>
+      </div>
+
+      <!-- KPI 3 -->
+      <div class="kpi-tile">
+        <div class="kpi-tile-top">
+          <span class="kpi-name">Kitco Gold Spot (Quốc tế)</span>
+          <span class="badge-tag badge-up num-mono">+12.5 $ (+0.38%)</span>
+        </div>
+        <div class="kpi-price num-mono" id="card-kitco-spot">
+          $3,342.5 <span class="kpi-unit">USD/oz</span>
+        </div>
+        <div class="kpi-subline">
+          <span>TG Quy đổi: <strong class="num-mono" id="card-world-converted">97.55</strong> Tr</span>
+          <span>VCB: <strong class="num-mono">25,960</strong></span>
+        </div>
+      </div>
+
+      <!-- KPI 4 -->
+      <div class="kpi-tile" style="border-left: 3px solid var(--gold-accent);">
+        <div class="kpi-tile-top">
+          <span class="kpi-name">Dự Báo Mô Hình (T+14)</span>
+          <span class="badge-tag badge-gold">Kỳ vọng tăng</span>
+        </div>
+        <div class="kpi-price num-mono" style="color: var(--gold-accent);" id="card-forecast-target">
+          106.15 <span class="kpi-unit">Tr/Lượng</span>
+        </div>
+        <div class="kpi-subline">
+          <span>Dải 95%: <strong class="num-mono" id="card-forecast-range">104.2 - 108.1</strong></span>
+          <span>Độ tin cậy: <strong style="color: var(--up-green);">Cao</strong></span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Central Dual Workbench -->
+    <section class="workbench-grid">
+
+      <!-- Cột Trái (70%): Biểu Đồ Kỹ Thuật TradingView Style -->
+      <div class="workbench-card">
+        <!-- Header Thanh Công Cụ Biểu Đồ -->
+        <div class="chart-header-bar">
+          <!-- Nhóm chọn mục tiêu & Khung thời gian -->
+          <div class="chart-left-controls">
+            <select class="chart-select" id="select-target">
+              <option value="sjcSell">SJC Bán Ra (Tr/Lượng)</option>
+              <option value="sjcBuy">SJC Mua Vào (Tr/Lượng)</option>
+              <option value="worldUsd">Kitco Spot Quốc Tế (USD/oz)</option>
+            </select>
+
+            <!-- Timeframe Pills -->
+            <div class="pill-group" id="timeframe-pills">
+              <button class="pill-btn" data-range="30">1M</button>
+              <button class="pill-btn" data-range="90">3M</button>
+              <button class="pill-btn" data-range="180">6M</button>
+              <button class="pill-btn" data-range="365">1Y</button>
+              <button class="pill-btn active" data-range="all">TẤT CẢ</button>
+            </div>
+          </div>
+
+          <!-- Nhóm chọn mô hình toán & chân trời dự báo -->
+          <div class="chart-right-controls">
+            <select class="chart-select" id="select-model">
+              <option value="holt">Holt's Linear Smoothing (Xu hướng kép)</option>
+              <option value="arima">ARIMA(1,1,0) có Drift hồi quy</option>
+              <option value="macro">Mô hình Truyền dẫn Vĩ mô (Kitco + USD)</option>
+            </select>
+
+            <div class="pill-group" id="horizon-pills">
+              <button class="pill-btn" data-horizon="7">T+7</button>
+              <button class="pill-btn active" data-horizon="14">T+14</button>
+              <button class="pill-btn" data-horizon="30">T+30</button>
+            </div>
+
+            <label class="checkbox-chip">
+              <input type="checkbox" id="chk-sma" checked>
+              <span>MA(14)</span>
+            </label>
+            <label class="checkbox-chip">
+              <input type="checkbox" id="chk-confidence" checked>
+              <span>Dải tin cậy</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Vùng Vẽ Biểu Đồ Canvas -->
+        <div class="chart-stage">
+          <div class="chart-watermark" id="chart-watermark-text">SJC / VND</div>
+          <div class="canvas-container">
+            <canvas id="goldChart"></canvas>
+          </div>
+        </div>
+
+        <!-- Chú giải Biểu Đồ chân trang -->
+        <div class="chart-strip-footer">
+          <div class="legend-chips">
+            <div class="legend-chip">
+              <span class="dot-indicator" style="background: #2563eb;"></span>
+              <span>Lịch sử giao dịch</span>
+            </div>
+            <div class="legend-chip">
+              <span class="dot-indicator" style="background: var(--gold-accent);"></span>
+              <span>Đường dự báo mô hình</span>
+            </div>
+            <div class="legend-chip">
+              <span class="dot-indicator" style="background: rgba(217, 119, 6, 0.25);"></span>
+              <span>Khoảng tin cậy 80%</span>
+            </div>
+            <div class="legend-chip">
+              <span class="dot-indicator" style="background: rgba(217, 119, 6, 0.10);"></span>
+              <span>Dải bao quát 95%</span>
+            </div>
+            <div class="legend-chip">
+              <span class="dot-indicator" style="background: #9333ea;"></span>
+              <span>Đường SMA(14)</span>
+            </div>
+          </div>
+          <div style="color: var(--text-muted);">
+            Sai số thực nghiệm (MAPE): <strong class="num-mono text-success" id="val-mape-strip">0.82%</strong>
+          </div>
+        </div>
+      </div>
+
+      <!-- Cột Phải (30%): Bảng Báo Giá Thương Hiệu Lớn & Sentiment Meter -->
+      <div class="workbench-card">
+        <div class="sidebar-panel-header">
+          <h3>Bảng Giá Thương Hiệu</h3>
+          <span class="badge-tag badge-up" style="font-size: 10px;">TRỰC TUYẾN</span>
+        </div>
+
+        <!-- Danh sách bảng giá các thương hiệu lớn -->
+        <div class="brand-list" id="brand-quotes-container">
+          <!-- Render dynamically via JavaScript -->
+        </div>
+
+        <!-- Sentiment & Volatility Meter -->
+        <div class="sentiment-box">
+          <div class="sentiment-header">
+            <span style="font-weight: 600; text-transform: uppercase; font-size: 11px;">Chỉ Báo Xu Thế Kỹ Thuật (RSI & Trend)</span>
+            <span class="badge-tag badge-up" id="sentiment-status-label">Lạc quan (Bullish)</span>
+          </div>
+          <div class="meter-track">
+            <div class="meter-pointer" id="sentiment-meter-pointer"></div>
+          </div>
+          <div class="meter-labels">
+            <span>Bán Quá Mức (RSI &lt; 30)</span>
+            <span>Trung Tính (50)</span>
+            <span>Mua Quá Mức (RSI &gt; 70)</span>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- Lower Split Grid: Simulator & Tabbed Dataset Studio -->
+    <section class="bottom-split-grid">
+
+      <!-- Khối Trái: Máy Tính Vị Thế & Kịch Bản Lợi Nhuận -->
+      <div class="workbench-card">
+        <div class="sidebar-panel-header">
+          <h3>Mô Phỏng Vị Thế & Kịch Bản Lợi Nhuận</h3>
+          <span style="font-size: 11.5px; color: var(--text-muted);">Tự động tính theo dự báo</span>
+        </div>
+
+        <div class="sim-body">
+          <!-- Slider Số lượng -->
+          <div class="field-group">
+            <div class="field-label-row">
+              <span>Số lượng nắm giữ (Lượng vàng):</span>
+              <strong class="num-mono" id="sim-qty-display">5.0 Lượng</strong>
+            </div>
+            <div class="slider-input-combo">
+              <input type="range" id="sim-slider-qty" min="0.5" max="50" step="0.5" value="5">
+              <input type="number" class="numeric-box num-mono" id="sim-input-qty" value="5" step="0.5" min="0.1">
+            </div>
+          </div>
+
+          <!-- Slider Giá vốn -->
+          <div class="field-group">
+            <div class="field-label-row">
+              <span>Giá vốn mua vào (Triệu VNĐ/Lượng):</span>
+              <strong class="num-mono" id="sim-cost-display">89.50 Tr</strong>
+            </div>
+            <div class="slider-input-combo">
+              <input type="range" id="sim-slider-cost" min="70" max="110" step="0.5" value="89.5">
+              <input type="number" class="numeric-box num-mono" id="sim-input-cost" value="89.5" step="0.1">
+            </div>
+          </div>
+
+          <div style="font-size: 12px; color: var(--text-muted); padding: 8px 12px; background: var(--bg-card-subtle); border-radius: var(--radius-sm);">
+            Tổng vốn đầu tư ban đầu: <strong class="num-mono" id="sim-total-capital" style="color: var(--text-primary);">447,500,000</strong> VNĐ
+          </div>
+
+          <!-- 3 Thẻ Kịch Bản -->
+          <div class="scenario-cards-list">
+            <div class="scenario-pill-card base">
+              <div>
+                <div class="scenario-label">Kịch Bản Cơ Sở (Dự báo T+14)</div>
+                <div class="scenario-sub num-mono" id="sim-card-base-target">Giá: 106.15 Tr/Lượng</div>
+              </div>
+              <div class="num-mono" style="font-weight: 700; font-size: 14px;" id="sim-pnl-base">
+                +83,250,000 VNĐ (+18.6%)
+              </div>
+            </div>
+
+            <div class="scenario-pill-card bull">
+              <div>
+                <div class="scenario-label" style="color: var(--up-green);">Kịch Bản Bứt Phá (Cận trên 95%)</div>
+                <div class="scenario-sub num-mono" id="sim-card-bull-target">Giá: 108.10 Tr/Lượng</div>
+              </div>
+              <div class="num-mono" style="font-weight: 700; font-size: 14px; color: var(--up-green);" id="sim-pnl-bull">
+                +93,000,000 VNĐ (+20.8%)
+              </div>
+            </div>
+
+            <div class="scenario-pill-card bear">
+              <div>
+                <div class="scenario-label" style="color: var(--down-red);">Kịch Bản Điều Chỉnh (Cận dưới 95%)</div>
+                <div class="scenario-sub num-mono" id="sim-card-bear-target">Giá: 104.20 Tr/Lượng</div>
+              </div>
+              <div class="num-mono" style="font-weight: 700; font-size: 14px;" id="sim-pnl-bear">
+                +73,500,000 VNĐ (+16.4%)
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Khối Phải: Dataset Explorer & Backtest Studio -->
+      <div class="workbench-card">
+        <!-- Tab Navigation -->
+        <div class="tab-nav-bar">
+          <button class="tab-nav-btn active" data-tab="tab-dataset">Dataset Lịch Sử Thực Tế</button>
+          <button class="tab-nav-btn" data-tab="tab-backtest">Kiểm Định Mô Hình (Backtest)</button>
+        </div>
+
+        <!-- Tab 1: Dataset -->
+        <div class="tab-content" id="tab-dataset">
+          <div class="table-toolbar-sleek">
+            <div style="display: flex; gap: 8px; align-items: center;">
+              <input type="text" class="sleek-search-input" id="table-search" placeholder="Tìm theo ngày (YYYY-MM)...">
+              <span style="font-size: 11.5px; color: var(--text-muted);">
+                Tổng: <strong class="num-mono" id="dataset-total-count">0</strong> phiên
+              </span>
+            </div>
+            <div style="display: flex; gap: 8px;">
+              <button class="btn-ui" id="btn-reset-dataset" style="font-size: 11.5px;">Mặc định</button>
+              <label class="btn-ui" style="margin-bottom:0; cursor:pointer; font-size: 11.5px;">
+                <span>Nhập CSV</span>
+                <input type="file" id="input-import-csv" accept=".csv" style="display: none;">
+              </label>
+            </div>
+          </div>
+
+          <div class="table-scroller">
+            <table class="data-grid">
+              <thead>
+                <tr>
+                  <th>Ngày</th>
+                  <th>SJC Mua (Tr)</th>
+                  <th>SJC Bán (Tr)</th>
+                  <th>Biến động %</th>
+                  <th>Kitco Spot ($)</th>
+                  <th>USD/VND</th>
+                  <th>TG Quy Đổi (Tr)</th>
+                  <th>Chênh Lệch</th>
+                </tr>
+              </thead>
+              <tbody id="dataset-table-body">
+                <!-- Render dynamically via JavaScript -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Tab 2: Backtesting Studio -->
+        <div class="tab-content" id="tab-backtest" style="display: none;">
+          <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px; line-height: 1.5;">
+            Đánh giá độ chính xác thực tế out-of-sample: Mô hình huấn luyện trên 80% dữ liệu ban đầu và dự phóng thử nghiệm trên 20% chuỗi gần nhất.
+          </div>
+
+          <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 14px;">
+            <div style="padding: 10px; background: var(--bg-card-subtle); border-radius: var(--radius-sm); border: 1px solid var(--border-subtle); text-align: center;">
+              <div style="font-size: 11px; color: var(--text-muted);">MAPE (Sai số %)</div>
+              <div class="num-mono" style="font-size: 16px; font-weight: 700; color: var(--up-green);" id="val-mape">0.82%</div>
+            </div>
+            <div style="padding: 10px; background: var(--bg-card-subtle); border-radius: var(--radius-sm); border: 1px solid var(--border-subtle); text-align: center;">
+              <div style="font-size: 11px; color: var(--text-muted);">RMSE (Tuyệt đối)</div>
+              <div class="num-mono" style="font-size: 16px; font-weight: 700;" id="val-rmse">0.74 Tr</div>
+            </div>
+            <div style="padding: 10px; background: var(--bg-card-subtle); border-radius: var(--radius-sm); border: 1px solid var(--border-subtle); text-align: center;">
+              <div style="font-size: 11px; color: var(--text-muted);">Hệ số R²</div>
+              <div class="num-mono" style="font-size: 16px; font-weight: 700;" id="val-r2">0.962</div>
+            </div>
+            <div style="padding: 10px; background: var(--bg-card-subtle); border-radius: var(--radius-sm); border: 1px solid var(--border-subtle); text-align: center;">
+              <div style="font-size: 11px; color: var(--text-muted);">Đúng hướng (%)</div>
+              <div class="num-mono" style="font-size: 16px; font-weight: 700; color: var(--gold-primary);" id="val-direction">78.5%</div>
+            </div>
+          </div>
+
+          <div style="font-size: 12px; border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 10px; background: var(--bg-card-subtle);">
+            <strong>Kết luận kiểm định:</strong> Chuỗi giá vàng thể hiện quán tính xu thế cao và phản ứng nhạy với giá Kitco Spot quốc tế. Sai số MAPE trung bình <strong class="num-mono">0.82%</strong> phản ánh mô hình bắt nhịp sát với thực tế biến động thị trường.
+          </div>
+        </div>
+
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="terminal-footer">
+    <div class="footer-inner-wrap">
+      <div class="disclaimer-badge">
+        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+        <span>Dữ liệu và dự báo mang tính chất nghiên cứu định lượng độc lập, không phải lời khuyên đầu tư tài chính.</span>
+      </div>
+      <div>
+        <span>Nguồn tham chiếu: <strong>SJC, DOJI, PNJ, Kitco Metals, Vietcombank</strong> &copy; 2026 VàngSố Pro</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Application Scripts -->
+  <script src="dataset.js"></script>
+  <script src="forecast-engine.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

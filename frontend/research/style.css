@@ -1,0 +1,849 @@
+/* ==========================================================================
+   VÀNGSỐ QUANTITATIVE TERMINAL - HIGH-END FINTECH DESIGN SYSTEM
+   Phong cách chuẩn mực tài chính cao cấp (Linear / TradingView / Koyfin inspired)
+   Typography: Plus Jakarta Sans + JetBrains Mono
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+
+:root {
+  /* Hệ màu sáng sang trọng (Light Theme) */
+  --bg-app: #f8fafc;
+  --bg-card: #ffffff;
+  --bg-card-subtle: #f1f5f9;
+  --bg-hover: #f1f5f9;
+  
+  --border-subtle: #e2e8f0;
+  --border-medium: #cbd5e1;
+  --border-active: #0f172a;
+
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #64748b;
+  --text-dim: #94a3b8;
+
+  /* Điểm nhấn Vàng thỏi kim loại chuẩn (Bullion Gold) */
+  --gold-primary: #b45309;
+  --gold-surface: #fef9c3;
+  --gold-border: #fde047;
+  --gold-accent: #d97706;
+
+  /* Tín hiệu tài chính xanh/đỏ chuẩn phố Wall */
+  --up-green: #059669;
+  --up-green-bg: #ecfdf5;
+  --up-green-border: #a7f3d0;
+
+  --down-red: #e11d48;
+  --down-red-bg: #fff1f2;
+  --down-red-border: #fecdd3;
+
+  --font-main: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.04);
+  --shadow-card: 0 1px 3px 0 rgba(15, 23, 42, 0.04), 0 4px 12px -2px rgba(15, 23, 42, 0.03);
+}
+
+/* Chế độ Dark Terminal (Bloomberg Pro Theme) */
+body.dark-mode {
+  --bg-app: #090d16;
+  --bg-card: #0f1422;
+  --bg-card-subtle: #171e30;
+  --bg-hover: #1c243a;
+
+  --border-subtle: #1f293d;
+  --border-medium: #2d3b55;
+  --border-active: #3b82f6;
+
+  --text-primary: #f8fafc;
+  --text-secondary: #cbd5e1;
+  --text-muted: #94a3b8;
+  --text-dim: #64748b;
+
+  --gold-primary: #f59e0b;
+  --gold-surface: #261c0a;
+  --gold-border: #78350f;
+  --gold-accent: #fbbf24;
+
+  --up-green: #10b981;
+  --up-green-bg: #062b1e;
+  --up-green-border: #047857;
+
+  --down-red: #f43f5e;
+  --down-red-bg: #370c17;
+  --down-red-border: #be123c;
+
+  --shadow-card: 0 4px 20px -2px rgba(0, 0, 0, 0.5);
+}
+
+/* Reset cơ bản */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-main);
+  background-color: var(--bg-app);
+  color: var(--text-primary);
+  font-size: 13.5px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Font số đơn cách chuẩn tài chính */
+.num-mono {
+  font-family: var(--font-mono);
+  font-feature-settings: "tnum" 1, "zero" 1;
+  letter-spacing: -0.3px;
+}
+
+/* ================= 1. Header & Live Ticker ================= */
+.terminal-nav {
+  background: var(--bg-card);
+  border-bottom: 1px solid var(--border-subtle);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  backdrop-filter: blur(8px);
+}
+
+.nav-inner {
+  max-width: 1540px;
+  margin: 0 auto;
+  padding: 10px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+
+.brand-unit {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.gold-ingot-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-sm);
+  background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  box-shadow: 0 2px 6px rgba(180, 83, 9, 0.25);
+  letter-spacing: -0.5px;
+}
+
+.brand-text h1 {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.2px;
+  line-height: 1.2;
+}
+
+.brand-text .subtext {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+/* Live Market Ribbon */
+.live-ribbon {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  background: var(--bg-card-subtle);
+  padding: 4px 14px;
+  border-radius: 9999px;
+  border: 1px solid var(--border-subtle);
+  font-size: 12px;
+}
+
+.market-pulse {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+  color: var(--up-green);
+}
+
+.pulse-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: var(--up-green);
+  box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.6);
+  animation: pulse-ring 2s infinite;
+}
+
+@keyframes pulse-ring {
+  0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.6); }
+  70% { box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+}
+
+.ribbon-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.ribbon-label {
+  color: var(--text-muted);
+}
+
+.ribbon-val {
+  font-weight: 600;
+}
+
+/* Top Actions */
+.nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Nút & Segmented Switch */
+.btn-ui {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 12.5px;
+  font-weight: 500;
+  cursor: pointer;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-card);
+  color: var(--text-primary);
+  transition: all 0.15s ease;
+}
+
+.btn-ui:hover {
+  background: var(--bg-hover);
+  border-color: var(--border-medium);
+}
+
+.btn-primary-dark {
+  background: #0f172a;
+  color: #ffffff;
+  border-color: #0f172a;
+}
+
+body.dark-mode .btn-primary-dark {
+  background: #2563eb;
+  border-color: #2563eb;
+  color: #ffffff;
+}
+
+.btn-primary-dark:hover {
+  opacity: 0.92;
+}
+
+/* ================= 2. Bố cục Workspace ================= */
+.main-wrapper {
+  max-width: 1540px;
+  margin: 0 auto;
+  padding: 20px 24px 60px 24px;
+}
+
+/* ================= 3. Thẻ Chỉ Số Thị Trường (KPIs) ================= */
+.kpi-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+@media (max-width: 1100px) {
+  .kpi-row { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 600px) {
+  .kpi-row { grid-template-columns: 1fr; }
+}
+
+.kpi-tile {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: border-color 0.2s;
+}
+
+.kpi-tile:hover {
+  border-color: var(--border-medium);
+}
+
+.kpi-tile-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.kpi-name {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.badge-tag {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 1px 7px;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.badge-up {
+  color: var(--up-green);
+  background: var(--up-green-bg);
+}
+
+.badge-down {
+  color: var(--down-red);
+  background: var(--down-red-bg);
+}
+
+.badge-gold {
+  color: var(--gold-primary);
+  background: var(--gold-surface);
+}
+
+.kpi-price {
+  font-size: 23px;
+  font-weight: 700;
+  letter-spacing: -0.6px;
+  color: var(--text-primary);
+  margin-bottom: 6px;
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.kpi-unit {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-muted);
+  font-family: var(--font-main);
+}
+
+.kpi-subline {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+  color: var(--text-muted);
+  padding-top: 8px;
+  border-top: 1px solid var(--border-subtle);
+}
+
+/* ================= 4. Dual Workbench (Chart & Depth) ================= */
+.workbench-grid {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+@media (max-width: 1180px) {
+  .workbench-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.workbench-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Header Biểu Đồ kiểu TradingView */
+.chart-header-bar {
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border-subtle);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  background: var(--bg-card);
+}
+
+.chart-left-controls, .chart-right-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.pill-group {
+  display: inline-flex;
+  background: var(--bg-card-subtle);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 2px;
+  gap: 2px;
+}
+
+.pill-btn {
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 500;
+  padding: 4px 9px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.pill-btn:hover {
+  color: var(--text-primary);
+}
+
+.pill-btn.active {
+  background: var(--bg-card);
+  color: var(--text-primary);
+  font-weight: 600;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.06);
+}
+
+.chart-select {
+  background: var(--bg-card-subtle);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-primary);
+  font-size: 12px;
+  font-weight: 500;
+  padding: 5px 8px;
+  border-radius: var(--radius-sm);
+  outline: none;
+  cursor: pointer;
+}
+
+.checkbox-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  user-select: none;
+}
+
+/* Vùng vẽ biểu đồ Canvas */
+.chart-stage {
+  padding: 16px 16px 8px 16px;
+  position: relative;
+  flex: 1;
+}
+
+.canvas-container {
+  height: 430px;
+  width: 100%;
+  position: relative;
+}
+
+/* Watermark tinh tế trên nền biểu đồ */
+.chart-watermark {
+  position: absolute;
+  top: 40%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 54px;
+  font-weight: 800;
+  color: rgba(100, 116, 139, 0.04);
+  pointer-events: none;
+  font-family: var(--font-mono);
+  user-select: none;
+}
+
+/* Chú giải dưới chân biểu đồ */
+.chart-strip-footer {
+  padding: 10px 16px;
+  background: var(--bg-card-subtle);
+  border-top: 1px solid var(--border-subtle);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 11.5px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.legend-chips {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.legend-chip {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--text-secondary);
+}
+
+.dot-indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+}
+
+/* ================= 5. Bảng Giá Thương Hiệu (Cột Phải) ================= */
+.sidebar-panel-header {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border-subtle);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.sidebar-panel-header h3 {
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.brand-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.brand-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border-subtle);
+  transition: background 0.15s;
+}
+
+.brand-row:hover {
+  background: var(--bg-hover);
+}
+
+.brand-row:last-child {
+  border-bottom: none;
+}
+
+.brand-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.brand-title {
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.brand-city {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.brand-prices {
+  text-align: right;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.brand-sell {
+  font-weight: 700;
+  font-size: 13.5px;
+  color: var(--text-primary);
+}
+
+.brand-buy-spread {
+  font-size: 11.5px;
+  color: var(--text-muted);
+}
+
+/* Thước Đo Xác Suất & Tâm Lý Thị Trường (Sentiment Meter) */
+.sentiment-box {
+  padding: 14px 16px;
+  border-top: 1px solid var(--border-subtle);
+  background: var(--bg-card-subtle);
+}
+
+.sentiment-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  font-size: 12px;
+}
+
+.meter-track {
+  width: 100%;
+  height: 6px;
+  border-radius: 3px;
+  background: linear-gradient(to right, #e11d48 0%, #cbd5e1 50%, #059669 100%);
+  position: relative;
+  margin-bottom: 6px;
+}
+
+.meter-pointer {
+  position: absolute;
+  top: -4px;
+  left: 72%;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 2.5px solid var(--up-green);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+  transform: translateX(-50%);
+  transition: left 0.4s ease;
+}
+
+.meter-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10.5px;
+  color: var(--text-muted);
+}
+
+/* ================= 6. Bảng Điều Khiển Dưới (Simulator & Dataset Studio) ================= */
+.bottom-split-grid {
+  display: grid;
+  grid-template-columns: 460px 1fr;
+  gap: 16px;
+}
+
+@media (max-width: 1080px) {
+  .bottom-split-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Bộ mô phỏng danh mục */
+.sim-body {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.field-label-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.slider-input-combo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+input[type="range"] {
+  flex: 1;
+  accent-color: var(--gold-primary);
+  height: 5px;
+}
+
+.numeric-box {
+  width: 110px;
+  padding: 6px 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-card-subtle);
+  color: var(--text-primary);
+  font-size: 13px;
+  outline: none;
+}
+
+.scenario-cards-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.scenario-pill-card {
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-card-subtle);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.scenario-pill-card.base {
+  border-left: 3px solid #3b82f6;
+}
+
+.scenario-pill-card.bull {
+  border-left: 3px solid var(--up-green);
+}
+
+.scenario-pill-card.bear {
+  border-left: 3px solid var(--down-red);
+}
+
+.scenario-label {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.scenario-sub {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+/* Studio Dataset & Backtest */
+.tab-nav-bar {
+  display: flex;
+  border-bottom: 1px solid var(--border-subtle);
+  padding: 0 16px;
+}
+
+.tab-nav-btn {
+  padding: 12px 16px;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.15s;
+}
+
+.tab-nav-btn.active {
+  color: var(--text-primary);
+  border-bottom-color: var(--text-primary);
+}
+
+body.dark-mode .tab-nav-btn.active {
+  border-bottom-color: #3b82f6;
+  color: #3b82f6;
+}
+
+.tab-content {
+  padding: 14px 16px;
+}
+
+.table-toolbar-sleek {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.sleek-search-input {
+  width: 220px;
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-card-subtle);
+  color: var(--text-primary);
+  font-size: 12.5px;
+  outline: none;
+}
+
+.table-scroller {
+  max-height: 275px;
+  overflow-y: auto;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+}
+
+.data-grid {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12.5px;
+}
+
+.data-grid th {
+  background: var(--bg-card-subtle);
+  color: var(--text-muted);
+  font-weight: 600;
+  text-align: left;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border-subtle);
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.data-grid td {
+  padding: 7px 12px;
+  border-bottom: 1px solid var(--border-subtle);
+  white-space: nowrap;
+}
+
+.data-grid tr:hover {
+  background: var(--bg-hover);
+}
+
+/* ================= 7. Footer ================= */
+.terminal-footer {
+  margin-top: 30px;
+  border-top: 1px solid var(--border-subtle);
+  padding: 20px 24px;
+  background: var(--bg-card);
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.footer-inner-wrap {
+  max-width: 1540px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+
+.disclaimer-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 500;
+}

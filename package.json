@@ -1,0 +1,18 @@
+{
+  "name": "gold-ai-workspace",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Shared development checks for the Python and static frontend workspace",
+  "scripts": {
+    "prepare": "husky",
+    "typecheck": "node scripts/python-check.cjs typecheck",
+    "test": "node scripts/python-check.cjs test",
+    "check:js": "node --check frontend/app.js && node --check frontend/data.js",
+    "format:check": "prettier --check frontend/app.js frontend/data.js package.json .lintstagedrc .prettierrc"
+  },
+  "devDependencies": {
+    "husky": "^9.1.7",
+    "lint-staged": "^16.2.6",
+    "prettier": "^3.9.10"
+  }
+}

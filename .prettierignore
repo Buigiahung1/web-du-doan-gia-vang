@@ -1,0 +1,9 @@
+.local-artifacts/
+archive/
+data/
+ml/artifacts/
+frontend/research/
+node_modules/
+.venv/
+**/*.ipynb
+docs/reference/

@@ -1,0 +1,35 @@
+{
+  "model": "gru",
+  "unit": "VND/luong",
+  "last_date": "2025-11-25",
+  "last_close": 38543136.73471496,
+  "days": 3,
+  "trend": "down",
+  "change_pct": -0.291,
+  "confidence_level": 0.9,
+  "predictions": [
+    {
+      "date": "2025-11-26",
+      "predicted_value": 38499363.708177775,
+      "lower": 37969242.05101633,
+      "upper": 39220239.81047178
+    },
+    {
+      "date": "2025-11-27",
+      "predicted_value": 38489856.30219757,
+      "lower": 37678748.936667606,
+      "upper": 39536728.8365392
+    },
+    {
+      "date": "2025-11-28",
+      "predicted_value": 38430944.02494956,
+      "lower": 37527784.65506958,
+      "upper": 39899857.32830581
+    }
+  ],
+  "data_used": {
+    "rows_given": 110,
+    "rows_in_window": 60,
+    "features_source": "local_copy"
+  }
+}
