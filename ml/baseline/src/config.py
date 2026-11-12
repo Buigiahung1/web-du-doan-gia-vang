@@ -19,7 +19,7 @@ FX_TICKER: str = "USDVND=X"    # Tỷ giá USD/VND
 DEFAULT_PERIOD: str = "2y"      # Khoảng thời gian lấy dữ liệu mặc định
 
 # ── Hằng số quy đổi đơn vị ───────────────────────────────────────────────────
-# 1 Lượng vàng (tael) = 0.829426 troy ounce (BẤT BIẾN - không được thay đổi)
+# 1 troy ounce (31.1035g) = 0.829426 lượng (37.5g), nên giá 1 lượng = usd_oz / OUNCE_PER_LUONG.
 OUNCE_PER_LUONG: float = 0.829426
 
 # ── Tên bảng CSDL (BẤT BIẾN - không được thay đổi) ──────────────────────────

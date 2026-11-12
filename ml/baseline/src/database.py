@@ -26,9 +26,15 @@ CREATE TABLE IF NOT EXISTS {TABLE_NAME} (
     fx_rate     REAL NOT NULL,
     vnd_price   REAL NOT NULL,
     volume      REAL NOT NULL,
+    open        REAL,
+    high        REAL,
+    low         REAL,
     created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 """
+
+# Bảng cũ (chỉ có Close) được bổ sung cột; hàng cũ giữ NULL, không tự tạo nến.
+_OHLC_COLUMNS = ("open", "high", "low")
 
 _CREATE_INDEX_SQL = f"""
 CREATE INDEX IF NOT EXISTS idx_{TABLE_NAME}_date
@@ -36,13 +42,16 @@ ON {TABLE_NAME} (date);
 """
 
 _UPSERT_SQL = f"""
-INSERT INTO {TABLE_NAME} (date, usd_close, fx_rate, vnd_price, volume)
-VALUES (?, ?, ?, ?, ?)
+INSERT INTO {TABLE_NAME} (date, usd_close, fx_rate, vnd_price, volume, open, high, low)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?)
 ON CONFLICT(date) DO UPDATE SET
     usd_close = excluded.usd_close,
     fx_rate   = excluded.fx_rate,
     vnd_price = excluded.vnd_price,
-    volume    = excluded.volume;
+    volume    = excluded.volume,
+    open      = excluded.open,
+    high      = excluded.high,
+    low       = excluded.low;
 """
 
 
@@ -52,6 +61,10 @@ def init_db(db_path: str = DB_PATH) -> None:
     """Khởi tạo CSDL: tạo bảng và index nếu chưa tồn tại."""
     with sqlite3.connect(db_path) as conn:
         conn.execute(_CREATE_TABLE_SQL)
+        existing = {row[1] for row in conn.execute(f"PRAGMA table_info({TABLE_NAME})")}
+        for col in _OHLC_COLUMNS:
+            if col not in existing:
+                conn.execute(f"ALTER TABLE {TABLE_NAME} ADD COLUMN {col} REAL")
         conn.execute(_CREATE_INDEX_SQL)
         conn.commit()
     logger.info("Database initialised at %s", db_path)
@@ -64,23 +77,21 @@ def save_gold_data(df: pd.DataFrame, db_path: str = DB_PATH) -> int:
     Đảm bảo Idempotency: chạy nhiều lần không tạo bản ghi trùng.
 
     Args:
-        df:      DataFrame chứa ít nhất các cột
-                 ['date', 'usd_close', 'fx_rate', 'vnd_price', 'volume'].
+        df:      DataFrame chứa các cột date, usd_close, fx_rate,
+                 vnd_price (= close VNĐ/lượng), volume, open, high, low.
         db_path: Đường dẫn file SQLite. Mặc định dùng config.DB_PATH.
 
     Returns:
         Số dòng đã xử lý.
     """
-    required_cols = {"date", "usd_close", "fx_rate", "vnd_price", "volume"}
-    missing = required_cols - set(df.columns)
+    columns = ["date", "usd_close", "fx_rate", "vnd_price", "volume", *_OHLC_COLUMNS]
+    missing = set(columns) - set(df.columns)
     if missing:
         raise ValueError(f"DataFrame thiếu cột: {missing}")
 
-    records = df[list(required_cols)].to_records(index=False)
     rows = [
-        (str(r.date), float(r.usd_close), float(r.fx_rate),
-         float(r.vnd_price), float(r.volume))
-        for r in records
+        (str(r[0]), *(float(v) for v in r[1:]))
+        for r in df[columns].itertuples(index=False, name=None)
     ]
 
     with sqlite3.connect(db_path) as conn:
@@ -99,7 +110,7 @@ def load_history_data(
     Tải dữ liệu lịch sử từ CSDL, sắp xếp theo ngày tăng dần.
 
     Args:
-        limit:   Số dòng tối đa cần lấy. None = lấy tất cả.
+        limit:   Lấy N phiên MỚI NHẤT (vẫn trả về tăng dần). None = lấy tất cả.
         db_path: Đường dẫn file SQLite.
 
     Returns:
@@ -107,7 +118,10 @@ def load_history_data(
     """
     sql = f"SELECT * FROM {TABLE_NAME} ORDER BY date ASC"
     if limit is not None:
-        sql += f" LIMIT {int(limit)}"
+        sql = (
+            f"SELECT * FROM (SELECT * FROM {TABLE_NAME} ORDER BY date DESC "
+            f"LIMIT {int(limit)}) ORDER BY date ASC"
+        )
 
     with sqlite3.connect(db_path) as conn:
         df = pd.read_sql_query(sql, conn)

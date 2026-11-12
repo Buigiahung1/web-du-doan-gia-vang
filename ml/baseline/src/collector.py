@@ -2,14 +2,14 @@
 collector.py - Thu thập và tiền xử lý dữ liệu giá vàng từ Yahoo Finance.
 
 Luồng xử lý:
-  1. Tải song song GC=F (giá vàng USD/oz) và USDVND=X (tỷ giá).
+  1. Tải GC=F (nến vàng USD/oz) và USDVND=X (tỷ giá).
   2. Chuẩn hoá cột ngày về YYYY-MM-DD.
-  3. Ghép 2 nguồn theo ngày, dùng ffill xử lý lệch ngày giao dịch.
-  4. Tính vnd_price = (usd_close / OUNCE_PER_LUONG) * fx_rate.
-  5. Làm sạch NaN còn sót.
+  3. Lấy phiên vàng làm gốc; tỷ giá thiếu dùng giá trị gần nhất trước đó.
+  4. Quy đổi Open/High/Low/Close: usd / OUNCE_PER_LUONG * fx_rate.
 """
 
 import logging
+from pathlib import Path
 from typing import Optional
 
 import pandas as pd
@@ -77,43 +77,53 @@ def _download_ticker(ticker: str, period: str) -> pd.DataFrame:
         raise
 
 
+PRICE_COLUMNS = ("open", "high", "low", "close")
+OUTPUT_COLUMNS = [
+    "date", "open", "high", "low", "vnd_price", "volume", "usd_close", "fx_rate",
+]
+
+
+def merge_gold_fx(gold_df: pd.DataFrame, fx_df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Quy đổi nến GC=F (USD/oz) sang VNĐ/lượng theo từng phiên vàng.
+
+    - Phiên gốc là ngày giao dịch của vàng; ngày chỉ có tỷ giá bị bỏ.
+    - Tỷ giá thiếu lấy giá trị GẦN NHẤT TRƯỚC ĐÓ (ffill). Không back-fill
+      từ tương lai: phiên chưa có tỷ giá quá khứ bị loại.
+    - Open/High/Low/Close nhân cùng một hệ số nên giữ đúng thứ tự nến.
+    """
+    fx_rate = fx_df["close"].rename("fx_rate")
+    all_days = gold_df.index.union(fx_rate.index)
+    fx_on_gold = fx_rate.reindex(all_days).sort_index().ffill().reindex(gold_df.index)
+
+    merged = gold_df[list(PRICE_COLUMNS) + ["volume"]].copy()
+    merged["fx_rate"] = fx_on_gold
+    merged = merged.dropna(subset=["fx_rate", *PRICE_COLUMNS]).sort_index()
+
+    factor = merged["fx_rate"] / OUNCE_PER_LUONG
+    merged["usd_close"] = merged["close"]
+    for col in PRICE_COLUMNS:
+        merged[col] = (merged[col] * factor).round(-3)
+    merged = merged.rename(columns={"close": "vnd_price"})
+    merged["volume"] = merged["volume"].fillna(0.0)
+    merged.index.name = "date"
+    return merged.reset_index()[OUTPUT_COLUMNS]
+
+
 def fetch_gold_data(period: str = DEFAULT_PERIOD) -> pd.DataFrame:
     """
-    Tải, ghép và tính toán giá vàng VNĐ/Lượng.
+    Tải nến GC=F và tỷ giá USDVND=X, quy đổi sang VNĐ/lượng.
 
     Args:
         period: Khoảng thời gian lịch sử (mặc định từ config).
 
     Returns:
-        DataFrame với các cột:
-            date (str), usd_close, fx_rate, vnd_price, volume.
+        DataFrame cột: date, open, high, low, vnd_price (= close),
+        volume, usd_close, fx_rate.
     """
-    # ── 1. Thu thập dữ liệu ──────────────────────────────────────────────────
     gold_df = _download_ticker(GOLD_TICKER, period)
     fx_df = _download_ticker(FX_TICKER, period)
-
-    # ── 2. Chọn cột cần thiết ────────────────────────────────────────────────
-    gold_selected = gold_df[["close", "volume"]].rename(
-        columns={"close": "usd_close"}
-    )
-    fx_selected = fx_df[["close"]].rename(columns={"close": "fx_rate"})
-
-    # ── 3. Ghép theo ngày; ffill để bù lệch ngày giao dịch ──────────────────
-    merged = gold_selected.join(fx_selected, how="outer")
-    merged = merged.ffill().bfill()  # forward-fill trước, back-fill cho đầu chuỗi
-
-    # ── 4. Tính giá VNĐ/Lượng ────────────────────────────────────────────────
-    # vnd_price = (usd_close / OUNCE_PER_LUONG) * fx_rate, làm tròn nghìn VNĐ
-    merged["vnd_price"] = (
-        (merged["usd_close"] / OUNCE_PER_LUONG) * merged["fx_rate"]
-    ).round(-3)
-
-    # ── 5. Làm sạch NaN còn sót và reset index ───────────────────────────────
-    merged = merged.dropna(subset=["usd_close", "fx_rate", "vnd_price"])
-    merged = merged.reset_index()  # 'date' trở thành cột thường
-
-    # Đảm bảo volume không null (set 0 nếu thiếu)
-    merged["volume"] = merged["volume"].fillna(0.0)
+    merged = merge_gold_fx(gold_df, fx_df)
 
     logger.info(
         "fetch_gold_data completed: %d rows, vnd_price range [%s – %s].",
@@ -121,4 +131,29 @@ def fetch_gold_data(period: str = DEFAULT_PERIOD) -> pd.DataFrame:
         f"{merged['vnd_price'].min():,.0f}",
         f"{merged['vnd_price'].max():,.0f}",
     )
-    return merged[["date", "usd_close", "fx_rate", "vnd_price", "volume"]]
+    return merged
+
+
+def export_ohlcv_csv(df: pd.DataFrame, csv_path: Path | str) -> Path:
+    """
+    Xuất bảng chuẩn hóa Date,Open,High,Low,Close,Volume cho importer backend.
+    """
+    required = {"date", "open", "high", "low", "vnd_price", "volume"}
+    missing = required - set(df.columns)
+    if missing:
+        raise ValueError(f"DataFrame thiếu cột OHLCV: {missing}")
+
+    path = Path(csv_path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    out = df[["date", "open", "high", "low", "vnd_price", "volume"]].rename(
+        columns={
+            "date": "Date",
+            "open": "Open",
+            "high": "High",
+            "low": "Low",
+            "vnd_price": "Close",
+            "volume": "Volume",
+        }
+    )
+    out.to_csv(path, index=False, encoding="utf-8")
+    return path

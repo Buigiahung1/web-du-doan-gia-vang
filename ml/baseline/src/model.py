@@ -1,4 +1,4 @@
-﻿"""
+"""
 model.py - ML Engine cho du an Gold Price Intelligence (Sprint 2).
 
 Cung cap 2 ham cong khai:
@@ -8,6 +8,7 @@ Cung cap 2 ham cong khai:
 
 from __future__ import annotations
 
+import json
 import logging
 import warnings
 from datetime import date, timedelta
@@ -18,9 +19,11 @@ import joblib
 import lightgbm as lgb
 import numpy as np
 import pandas as pd
-from sklearn.metrics import mean_absolute_error, mean_squared_error
+import sklearn
+from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 
 from .config import FEATURE_COLUMNS
+from .features import _compute_rsi
 
 # ── Hang so ───────────────────────────────────────────────────────────────────
 logger = logging.getLogger(__name__)
@@ -31,15 +34,18 @@ MODEL_PATH: Path = MODEL_DIR / "gold_lgbm.pkl"
 
 _TARGET: str = "vnd_price"
 _FEATURE_COLS: list[str] = [c for c in FEATURE_COLUMNS if c not in (_TARGET, "date")]
+FEATURES: list[str] = _FEATURE_COLS
 
 _LGBM_PARAMS: dict[str, Any] = {
     "n_estimators": 150,
     "learning_rate": 0.05,
     "random_state": 42,
+    "n_jobs": 1,
     "verbosity": -1,
 }
 
-_TEST_RATIO: float = 0.20
+_TRAIN_RATIO: float = 0.70
+_VAL_RATIO: float = 0.15
 
 
 # ── Ham noi bo ────────────────────────────────────────────────────────────────
@@ -58,98 +64,108 @@ def _next_business_day(current: date) -> date:
     return next_day
 
 
-def _ewm_last(arr: np.ndarray, alpha: float) -> float:
-    """Tinh gia tri EWM cuoi cung cua mang 1D (Wilder smoothing)."""
-    if len(arr) == 0:
-        return 0.0
-    result = arr[0]
-    for val in arr[1:]:
-        result = (1 - alpha) * result + alpha * val
-    return float(result)
+def build_supervised(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Tạo bảng huấn luyện có giám sát không rò rỉ dữ liệu tương lai.
+
+    Mỗi hàng mục tiêu `t` chỉ dùng chỉ báo và độ trễ tính đến phiên `t - 1`,
+    khớp chính xác với `_build_feature_row` khi suy luận.
+    """
+    required = {"date", _TARGET}
+    missing = required - set(df.columns)
+    if missing:
+        raise ValueError(f"DataFrame thiếu cột bắt buộc: {missing}")
+
+    out = df[["date", _TARGET]].copy().reset_index(drop=True)
+    price = out[_TARGET].astype(float)
+    out["sma_7"] = price.rolling(window=7, min_periods=7).mean().shift(1)
+    out["sma_21"] = price.rolling(window=21, min_periods=21).mean().shift(1)
+    out["rsi_14"] = _compute_rsi(price, period=14).shift(1)
+    out["volatility_14"] = (
+        price.pct_change().rolling(window=14, min_periods=14).std().shift(1)
+    )
+    for lag in (1, 2, 3, 5):
+        out[f"lag_{lag}"] = price.shift(lag)
+    return out.dropna(subset=_FEATURE_COLS).reset_index(drop=True)[FEATURE_COLUMNS]
 
 
 def _build_feature_row(price_series: pd.Series, date_str: str) -> pd.DataFrame:
     """
-    Tai tao vector dac trung ky thuat tu chuoi gia gan nhat.
+    Tái tạo vector đặc trưng kỹ thuật từ chuỗi giá quá khứ (đến t - 1).
 
     Args:
-        price_series: pd.Series vnd_price, index = date string.
-        date_str:     Ngay can du bao (YYYY-MM-DD).
+        price_series: pd.Series vnd_price các phiên đã biết, index = date string.
+        date_str:     Ngày cần dự báo (YYYY-MM-DD).
 
     Returns:
-        DataFrame 1 hang voi day du _FEATURE_COLS.
+        DataFrame 1 hàng với đầy đủ _FEATURE_COLS, khớp công thức build_supervised.
     """
-    prices = price_series.values.astype(float)
-
-    sma_7 = float(np.mean(prices[-7:]))
-    sma_21 = float(np.mean(prices[-21:]))
-
-    # RSI Wilder 14
-    delta = np.diff(prices)
-    gains = np.where(delta > 0, delta, 0.0)
-    losses = np.where(delta < 0, -delta, 0.0)
-    alpha = 1.0 / 14
-    avg_gain = _ewm_last(gains, alpha)
-    avg_loss = _ewm_last(losses, alpha)
-    if avg_loss == 0:
-        rsi_14 = 100.0
-    else:
-        rs = avg_gain / avg_loss
-        rsi_14 = float(100.0 - 100.0 / (1.0 + rs))
-    rsi_14 = float(np.clip(rsi_14, 0.0, 100.0))
-
-    # Volatility 14
-    recent_prices = prices[-15:]
-    returns = np.diff(recent_prices) / recent_prices[:-1]
-    volatility_14 = float(np.std(returns, ddof=1)) if len(returns) >= 2 else 0.0
-
-    # Lag features
-    lag_1 = float(prices[-1])
-    lag_2 = float(prices[-2])
-    lag_3 = float(prices[-3])
-    lag_5 = float(prices[-5])
-
+    s = pd.Series(price_series.to_numpy(dtype=float))
     row = {
-        "sma_7": sma_7,
-        "sma_21": sma_21,
-        "rsi_14": rsi_14,
-        "volatility_14": volatility_14,
-        "lag_1": lag_1,
-        "lag_2": lag_2,
-        "lag_3": lag_3,
-        "lag_5": lag_5,
+        "sma_7": float(s.iloc[-7:].mean()),
+        "sma_21": float(s.iloc[-21:].mean()),
+        "rsi_14": float(_compute_rsi(s, period=14).iloc[-1]),
+        "volatility_14": float(
+            s.pct_change().rolling(window=14, min_periods=14).std().iloc[-1]
+        ),
+        "lag_1": float(s.iloc[-1]),
+        "lag_2": float(s.iloc[-2]),
+        "lag_3": float(s.iloc[-3]),
+        "lag_5": float(s.iloc[-5]),
     }
     return pd.DataFrame([row], columns=_FEATURE_COLS)
 
 
 # ── Public API ────────────────────────────────────────────────────────────────
 
-def train_and_evaluate(df: pd.DataFrame) -> dict:
+def _compute_metrics(y_true: np.ndarray, y_pred: np.ndarray) -> dict[str, float]:
+    mse = float(mean_squared_error(y_true, y_pred))
+    return {
+        "mae": float(mean_absolute_error(y_true, y_pred)),
+        "mse": mse,
+        "rmse": float(np.sqrt(mse)),
+        "mape": _mape(y_true, y_pred),
+        "r2": float(r2_score(y_true, y_pred)),
+    }
+
+
+def train_and_evaluate(
+    df: pd.DataFrame, *, output_dir: Path | str | None = None
+) -> dict[str, Any]:
     """
-    Huan luyen LightGBM Regressor theo thu tu thoi gian va danh gia tren tap Test.
+    Huấn luyện LightGBM theo thứ tự thời gian (Train 70% / Val 15% / Test 15%).
 
-    Tach Train/Test 80/20 theo thu tu thoi gian (khong shuffle).
-    Luu model da huan luyen vao models/gold_lgbm.pkl.
-
-    Args:
-        df: DataFrame dau ra cua build_technical_features().
-
-    Returns:
-        dict chua: mae, rmse, mape, train_size, test_size,
-                   residual_std, feature_importance, model_path.
+    - Mỗi hàng mục tiêu chỉ dùng đặc trưng đến phiên t - 1 (build_supervised).
+    - residual_std ước lượng trên tập Validation để tập Test độc lập hoàn toàn.
+    - Xuất đủ 5 chỉ số (MAE, MSE, RMSE, MAPE, R²) và evaluation.json.
     """
-    MODEL_DIR.mkdir(parents=True, exist_ok=True)
+    target_dir = Path(output_dir) if output_dir is not None else MODEL_DIR
+    target_dir.mkdir(parents=True, exist_ok=True)
+    model_path = target_dir / "gold_lgbm.pkl"
 
-    X: pd.DataFrame = df[_FEATURE_COLS]
-    y: pd.Series = df[_TARGET]
+    sup = build_supervised(df)
+    X: pd.DataFrame = sup[_FEATURE_COLS]
+    y: pd.Series = sup[_TARGET]
+    dates: pd.Series = sup["date"].astype(str)
 
-    split_idx: int = int(len(df) * (1 - _TEST_RATIO))
-    X_train, X_test = X.iloc[:split_idx], X.iloc[split_idx:]
-    y_train, y_test = y.iloc[:split_idx], y.iloc[split_idx:]
+    n = len(sup)
+    i_tr = int(n * _TRAIN_RATIO)
+    i_va = int(n * (_TRAIN_RATIO + _VAL_RATIO))
+    if i_tr < 20 or i_va <= i_tr or n <= i_va:
+        raise ValueError(f"Cần đủ dữ liệu để tách Train/Val/Test (hiện có {n} dòng).")
+
+    X_train, y_train = X.iloc[:i_tr], y.iloc[:i_tr]
+    X_val, y_val = X.iloc[i_tr:i_va], y.iloc[i_tr:i_va]
+    X_test, y_test = X.iloc[i_va:], y.iloc[i_va:]
+    dates_test = dates.iloc[i_va:]
 
     logger.info(
-        "Train size: %d rows | Test size: %d rows | Split date: %s",
-        len(X_train), len(X_test), df["date"].iloc[split_idx],
+        "Train: %d | Val: %d | Test: %d | Val start: %s | Test start: %s",
+        len(X_train),
+        len(X_val),
+        len(X_test),
+        dates.iloc[i_tr],
+        dates.iloc[i_va],
     )
 
     with warnings.catch_warnings():
@@ -157,17 +173,21 @@ def train_and_evaluate(df: pd.DataFrame) -> dict:
         model = lgb.LGBMRegressor(**_LGBM_PARAMS)
         model.fit(X_train, y_train)
 
-    y_pred: np.ndarray = model.predict(X_test)
-    y_true: np.ndarray = y_test.values
+    val_pred = np.asarray(model.predict(X_val), dtype=float)
+    val_true = y_val.to_numpy(dtype=float)
+    residual_std = float(np.std(val_true - val_pred))
+    val_metrics = _compute_metrics(val_true, val_pred)
 
-    mae = float(mean_absolute_error(y_true, y_pred))
-    rmse = float(np.sqrt(mean_squared_error(y_true, y_pred)))
-    mape = _mape(y_true, y_pred)
-    residual_std = float(np.std(y_true - y_pred))
+    y_pred = np.asarray(model.predict(X_test), dtype=float)
+    y_true = y_test.to_numpy(dtype=float)
+    metrics = _compute_metrics(y_true, y_pred)
 
     logger.info(
-        "Evaluation -> MAE: %s | RMSE: %s | MAPE: %.2f%%",
-        f"{mae:,.0f}", f"{rmse:,.0f}", mape,
+        "Test -> MAE: %s | RMSE: %s | MAPE: %.2f%% | R2: %.4f",
+        f"{metrics['mae']:,.0f}",
+        f"{metrics['rmse']:,.0f}",
+        metrics["mape"],
+        metrics["r2"],
     )
 
     importance_scores: np.ndarray = model.feature_importances_
@@ -180,19 +200,59 @@ def train_and_evaluate(df: pd.DataFrame) -> dict:
         reverse=True,
     )
 
-    artifact = {"model": model, "residual_std": residual_std}
-    joblib.dump(artifact, MODEL_PATH)
-    logger.info("Model artifact saved to %s", MODEL_PATH)
+    artifact = {
+        "model": model,
+        "residual_std": residual_std,
+        "features": list(_FEATURE_COLS),
+        "lightgbm_version": lgb.__version__,
+        "sklearn_version": sklearn.__version__,
+    }
+    joblib.dump(artifact, model_path)
 
-    return {
-        "mae": mae,
-        "rmse": rmse,
-        "mape": mape,
+    evaluation = {
+        "metrics": metrics,
+        "val_metrics": val_metrics,
         "train_size": len(X_train),
+        "val_size": len(X_val),
         "test_size": len(X_test),
         "residual_std": residual_std,
         "feature_importance": feature_importance,
-        "model_path": str(MODEL_PATH),
+        "series": {
+            "dates": dates_test.tolist(),
+            "actual": [round(float(v), 2) for v in y_true],
+            "predicted": [round(float(v), 2) for v in y_pred],
+        },
+    }
+    (target_dir / "evaluation.json").write_text(
+        json.dumps(evaluation, ensure_ascii=False, indent=2), encoding="utf-8"
+    )
+    meta_path = target_dir / "meta.json"
+    if not meta_path.exists():
+        manifest = {
+            "backend": "tv5_lightgbm",
+            "tv5_module": "ml.baseline.src.model",
+            "gold_type": "XAU_VND_LUONG",
+            "unit": "VND/luong",
+            "price_source": "TV5_GC_F_USDVND",
+            "window": 25,
+            "min_history_rows": 120,
+            "max_horizon": 7,
+        }
+        meta_path.write_text(
+            json.dumps(manifest, ensure_ascii=False, indent=2), encoding="utf-8"
+        )
+    logger.info("Model artifact saved to %s", model_path)
+
+    return {
+        **metrics,
+        "metrics": metrics,
+        "val_metrics": val_metrics,
+        "train_size": len(X_train),
+        "val_size": len(X_val),
+        "test_size": len(X_test),
+        "residual_std": residual_std,
+        "feature_importance": feature_importance,
+        "model_path": str(model_path),
     }
 
 
