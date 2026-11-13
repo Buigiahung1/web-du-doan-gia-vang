@@ -8,9 +8,25 @@ Contract giá/dự báo bên dưới kế thừa TV3. OpenAPI hiện hành lấy
 | ----------------------- | ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | POST /api/auth/register | JSON username, email, password, full_name tùy chọn    | 201 message; username 3–50 ký tự chữ/số/_.-, email hợp lệ, password ít nhất 8 ký tự và tối đa 72 byte UTF-8. Role luôn user. 409 ACCOUNT_EXISTS khi trùng username/email. |
 | POST /api/auth/login    | application/x-www-form-urlencoded: username, password | access_token, token_type=bearer. 401 sai thông tin/user không active.                                                                                                     |
-| GET /api/auth/me        | Authorization: Bearer JWT                             | id, username (có thể null với user cũ), email, role, full_name. 401 nếu token không hợp lệ/hết hạn/user không tồn tại hoặc bị khóa.                                       |
+| GET /api/auth/me | Authorization: Bearer JWT | id, username (có thể null với user cũ), email, role, full_name. 401 nếu token không hợp lệ/hết hạn/user không tồn tại hoặc bị khóa. |
+| PATCH /api/auth/profile | JSON `full_name`, `email` tùy chọn (Bearer JWT) | Cập nhật họ tên/email của user hiện tại; trả về giống `/me`. 409 `ACCOUNT_EXISTS` nếu email trùng. |
+| POST /api/auth/change-password | JSON `current_password`, `new_password` (Bearer JWT) | Kiểm tra mật khẩu cũ (401 nếu sai), cập nhật mật khẩu mới (>= 8 ký tự, <= 72 byte UTF-8). |
 
-Không có token: POST dự báo vẫn là guest và không lưu history. Có token nhưng sai: 401, không hạ xuống guest. JWT_SECRET ít nhất 32 ký tự; thiếu cấu hình/bcrypt trả 503 AUTH_UNAVAILABLE. Phone không phải trường được lưu; API hồ sơ/đổi mật khẩu/admin CRUD **chưa có** trong backend chung. Không gửi login JSON rồi tự fallback khi lỗi.
+Không có token: POST dự báo vẫn là guest và không lưu history. Có token nhưng sai: 401, không hạ xuống guest. JWT_SECRET ít nhất 32 ký tự; thiếu cấu hình/bcrypt trả 503 AUTH_UNAVAILABLE. Phone không phải trường được lưu. Không gửi login JSON rồi tự fallback khi lỗi.
+
+## Quản trị Admin (`/api/admin/*`)
+
+Tất cả endpoint dưới đây yêu cầu Bearer JWT có `role="admin"` (401 nếu chưa đăng nhập, 403 `FORBIDDEN` nếu không phải admin):
+
+| Endpoint | Tham số / Body | Mô tả |
+| :--- | :--- | :--- |
+| `GET /api/admin/users` | `page=1, page_size=20` | Danh sách tài khoản (không trả `password_hash`). |
+| `PATCH /api/admin/users/{user_id}` | JSON `role`, `is_active`, `full_name` | Cập nhật vai trò (`user`\|`admin`), khóa/mở khóa hoặc tên. Chặn tự khóa/hạ quyền chính mình (422). |
+| `POST /api/admin/prices` | JSON `gold_type, date, open, high, low, close, volume, buy, sell` | Thêm phiên giá mới, kiểm tra bất biến OHLC (422) và trùng ngày (409), xóa cache & điền `actual_price`. |
+| `PATCH /api/admin/prices/{price_id}` | JSON `open, high, low, close, volume, buy, sell` | Sửa phiên giá, kiểm tra bất biến OHLC, xóa cache & điền `actual_price`. |
+| `DELETE /api/admin/prices/{price_id}` | — | Xóa phiên giá (404 nếu không tồn tại) và xóa cache. |
+| `GET /api/admin/models` | — | Danh sách toàn bộ model kèm `artifact_path`, `is_active`, `metrics`. |
+| `PATCH /api/admin/models/{model_id}` | JSON `name`, `version`, `is_active` | Cập nhật thông tin hoặc đặt model mặc định (`is_active=true` tự tắt mặc định cũ). |
 
 ## Trạng thái kiểm chứng
 

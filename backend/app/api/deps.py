@@ -53,3 +53,10 @@ def get_current_user(user: User | None = Depends(get_optional_user)) -> User:
             401, "UNAUTHORIZED", "Bạn cần đăng nhập để thực hiện thao tác này."
         )
     return user
+
+
+def require_admin(user: User = Depends(get_current_user)) -> User:
+    """Bắt buộc quyền admin, nếu không -> 403."""
+    if user.role != "admin":
+        raise AppError(403, "FORBIDDEN", "Bạn không có quyền quản trị.")
+    return user

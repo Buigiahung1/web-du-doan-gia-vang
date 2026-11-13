@@ -9,7 +9,7 @@ from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy import text
 
-from app.api import auth, gold, predict
+from app.api import admin, auth, gold, predict
 from app.core.config import settings
 from app.core.errors import AppError, register_exception_handlers
 from app.core.ratelimit import RateLimiter
@@ -70,6 +70,7 @@ def create_app() -> FastAPI:
     app.include_router(gold.router)
     app.include_router(predict.router)
     app.include_router(auth.router)
+    app.include_router(admin.router)
 
     @app.get("/api/health", tags=["system"])
     def health():

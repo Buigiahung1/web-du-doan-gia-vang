@@ -11,7 +11,7 @@ from sqlalchemy.orm import Session
 from app.core.config import settings
 from app.core.errors import AppError
 from app.models import User
-from app.schemas.auth import UserRegister
+from app.schemas.auth import ChangePasswordRequest, ProfileUpdateRequest, UserRegister
 
 
 def _bcrypt():
@@ -71,3 +71,40 @@ def login(db: Session, username: str, password: str) -> str:
     return jwt.encode(
         {"sub": str(user.id), "exp": expires}, settings.jwt_secret, algorithm="HS256"
     )
+
+
+def update_profile(db: Session, user: User, data: ProfileUpdateRequest) -> User:
+    if data.email is not None and str(data.email) != user.email:
+        conflict = db.scalar(
+            select(User).where(User.email == str(data.email), User.id != user.id)
+        )
+        if conflict:
+            raise AppError(409, "ACCOUNT_EXISTS", "Email đã được sử dụng.")
+        user.email = str(data.email)
+    if "full_name" in data.model_fields_set:
+        user.full_name = data.full_name
+    try:
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        raise AppError(409, "ACCOUNT_EXISTS", "Email đã được sử dụng.") from None
+    db.refresh(user)
+    return user
+
+
+def change_password(db: Session, user: User, data: ChangePasswordRequest) -> None:
+    bcrypt = _bcrypt()
+    valid = False
+    if len(data.current_password.encode()) <= 72:
+        try:
+            valid = bcrypt.checkpw(
+                data.current_password.encode(), user.password_hash.encode()
+            )
+        except ValueError:
+            pass
+    if not valid:
+        raise AppError(401, "UNAUTHORIZED", "Mật khẩu hiện tại không chính xác.")
+    user.password_hash = bcrypt.hashpw(
+        data.new_password.encode(), bcrypt.gensalt()
+    ).decode()
+    db.commit()
