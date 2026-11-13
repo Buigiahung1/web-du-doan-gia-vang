@@ -3,8 +3,8 @@
 - **Ngày cập nhật**: 13/11/2026
 - **Repository**: `Buigiahung1/web-du-doan-gia-vang`
 - **Base SHA (`main`)**: `976241f5922a31fc46c776c7fb99786ae8f873ef`
-- **Nhánh làm việc hiện tại**: `fix/tv5-data-pipeline` (trạng thái: **local**, chưa commit/push/merge)
-- **Trạng thái triển khai**: Chạy local (chưa deploy cloud, chưa nghiệm thu trên MySQL thật)
+- **Nhánh làm việc hiện tại**: `fix/tv5-data-pipeline` (`HEAD`: `957c5a1`, đã commit local; chưa merge/push)
+- **Trạng thái triển khai**: Đã chạy local kết nối thành công **MySQL (`gold_predict`)** + model thật **`lightgbm_tv5_v1`** (chưa deploy cloud)
 
 ---
 
@@ -64,20 +64,35 @@ Trong lượt làm việc này, đã giải quyết dứt điểm điểm nghẽ
 
 ---
 
+### 1.3. Giai đoạn 3: Hoàn thiện API Hồ sơ, Đổi mật khẩu, Admin CRUD, Nối Frontend & Chạy với MySQL thật (13/11/2026)
+
+1. **API Hồ sơ cá nhân & Đổi mật khẩu (`8088a9f`)**:
+   - [`backend/app/schemas/auth.py`](../backend/app/schemas/auth.py), [`backend/app/services/auth_service.py`](../backend/app/services/auth_service.py), [`backend/app/api/auth.py`](../backend/app/api/auth.py):
+     - `PATCH /api/auth/profile`: cập nhật `full_name`, `email` (kiểm tra trùng email trả `409`).
+     - `POST /api/auth/change-password`: xác thực `current_password` bằng `bcrypt` (sai trả `401`) trước khi cập nhật mật khẩu mới.
+2. **API Quản trị Admin CRUD (`8088a9f`)**:
+   - [`backend/app/api/deps.py`](../backend/app/api/deps.py): bổ sung dependency `require_admin` (`401` khi chưa đăng nhập, `403 FORBIDDEN` khi `role != "admin"`).
+   - [`backend/app/schemas/admin.py`](../backend/app/schemas/admin.py), [`backend/app/services/admin_service.py`](../backend/app/services/admin_service.py), [`backend/app/api/admin.py`](../backend/app/api/admin.py), [`backend/app/main.py`](../backend/app/main.py):
+     - `/api/admin/users` (`GET`, `PATCH`): xem danh sách, đổi quyền `user`/`admin`, khóa/mở khóa tài khoản.
+     - `/api/admin/prices` (`POST`, `PATCH`, `DELETE`): thêm/sửa/xóa giá OHLCV (kiểm tra bất biến OHLC, cập nhật `fill_actual_price`, xóa cache `gold_service`).
+     - `/api/admin/models` (`GET`, `PATCH`): xem danh sách và chuyển đổi model mặc định duy nhất (`is_active = true`).
+   - Cập nhật hợp đồng tại [`docs/api.md`](api.md) và thêm bộ kiểm thử TDD `backend/tests/test_profile_admin.py` *(giữ local theo `.gitignore`)*.
+3. **Nối giao diện chính (`957c5a1`)**:
+   - [`frontend/index.html`](../frontend/index.html) & [`frontend/app.js`](../frontend/app.js):
+     - Mở khóa và nối form **Hồ sơ cá nhân** (`#formProfile`, giữ `#profPhone` ở trạng thái khóa vì server chưa lưu số điện thoại) và **Đổi mật khẩu** (`#formChangePassword`).
+     - Nối tab **Quản trị** với bảng tương tác **Users** (`GET/PATCH /api/admin/users`), bảng **Models** (`GET/PATCH /api/admin/models`) và form **Thêm giá vàng OHLC** (`POST /api/admin/prices`).
+
+---
+
 ## 2. Bằng chứng kiểm chứng & Môi trường trên máy hiện tại
 
 1. **Môi trường Python (`.venv`)**:
    - Đã khởi tạo `.venv` từ Python `3.14.2` trên máy và cài đặt đầy đủ thư viện của cả Backend (`fastapi`, `uvicorn`, `sqlalchemy`, `pymysql`, `bcrypt`, `pyjwt`, `pytest`, `httpx`) lẫn ML (`lightgbm 4.7.0`, `scikit-learn 1.9.1`, `joblib 1.6.0`, `yfinance 1.8.0`).
 2. **Kết quả chạy Test & Kiểm tra cú pháp**:
-   - `pytest ml/baseline/tests -q -p no:cacheprovider`: **6 passed in 3.80s**
-     - `test_load_history_limit_returns_newest_rows_ascending`: PASS
-     - `test_merge_keeps_ohlc_on_gold_sessions_without_future_fill`: PASS
-     - `test_database_round_trips_ohlc_columns`: PASS
-     - `test_supervised_features_do_not_use_target_day_price` (kèm kiểm tra khớp `_build_feature_row`): PASS
-     - `test_train_and_evaluate_uses_validation_residual_and_all_five_metrics`: PASS
-     - `test_tv5_pipeline_integrates_with_tv3_import_and_parity`: PASS
+   - `pytest backend/tests/test_profile_admin.py ml/baseline/tests/test_pipeline.py -q -p no:cacheprovider` (với `DATABASE_URL=sqlite://`): **10 passed in 6.38s** (6 test pipeline TV5 + 4 test API Profile/Admin CRUD).
    - `npm run check:js` (`node --check frontend/app.js && node --check frontend/data.js`): **PASS**.
    - Khởi tạo DB demo `.local-artifacts/demo/gold_demo.db` qua `scripts/run_demo.py --seed-only`: **PASS** (287 phiên giá giả + 1 model Naive stub).
+   - **Kiểm chứng thực tế với MySQL & Trình duyệt (`13/11/2026`)**: đã nạp `gold_predict` (504 phiên giá), chạy thành công FastAPI từ `backend/` với model thật `lightgbm_tv5_v1` và truy cập/mở khóa được menu **Thông tin cá nhân** trên `http://127.0.0.1:8000/`.
 3. **Review độc lập 2 trục**:
    - Trục 1 (Chuẩn repo [`AGENTS.md`](../AGENTS.md)): **PASS (0 lỗi)**.
    - Trục 2 (Đặc tả & Yêu cầu người dùng): **PASS (0 lỗi)**.
@@ -129,13 +144,29 @@ cd backend
 
 ---
 
+### Cách 3: Chạy trực tiếp từ `backend/` với MySQL thật & `backend/.env` (Khuyên dùng sau khi đã cài DB)
+
+1. **Cấu hình `backend/.env`**:
+   - Đảm bảo user MySQL đã được cấp quyền trên `gold_predict.*` (ví dụ `GRANT ALL PRIVILEGES ON gold_predict.* TO 'Khoi'@'localhost'; FLUSH PRIVILEGES;`).
+   - Nếu mật khẩu chứa ký tự `@` trong `DATABASE_URL`, phải mã hóa thành `%40` (ví dụ `mysql+pymysql://Khoi:Khoi9876%40@localhost:3306/gold_predict`).
+   - Cấu hình `JWT_SECRET` dài tối thiểu 32 ký tự và `MODEL_DIR=../ml/artifacts`.
+2. **Khởi động server từ thư mục `backend/`** *(để nạp đúng `backend/.env` và `../ml/artifacts`, đồng thời đặt `PYTHONPATH` tới cả thư mục gốc để import `ml.*`)*:
+```powershell
+cd C:\Users\Khoi\Documents\GitHub\web-du-doan-gia-vang\backend
+$env:PYTHONPATH = "C:\Users\Khoi\Documents\GitHub\web-du-doan-gia-vang;C:\Users\Khoi\Documents\GitHub\web-du-doan-gia-vang\backend"
+..\.venv\Scripts\python.exe -m uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
+```
+3. Mở `http://127.0.0.1:8000/` trên trình duyệt (nếu mới cập nhật `frontend/app.js`, nhấn `Ctrl + Shift + R` để bỏ qua cache trình duyệt).
+
+---
+
 ## 4. Giới hạn hiện tại & Công việc còn lại theo từng thành viên
 
 | Thành viên | Trạng thái hiện tại | Việc cần làm tiếp theo |
 | :--- | :--- | :--- |
-| **TV3 (Backend)** | Đã xong toàn bộ API giá/lịch sử/dự báo/model/evaluation, công cụ CLI (`import_ohlcv`, `register_model`, `check_model_parity`) và tích hợp xong với pipeline TV5 đã sửa. | - Chạy nghiệm thu trên MySQL thật cùng TV4.<br>- Chạy `register_model` và `check_model_parity` cho model LSTM/GRU thật sau khi TV6 train xong. |
-| **TV5 (Data & Baseline)** | Đã được sửa xong lỗi mất OHLC, lỗi `bfill` tỷ giá tương lai, lỗi `load_history_data`, lỗi target leakage và tách Validation độc lập + xuất đủ 5 metrics. | - Bổ sung biến kinh tế/chỉ báo mở rộng (`MA20/MA50, MACD, Bollinger, Giá dầu`) nếu nhóm muốn giữ đúng từng chữ trong bản phân công ban đầu, hoặc thống nhất báo cáo theo bộ đặc trưng `SMA7, SMA21, RSI14, Volatility14, Lags` hiện hành.<br>- Phối hợp TV3 thiết lập lịch cập nhật dữ liệu định kỳ (scheduler). |
+| **TV3 (Backend)** | Đã xong toàn bộ API giá/lịch sử/dự báo/model/evaluation, API Profile/Password/Admin CRUD, công cụ CLI (`import_ohlcv`, `register_model`, `check_model_parity`) và đã chạy thực tế trên MySQL `gold_predict`. | - Nghiệm thu đầy đủ các luồng dự báo, hồ sơ, admin CRUD trên trình duyệt.<br>- Chạy `register_model` và `check_model_parity` cho model LSTM/GRU thật sau khi TV6 train xong. |
+| **TV5 (Data & Baseline)** | Đã sửa xong lỗi mất OHLC, lỗi `bfill` tỷ giá tương lai, lỗi `load_history_data`, lỗi target leakage và tách Validation độc lập + xuất đủ 5 metrics. | - Bổ sung biến kinh tế/chỉ báo mở rộng (`MA20/MA50, MACD, Bollinger, Giá dầu`) nếu nhóm muốn giữ đúng từng chữ trong bản phân công ban đầu, hoặc thống nhất báo cáo theo bộ đặc trưng `SMA7, SMA21, RSI14, Volatility14, Lags` hiện hành.<br>- Phối hợp TV3 thiết lập lịch cập nhật dữ liệu định kỳ (scheduler). |
 | **TV6 (Deep Learning)** | Code `ml/gold_dl/` và adapter `ml/src/predict.py` đã sẵn sàng; mới có artifact demo trên dữ liệu giả. | - Dùng dữ liệu thật từ `ml/baseline/gold_data.db` (hoặc CSV của TV5) để huấn luyện lại LSTM/GRU.<br>- Xuất artifact vào `ml/artifacts/lstm_v1/` kèm `meta.json` (`"gold_type": "XAU_VND_LUONG"`, `"price_source": "TV5_GC_F_USDVND"`). |
-| **TV4 (DB & Security)** | Đã ghép `/api/auth/register`, `/api/auth/login`, `/api/auth/me` và xuất `database/schema.sql`. | - Khởi tạo MySQL thật từ `database/schema.sql` và đồng bộ ERD 6 bảng trong báo cáo.<br>- Viết thêm API Admin CRUD (users, gold_prices, ml_models) và API Cập nhật hồ sơ / Đổi mật khẩu. |
-| **TV1 (Frontend Core)** | Giao diện chính, Auth JWT, form dự báo 1/3/7 ngày, xem/xuất CSV lịch sử đã hoạt động. | - Mở khóa form Hồ sơ & Đổi mật khẩu khi TV4 có API.<br>- Bổ sung phân trang lịch sử dự đoán trên UI. |
-| **TV2 (Charts & Admin)** | Công cụ nghiên cứu đặt tại `/research/`. | - Đưa biểu đồ Candlestick, Actual vs Predicted, vùng sai số và giao diện Admin vào trang chính (`frontend/index.html`) đọc từ API chung. |
+| **TV4 (DB & Security)** | Đã hoàn thiện schema `database/schema.sql`, auth JWT (`/register`, `/login`, `/me`), cập nhật hồ sơ (`/profile`), đổi mật khẩu (`/change-password`) và phân quyền `require_admin` cho `/api/admin/*`. | - Đồng bộ ERD 6 bảng và tài liệu phân quyền vào báo cáo cuối kỳ.<br>- Phối hợp TV3 kiểm tra ràng buộc/bảo mật khi triển khai thật. |
+| **TV1 (Frontend Core)** | Giao diện chính, Auth JWT, Hồ sơ cá nhân, Đổi mật khẩu, form dự báo 1/3/7 ngày, xem/xuất CSV lịch sử đã nối API hoàn chỉnh. | - Bổ sung phân trang lịch sử dự đoán trên UI nếu dữ liệu lớn.<br>- Kiểm tra responsive trên 375/768/1024/1440px. |
+| **TV2 (Charts & Admin)** | Công cụ nghiên cứu đặt tại `/research/`; tab Quản trị trên trang chính đã nối bảng Users, Models và form thêm giá OHLC. | - Bổ sung biểu đồ Candlestick chuyên sâu và thao tác sửa/xóa giá trực tiếp trên bảng nếu cần mở rộng thêm ở trang chính. |
