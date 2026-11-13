@@ -1055,19 +1055,19 @@
             class="rounded-xl bg-brand-surface border border-brand-border p-4 space-y-3 shadow-subtle"
           >
             <h3 class="text-xs font-bold text-white flex items-center gap-2">
-              <i class="fa-solid fa-shield-halved text-brand-gold"></i> Kiểm Tra
-              Quyền Admin Token
+              <i class="fa-solid fa-microchip text-brand-gold"></i> Quản Lý Mô
+              Hình (Admin API)
             </h3>
             <p class="text-xs text-brand-textSecondary">
               Gọi endpoint
-              <code class="text-brand-gold">GET /api/auth/admin/test</code> với
-              JWT Header.
+              <code class="text-brand-gold">GET /api/admin/models</code> xem và
+              đổi model mặc định.
             </p>
             <button
               id="btnTestAdminToken"
               class="w-full py-2 rounded-lg text-xs font-semibold bg-amber-600 hover:bg-amber-500 text-slate-950 transition font-bold"
             >
-              Kiểm Tra Token Admin
+              Tải Danh Sách Models
             </button>
           </div>
 
@@ -1089,6 +1089,85 @@
             >
               Ping Kiểm Tra Database
             </button>
+          </div>
+        </div>
+
+        <!-- Admin Interactive Panels -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+          <div
+            class="rounded-xl bg-brand-surface border border-brand-border p-4 space-y-3 shadow-subtle"
+          >
+            <h3 class="text-xs font-bold text-white">
+              Quản Lý Người Dùng &amp; Mô Hình
+            </h3>
+            <div
+              id="adminTableContainer"
+              class="overflow-x-auto text-xs text-brand-textSecondary"
+            >
+              Bấm "Tải Danh Sách Users" hoặc "Tải Danh Sách Models" ở trên để
+              quản lý.
+            </div>
+          </div>
+
+          <div
+            class="rounded-xl bg-brand-surface border border-brand-border p-4 space-y-3 shadow-subtle"
+          >
+            <h3 class="text-xs font-bold text-white">
+              Thêm Phiên Giá Vàng (POST /api/admin/prices)
+            </h3>
+            <form id="formAdminAddPrice" class="grid grid-cols-2 gap-2 text-xs">
+              <input
+                id="adminPriceType"
+                type="text"
+                value="XAU_VND_LUONG"
+                placeholder="Mã loại vàng"
+                class="bg-slate-950 border border-brand-border rounded px-2.5 py-1.5 text-white"
+              />
+              <input
+                id="adminPriceDate"
+                type="date"
+                required
+                class="bg-slate-950 border border-brand-border rounded px-2.5 py-1.5 text-white"
+              />
+              <input
+                id="adminPriceOpen"
+                type="number"
+                step="any"
+                required
+                placeholder="Open"
+                class="bg-slate-950 border border-brand-border rounded px-2.5 py-1.5 text-white"
+              />
+              <input
+                id="adminPriceHigh"
+                type="number"
+                step="any"
+                required
+                placeholder="High"
+                class="bg-slate-950 border border-brand-border rounded px-2.5 py-1.5 text-white"
+              />
+              <input
+                id="adminPriceLow"
+                type="number"
+                step="any"
+                required
+                placeholder="Low"
+                class="bg-slate-950 border border-brand-border rounded px-2.5 py-1.5 text-white"
+              />
+              <input
+                id="adminPriceClose"
+                type="number"
+                step="any"
+                required
+                placeholder="Close"
+                class="bg-slate-950 border border-brand-border rounded px-2.5 py-1.5 text-white"
+              />
+              <button
+                type="submit"
+                class="col-span-2 py-2 rounded-lg font-bold text-xs bg-brand-gold hover:bg-brand-goldLight text-slate-950 transition"
+              >
+                Thêm Phiên Giá Mới
+              </button>
+            </form>
           </div>
         </div>
 
@@ -1464,7 +1543,7 @@
             <label
               for="profFullName"
               class="block text-xs font-medium text-slate-300 mb-1"
-              >Tên người dùng (Username)</label
+              >Họ và tên (Full Name)</label
             >
             <input
               id="profFullName"
@@ -1488,12 +1567,14 @@
             <label
               for="profPhone"
               class="block text-xs font-medium text-slate-300 mb-1"
-              >Số điện thoại</label
+              >Số điện thoại (chưa hỗ trợ lưu trên server)</label
             >
             <input
               id="profPhone"
               type="text"
-              class="w-full bg-slate-950 border border-brand-border rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-brand-gold"
+              disabled
+              placeholder="Chưa hỗ trợ"
+              class="w-full bg-slate-950/50 border border-brand-border rounded-lg px-3 py-1.5 text-xs text-slate-500 cursor-not-allowed"
             />
           </div>
 

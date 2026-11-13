@@ -581,11 +581,10 @@ document.addEventListener("DOMContentLoaded", async () => {
   document.getElementById("btnMenuProfile").addEventListener("click", () => {
     if (AppState.currentUser) {
       document.getElementById("profFullName").value =
-        AppState.currentUser.username || "";
+        AppState.currentUser.full_name || "";
       document.getElementById("profEmail").value =
         AppState.currentUser.email || "";
-      document.getElementById("profPhone").value =
-        AppState.currentUser.phone || "0912345678";
+      document.getElementById("profPhone").value = "";
     }
     openModal("modalProfile");
   });
@@ -861,9 +860,204 @@ document.addEventListener("DOMContentLoaded", async () => {
     .getElementById("predictionForm")
     .addEventListener("submit", submitPrediction);
 
-  // 4. ADMIN TEST BUTTONS (KẾT NỐI API ADMIN)
+  // 4. ADMIN & PROFILE API HANDLERS
   // -----------------------------------------------------------------------
   const consoleLog = document.getElementById("adminConsoleLog");
+  const adminTableContainer = document.getElementById("adminTableContainer");
+
+  function createActionBtn(label, extraClass, onClick) {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.textContent = label;
+    btn.className = `px-2 py-1 rounded text-[11px] font-medium transition ${extraClass}`;
+    btn.addEventListener("click", onClick);
+    return btn;
+  }
+
+  function renderAdminUsersTable(items) {
+    adminTableContainer.textContent = "";
+    if (!items || items.length === 0) {
+      const empty = document.createElement("p");
+      empty.className = "text-xs text-brand-textSecondary";
+      empty.textContent = "Chưa có người dùng nào.";
+      adminTableContainer.appendChild(empty);
+      return;
+    }
+
+    const wrap = document.createElement("div");
+    wrap.className = "overflow-x-auto border border-brand-border rounded-lg";
+    const table = document.createElement("table");
+    table.className = "w-full text-left text-xs";
+
+    const thead = document.createElement("thead");
+    thead.className = "bg-slate-900/80 text-brand-textSecondary";
+    const headRow = document.createElement("tr");
+    ["ID", "Username", "Họ tên", "Email", "Role", "Trạng thái", "Thao tác"].forEach(
+      (col) => {
+        const th = document.createElement("th");
+        th.className = "px-3 py-2 font-semibold";
+        th.textContent = col;
+        headRow.appendChild(th);
+      }
+    );
+    thead.appendChild(headRow);
+    table.appendChild(thead);
+
+    const tbody = document.createElement("tbody");
+    tbody.className = "divide-y divide-brand-border/60";
+    items.forEach((u) => {
+      const tr = document.createElement("tr");
+      [
+        String(u.id),
+        u.username || "",
+        u.full_name || "—",
+        u.email || "—",
+        u.role || "user",
+        u.is_active ? "Hoạt động" : "Đã khóa",
+      ].forEach((val) => {
+        const td = document.createElement("td");
+        td.className = "px-3 py-2 text-slate-200 whitespace-nowrap";
+        td.textContent = val;
+        tr.appendChild(td);
+      });
+
+      const actionTd = document.createElement("td");
+      actionTd.className = "px-3 py-2 flex items-center gap-1.5 whitespace-nowrap";
+      const nextRole = u.role === "admin" ? "user" : "admin";
+      actionTd.appendChild(
+        createActionBtn(
+          `Đổi → ${nextRole}`,
+          "bg-slate-800 hover:bg-slate-700 text-brand-gold border border-brand-border",
+          async () => {
+            try {
+              const updated = await apiRequest(`/api/admin/users/${u.id}`, {
+                method: "PATCH",
+                body: JSON.stringify({ role: nextRole }),
+              });
+              consoleLog.textContent = JSON.stringify(updated, null, 2);
+              showToast(`Đã đổi quyền ${u.username} thành ${nextRole}`);
+              document.getElementById("btnFetchAdminUsers").click();
+            } catch (err) {
+              showToast(err.message, "error");
+            }
+          }
+        )
+      );
+      actionTd.appendChild(
+        createActionBtn(
+          u.is_active ? "Khóa" : "Mở khóa",
+          u.is_active
+            ? "bg-rose-950/70 hover:bg-rose-900 text-rose-300 border border-rose-800/60"
+            : "bg-emerald-950/70 hover:bg-emerald-900 text-emerald-300 border border-emerald-800/60",
+          async () => {
+            try {
+              const updated = await apiRequest(`/api/admin/users/${u.id}`, {
+                method: "PATCH",
+                body: JSON.stringify({ is_active: !u.is_active }),
+              });
+              consoleLog.textContent = JSON.stringify(updated, null, 2);
+              showToast(
+                `${updated.is_active ? "Đã mở khóa" : "Đã khóa"} ${u.username}`
+              );
+              document.getElementById("btnFetchAdminUsers").click();
+            } catch (err) {
+              showToast(err.message, "error");
+            }
+          }
+        )
+      );
+      tr.appendChild(actionTd);
+      tbody.appendChild(tr);
+    });
+    table.appendChild(tbody);
+    wrap.appendChild(table);
+    adminTableContainer.appendChild(wrap);
+  }
+
+  function renderAdminModelsTable(models) {
+    adminTableContainer.textContent = "";
+    if (!models || models.length === 0) {
+      const empty = document.createElement("p");
+      empty.className = "text-xs text-brand-textSecondary";
+      empty.textContent = "Chưa có model nào được đăng ký.";
+      adminTableContainer.appendChild(empty);
+      return;
+    }
+
+    const wrap = document.createElement("div");
+    wrap.className = "overflow-x-auto border border-brand-border rounded-lg";
+    const table = document.createElement("table");
+    table.className = "w-full text-left text-xs";
+
+    const thead = document.createElement("thead");
+    thead.className = "bg-slate-900/80 text-brand-textSecondary";
+    const headRow = document.createElement("tr");
+    ["ID", "Tên model", "Thuật toán", "Phiên bản", "Trạng thái", "Thao tác"].forEach(
+      (col) => {
+        const th = document.createElement("th");
+        th.className = "px-3 py-2 font-semibold";
+        th.textContent = col;
+        headRow.appendChild(th);
+      }
+    );
+    thead.appendChild(headRow);
+    table.appendChild(thead);
+
+    const tbody = document.createElement("tbody");
+    tbody.className = "divide-y divide-brand-border/60";
+    models.forEach((m) => {
+      const tr = document.createElement("tr");
+      [
+        String(m.id),
+        m.name || "",
+        m.algorithm || "",
+        m.version || "",
+        m.is_active ? "Đang kích hoạt" : "Tắt",
+      ].forEach((val) => {
+        const td = document.createElement("td");
+        td.className = "px-3 py-2 text-slate-200 whitespace-nowrap";
+        td.textContent = val;
+        tr.appendChild(td);
+      });
+
+      const actionTd = document.createElement("td");
+      actionTd.className = "px-3 py-2 whitespace-nowrap";
+      if (m.is_active) {
+        const badge = document.createElement("span");
+        badge.className = "text-[11px] text-emerald-400 font-semibold";
+        badge.textContent = "Mặc định";
+        actionTd.appendChild(badge);
+      } else {
+        actionTd.appendChild(
+          createActionBtn(
+            "Đặt mặc định",
+            "bg-brand-gold hover:bg-brand-goldLight text-slate-950 font-semibold",
+            async () => {
+              try {
+                const updated = await apiRequest(`/api/admin/models/${m.id}`, {
+                  method: "PATCH",
+                  body: JSON.stringify({ is_active: true }),
+                });
+                consoleLog.textContent = JSON.stringify(updated, null, 2);
+                showToast(`Đã kích hoạt model ${m.name}`);
+                document.getElementById("btnTestAdminToken").click();
+                if (typeof loadGoldCurrentAndHistory === "function") {
+                  loadGoldCurrentAndHistory();
+                }
+              } catch (err) {
+                showToast(err.message, "error");
+              }
+            }
+          )
+        );
+      }
+      tr.appendChild(actionTd);
+      tbody.appendChild(tr);
+    });
+    table.appendChild(tbody);
+    wrap.appendChild(table);
+    adminTableContainer.appendChild(wrap);
+  }
 
   document
     .getElementById("btnFetchAdminUsers")
@@ -872,9 +1066,10 @@ document.addEventListener("DOMContentLoaded", async () => {
       try {
         const res = await apiRequest("/api/admin/users");
         consoleLog.textContent = JSON.stringify(res, null, 2);
+        renderAdminUsersTable(res.items || []);
         showToast("Tải danh sách users thành công!");
       } catch (e) {
-        consoleLog.textContent = `Lỗi: ${e.message}\n(Lưu ý: Chỉ tài khoản có vai trò 'admin' trong MySQL mới được cấp quyền truy cập)`;
+        consoleLog.textContent = `Lỗi: ${e.message}\n(Lưu ý: Chỉ tài khoản có vai trò 'admin' mới được cấp quyền truy cập)`;
         showToast("Lỗi API Admin: " + e.message, "error");
       }
     });
@@ -882,14 +1077,49 @@ document.addEventListener("DOMContentLoaded", async () => {
   document
     .getElementById("btnTestAdminToken")
     .addEventListener("click", async () => {
-      consoleLog.textContent = "Đang gọi GET /api/auth/admin/test...";
+      consoleLog.textContent = "Đang gọi GET /api/admin/models...";
       try {
-        const res = await apiRequest("/api/auth/admin/test");
+        const res = await apiRequest("/api/admin/models");
         consoleLog.textContent = JSON.stringify(res, null, 2);
-        showToast("Xác thực quyền Admin thành công!");
+        renderAdminModelsTable(Array.isArray(res) ? res : []);
+        showToast("Tải danh sách models thành công!");
       } catch (e) {
         consoleLog.textContent = `Lỗi: ${e.message}`;
         showToast(e.message, "error");
+      }
+    });
+
+  document
+    .getElementById("formAdminAddPrice")
+    .addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const payload = {
+        gold_type: document.getElementById("adminPriceType").value,
+        date: document.getElementById("adminPriceDate").value,
+        open: Number(document.getElementById("adminPriceOpen").value),
+        high: Number(document.getElementById("adminPriceHigh").value),
+        low: Number(document.getElementById("adminPriceLow").value),
+        close: Number(document.getElementById("adminPriceClose").value),
+      };
+      if (!payload.date || Number.isNaN(payload.close)) {
+        showToast("Vui lòng nhập đầy đủ ngày và giá OHLC hợp lệ.", "error");
+        return;
+      }
+      consoleLog.textContent = "Đang gọi POST /api/admin/prices...";
+      try {
+        const res = await apiRequest("/api/admin/prices", {
+          method: "POST",
+          body: JSON.stringify(payload),
+        });
+        consoleLog.textContent = JSON.stringify(res, null, 2);
+        showToast("Đã thêm dữ liệu giá vàng!");
+        event.target.reset();
+        if (typeof loadGoldCurrentAndHistory === "function") {
+          loadGoldCurrentAndHistory();
+        }
+      } catch (e) {
+        consoleLog.textContent = `Lỗi: ${e.message}`;
+        showToast("Lỗi thêm giá: " + e.message, "error");
       }
     });
 
@@ -910,6 +1140,65 @@ document.addEventListener("DOMContentLoaded", async () => {
       }
     });
 
+  document
+    .getElementById("formProfile")
+    .addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const fullName = document.getElementById("profFullName").value.trim();
+      const email = document.getElementById("profEmail").value.trim();
+      try {
+        const updated = await apiRequest("/api/auth/profile", {
+          method: "PATCH",
+          body: JSON.stringify({
+            full_name: fullName || null,
+            email: email || null,
+          }),
+        });
+        AppState.currentUser = updated;
+        updateAuthUI();
+        closeModal("modalProfile");
+        showToast("Cập nhật hồ sơ thành công!");
+      } catch (e) {
+        showToast("Lỗi cập nhật hồ sơ: " + e.message, "error");
+      }
+    });
+
+  document
+    .getElementById("formChangePassword")
+    .addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const currentPassword = document.getElementById("pwdOld").value;
+      const newPassword = document.getElementById("pwdNew").value;
+      const confirmPassword = document.getElementById("pwdConfirm").value;
+
+      if (!currentPassword || newPassword.length < 8) {
+        showToast(
+          "Vui lòng nhập mật khẩu hiện tại và mật khẩu mới tối thiểu 8 ký tự.",
+          "error"
+        );
+        return;
+      }
+      if (newPassword !== confirmPassword) {
+        showToast("Xác nhận mật khẩu mới không khớp.", "error");
+        return;
+      }
+
+      try {
+        const res = await apiRequest("/api/auth/change-password", {
+          method: "POST",
+          body: JSON.stringify({
+            current_password: currentPassword,
+            new_password: newPassword,
+          }),
+        });
+        event.target.reset();
+        closeModal("modalPassword");
+        showToast(res.message || "Đổi mật khẩu thành công!");
+      } catch (e) {
+        showToast("Lỗi đổi mật khẩu: " + e.message, "error");
+      }
+    });
+
   // Filter events on History
   document
     .getElementById("historySearchInput")
@@ -918,26 +1207,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     .getElementById("filterTrend")
     .addEventListener("change", renderHistoryTable);
 
-  // These workflows are absent from the supplied backend; do not simulate success.
-  ["formProfile", "formChangePassword"].forEach((id) => {
-    document.getElementById(id).addEventListener("submit", (event) => {
-      event.preventDefault();
-      showToast("Chức năng này chưa có API trong bản bàn giao.", "error");
-    });
-  });
-  [
-    "btnMenuProfile",
-    "btnMenuPassword",
-    "btnSaveProfile",
-    "btnSavePassword",
-    "btnFetchAdminUsers",
-    "btnTestAdminToken",
-  ].forEach((id) => {
-    const control = document.getElementById(id);
-    control.disabled = true;
-    control.title = "Chưa có API trong bản bàn giao";
-    control.textContent += " (chưa hỗ trợ)";
-  });
   ["btnQuickUserLogin", "btnQuickAdminLogin"].forEach(
     (id) => (document.getElementById(id).hidden = true)
   );
