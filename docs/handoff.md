@@ -101,8 +101,29 @@ Trong lượt làm việc này, đã giải quyết dứt điểm điểm nghẽ
 
 ## 3. Hướng dẫn chạy dự án (Dành cho TV3 và cả nhóm)
 
+### Bước 0: Khởi tạo môi trường (khi mới clone repo)
+Ưu tiên **Python 3.12** (để tương thích artifact Deep Learning; với Backend + LightGBM có thể chạy trên Python 3.12–3.14). Từ **thư mục gốc repo**:
+
+```powershell
+python -m venv .venv
+.venv\Scripts\python.exe -m pip install --upgrade pip
+.venv\Scripts\python.exe -m pip install -r backend\requirements.txt
+.venv\Scripts\python.exe -m pip install -r ml\baseline\requirements.txt
+```
+
+- *(Tùy chọn)* Nếu chạy mô hình Deep Learning (LSTM/GRU của TV6), cài thêm:
+  ```powershell
+  .venv\Scripts\python.exe -m pip install -r ml\requirements-dl.txt
+  ```
+- *(Tùy chọn)* Nếu chạy kiểm tra cú pháp JS / lint (`npm run check:js`):
+  ```powershell
+  npm install
+  ```
+
+---
+
 ### Cách 1: Chạy nhanh bản Demo (SQLite riêng + Model Naive mô phỏng)
-Từ thư mục gốc `c:\Users\Khoi\Documents\GitHub\web-du-doan-gia-vang`:
+Từ thư mục gốc repo:
 
 ```powershell
 .venv/Scripts/python.exe scripts/run_demo.py
@@ -146,17 +167,30 @@ cd backend
 
 ### Cách 3: Chạy trực tiếp từ `backend/` với MySQL thật & `backend/.env` (Khuyên dùng sau khi đã cài DB)
 
-1. **Cấu hình `backend/.env`**:
-   - Đảm bảo user MySQL đã được cấp quyền trên `gold_predict.*` (ví dụ `GRANT ALL PRIVILEGES ON gold_predict.* TO 'Khoi'@'localhost'; FLUSH PRIVILEGES;`).
-   - Nếu mật khẩu chứa ký tự `@` trong `DATABASE_URL`, phải mã hóa thành `%40` (ví dụ `mysql+pymysql://Khoi:Khoi9876%40@localhost:3306/gold_predict`).
-   - Cấu hình `JWT_SECRET` dài tối thiểu 32 ký tự và `MODEL_DIR=../ml/artifacts`.
-2. **Khởi động server từ thư mục `backend/`** *(để nạp đúng `backend/.env` và `../ml/artifacts`, đồng thời đặt `PYTHONPATH` tới cả thư mục gốc để import `ml.*`)*:
+1. **Khởi tạo MySQL & tạo `backend/.env`** *(làm 1 lần đầu)*:
+   - Chạy [`database/schema.sql`](../database/schema.sql) trên MySQL để tạo database `gold_predict` và 6 bảng.
+   - Cấp quyền cho user MySQL trên `gold_predict.*` (ví dụ `GRANT ALL PRIVILEGES ON gold_predict.* TO '<db_user>'@'localhost'; FLUSH PRIVILEGES;`).
+   - Copy `backend\.env.example` thành `backend\.env` và điền:
+     - `DATABASE_URL=mysql+pymysql://<db_user>:<password>@localhost:3306/gold_predict` *(nếu mật khẩu có ký tự `@`, phải mã hóa thành `%40`)*.
+     - `JWT_SECRET` dài tối thiểu 32 ký tự.
+     - `MODEL_DIR=../ml/artifacts` và `USE_STUB_MODEL=false`.
+2. **Nạp dữ liệu & đăng ký model vào MySQL** *(nếu DB mới chưa có dữ liệu; không dùng `--init-sqlite` khi chạy MySQL)*:
+   ```powershell
+   cd backend
+   $repoRoot = (Resolve-Path ..).Path
+   $env:PYTHONPATH = "$repoRoot;$repoRoot\backend"
+   ..\.venv\Scripts\python.exe -m app.tools.import_ohlcv ..\.local-artifacts\demo\ohlcv_tv5_vnd.csv --source TV5_GC_F_USDVND
+   ..\.venv\Scripts\python.exe -m app.tools.register_model lightgbm_tv5_v1 --name LightGBM --algorithm lightgbm --version v1 --default
+   ```
+   *(Nếu chưa có file CSV và artifact `ml/artifacts/lightgbm_tv5_v1`, chạy Bước 1 của Cách 2 ở thư mục gốc trước.)*
+3. **Khởi động server từ thư mục `backend/`** *(để nạp đúng `backend/.env` và `../ml/artifacts`, đồng thời đặt `PYTHONPATH` tới cả thư mục gốc để import `ml.*`)*:
 ```powershell
-cd C:\Users\Khoi\Documents\GitHub\web-du-doan-gia-vang\backend
-$env:PYTHONPATH = "C:\Users\Khoi\Documents\GitHub\web-du-doan-gia-vang;C:\Users\Khoi\Documents\GitHub\web-du-doan-gia-vang\backend"
+cd backend
+$repoRoot = (Resolve-Path ..).Path
+$env:PYTHONPATH = "$repoRoot;$repoRoot\backend"
 ..\.venv\Scripts\python.exe -m uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
 ```
-3. Mở `http://127.0.0.1:8000/` trên trình duyệt (nếu mới cập nhật `frontend/app.js`, nhấn `Ctrl + Shift + R` để bỏ qua cache trình duyệt).
+4. Mở `http://127.0.0.1:8000/` trên trình duyệt (nếu mới cập nhật `frontend/app.js`, nhấn `Ctrl + Shift + R` để bỏ qua cache trình duyệt).
 
 ---
 
