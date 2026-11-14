@@ -59,6 +59,7 @@ Một module sở hữu một quy tắc nghiệp vụ. Không tạo backend/DB/a
 - 2026-11-14: Chuyển từ Codex sang Claude Code: CLAUDE.md thay AGENTS.md (`.agents/rules/` do bridge anti sinh lại, giữ local); index CodeGraph (`.codegraph/`). Husky pre-commit giữ nguyên.
 - 2026-11-14: Được xóa file thừa/thư mục rỗng sau kiểm kê.
 - 2026-11-14: Chuyển làm việc sang nhánh `fix/tv5-data-pipeline` (main cũ); mang theo việc chuyển Codex→Claude và code TV6 chưa commit. Nhánh này đã có admin CRUD/hồ sơ do TV3/TV4 làm — mục 2026-11-06 "không phát triển CRUD admin" chỉ áp dụng lượt hợp nhất. TV6 dùng `ml/baseline/gold_data.db` làm dữ liệu chốt.
+- 2026-11-14: TV6 giữ `lstm_v1`/`gru_v1` với khoảng sai số tĩnh hiện tại và ghi giới hạn thiếu phủ nhiều ngày; không làm khoảng rolling hay nới khoảng (thử offline chưa đủ tin cậy).
 
 ## Docs
 
