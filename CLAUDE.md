@@ -51,6 +51,7 @@ Một module sở hữu một quy tắc nghiệp vụ. Không tạo backend/DB/a
 5. Trước bàn giao: `code-review` hai trục (chuẩn repo + yêu cầu/đặc tả) so với SHA base, hoặc agy `review`. Nghiên cứu: `research`. Nhu cầu mới chưa có skill: `find-skills` (chỉ cài khi người dùng đồng ý).
 6. Khi đề xuất bước tiếp theo: mỗi bước kèm **1 câu ngắn vì sao cần làm và tác dụng**, theo từng chủ sở hữu TV.
 7. Kết thúc việc nhiều bước: cập nhật handoff ngắn (đã làm, bằng chứng, giới hạn, Git/PR/deploy thực tế — phân biệt local/merged/deployed), cập nhật `docs/api.md` khi hợp đồng đổi, báo cáo TV khi có bằng chứng mới, và **ghi quyết định mới của người dùng vào Nhật ký dưới đây**.
+8. **Khi người dùng nhập "update"**: tự cập nhật handoff công việc hiện tại (`.local-artifacts/handoff.md` mục "HIỆN HÀNH" ở đầu file; `docs/handoff.md` khi trạng thái TV đổi). Nếu bước ngay trước đã cập nhật và không có gì mới thì không làm lại, chỉ báo đã cập nhật.
 
 ## Nhật ký quyết định (thêm mới ở cuối)
 
