@@ -1,9 +1,9 @@
 # Tài liệu Bàn giao & Tổng hợp Tiến độ (Handoff) — Gold AI
 
-- **Ngày cập nhật**: 13/11/2026
+- **Ngày cập nhật**: 14/11/2026 (TV6)
 - **Repository**: `Buigiahung1/web-du-doan-gia-vang`
 - **Base SHA (`main`)**: `976241f5922a31fc46c776c7fb99786ae8f873ef`
-- **Nhánh làm việc hiện tại**: `fix/tv5-data-pipeline` (`HEAD`: `957c5a1`, đã commit local; chưa merge/push)
+- **Nhánh làm việc hiện tại**: `fix/tv5-data-pipeline` (đã push lên `origin`; chưa merge vào `main`, chưa mở PR). Lượt TV6 14/11: artifact `lstm_v1`/`gru_v1` thật, CLAUDE.md thay AGENTS.md
 - **Trạng thái triển khai**: Đã chạy local kết nối thành công **MySQL (`gold_predict`)** + model thật **`lightgbm_tv5_v1`** (chưa deploy cloud)
 
 ---
