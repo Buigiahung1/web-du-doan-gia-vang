@@ -11,6 +11,7 @@
 ## 1. Tổng quan những gì đã hoàn thành trong dự án
 
 ### 1.1. Giai đoạn 1: Hợp nhất 6 bản bàn giao TV1–TV6 về một kiến trúc thống nhất (06/11/2026)
+
 - **Chọn Runtime chung**: `FastAPI` (`backend/app/` của TV3) + `SQLAlchemy` + giao diện `HTML/CSS/JavaScript` (`frontend/` của TV1) phục vụ cùng origin tại cổng `8000`.
 - **Xác thực & Bảo mật (TV4 $\rightarrow$ TV3)**:
   - Ghép `/api/auth/register` (JSON), `/api/auth/login` (form-urlencoded), `/api/auth/me` (Bearer JWT) vào `backend/app/api/auth.py` và `backend/app/services/auth_service.py`.
@@ -30,17 +31,19 @@
 Trong lượt làm việc này, đã giải quyết dứt điểm điểm nghẽn P0 giữa **TV5 (Data & Baseline ML)** và **TV3 (Backend API)**:
 
 #### A. Hợp đồng dữ liệu chuẩn đã chốt (`XAU_VND_LUONG`)
-| Thuộc tính | Giá trị quy ước |
-| :--- | :--- |
-| **Mã loại vàng (`gold_type`)** | `XAU_VND_LUONG` |
-| **Tên hiển thị** | Vàng thế giới quy đổi VNĐ/lượng |
-| **Đơn vị (`unit`)** | `VND/luong` |
-| **Nguồn dữ liệu (`price_source`)** | `TV5_GC_F_USDVND` (Yahoo Finance `GC=F` kết hợp `USDVND=X`) |
-| **Công thức quy đổi** | `gia_vnd = round((gia_usd / 0.829426) * fx_rate, -3)` (áp dụng đồng nhất cho `Open, High, Low, Close`) |
-| **Quy tắc phiên & tỷ giá** | Lấy ngày giao dịch của `GC=F` làm gốc; chỉ `ffill()` tỷ giá quá khứ sang ngày giao dịch vàng; **cấm `bfill()` từ tương lai**; loại bỏ ngày chỉ có tỷ giá |
-| **Định dạng CSV xuất ra** | `Date,Open,High,Low,Close,Volume` (`YYYY-MM-DD`, thỏa bất biến nến `Low <= min(Open, Close) <= max(Open, Close) <= High`) |
+
+| Thuộc tính                         | Giá trị quy ước                                                                                                                                          |
+| :--------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Mã loại vàng (`gold_type`)**     | `XAU_VND_LUONG`                                                                                                                                          |
+| **Tên hiển thị**                   | Vàng thế giới quy đổi VNĐ/lượng                                                                                                                          |
+| **Đơn vị (`unit`)**                | `VND/luong`                                                                                                                                              |
+| **Nguồn dữ liệu (`price_source`)** | `TV5_GC_F_USDVND` (Yahoo Finance `GC=F` kết hợp `USDVND=X`)                                                                                              |
+| **Công thức quy đổi**              | `gia_vnd = round((gia_usd / 0.829426) * fx_rate, -3)` (áp dụng đồng nhất cho `Open, High, Low, Close`)                                                   |
+| **Quy tắc phiên & tỷ giá**         | Lấy ngày giao dịch của `GC=F` làm gốc; chỉ `ffill()` tỷ giá quá khứ sang ngày giao dịch vàng; **cấm `bfill()` từ tương lai**; loại bỏ ngày chỉ có tỷ giá |
+| **Định dạng CSV xuất ra**          | `Date,Open,High,Low,Close,Volume` (`YYYY-MM-DD`, thỏa bất biến nến `Low <= min(Open, Close) <= max(Open, Close) <= High`)                                |
 
 #### B. Chi tiết các file đã sửa và tạo mới
+
 1. **[`ml/baseline/src/collector.py`](../ml/baseline/src/collector.py)**:
    - Viết hàm `merge_gold_fx(gold_df, fx_df)` giữ đầy đủ `open, high, low, vnd_price (= close), volume, usd_close, fx_rate` trên các phiên giao dịch vàng (trước đây collector vứt bỏ `Open, High, Low` làm hệ thống mất dữ liệu nến).
    - Bỏ `.bfill()` trên tỷ giá để không lấy tỷ giá tương lai điền ngược về đầu chuỗi.
@@ -57,7 +60,7 @@ Trong lượt làm việc này, đã giải quyết dứt điểm điểm nghẽ
    - Đặt `n_jobs=1` trong `_LGBM_PARAMS` để tránh xung đột thread OpenMP trên Windows khi gọi qua `ThreadPoolExecutor` của FastAPI.
 4. **[`ml/baseline/src/config.py`](../ml/baseline/src/config.py)**:
    - Sửa chú thích hằng số `OUNCE_PER_LUONG = 0.829426` (`1 troy ounce = 0.829426 lượng`, nên giá 1 lượng = `usd_oz / OUNCE_PER_LUONG`).
-5. **[`ml/baseline/tests/test_pipeline.py`](../ml/baseline/tests/test_pipeline.py)** *(giữ local theo `.gitignore`)*:
+5. **[`ml/baseline/tests/test_pipeline.py`](../ml/baseline/tests/test_pipeline.py)** _(giữ local theo `.gitignore`)_:
    - Bộ 6 bài kiểm thử TDD kiểm tra từng lỗi đã sửa và kiểm thử tích hợp toàn trình từ TV5 sang TV3 (`import_candles` $\rightarrow$ `ModelRegistry` $\rightarrow$ `predict_service.predict` $\rightarrow$ `predict_service.evaluation`).
 6. **Cập nhật tài liệu**:
    - Cập nhật [`ml/baseline/README.md`](../ml/baseline/README.md), [`docs/decisions.md`](decisions.md), [`docs/BAO_CAO_HOP_NHAT_VA_TIEN_DO.md`](BAO_CAO_HOP_NHAT_VA_TIEN_DO.md), [`docs/handoff.md`](handoff.md) và [`.local-artifacts/handoff.md`](../.local-artifacts/handoff.md).
@@ -76,7 +79,7 @@ Trong lượt làm việc này, đã giải quyết dứt điểm điểm nghẽ
      - `/api/admin/users` (`GET`, `PATCH`): xem danh sách, đổi quyền `user`/`admin`, khóa/mở khóa tài khoản.
      - `/api/admin/prices` (`POST`, `PATCH`, `DELETE`): thêm/sửa/xóa giá OHLCV (kiểm tra bất biến OHLC, cập nhật `fill_actual_price`, xóa cache `gold_service`).
      - `/api/admin/models` (`GET`, `PATCH`): xem danh sách và chuyển đổi model mặc định duy nhất (`is_active = true`).
-   - Cập nhật hợp đồng tại [`docs/api.md`](api.md) và thêm bộ kiểm thử TDD `backend/tests/test_profile_admin.py` *(giữ local theo `.gitignore`)*.
+   - Cập nhật hợp đồng tại [`docs/api.md`](api.md) và thêm bộ kiểm thử TDD `backend/tests/test_profile_admin.py` _(giữ local theo `.gitignore`)_.
 3. **Nối giao diện chính (`957c5a1`)**:
    - [`frontend/index.html`](../frontend/index.html) & [`frontend/app.js`](../frontend/app.js):
      - Mở khóa và nối form **Hồ sơ cá nhân** (`#formProfile`, giữ `#profPhone` ở trạng thái khóa vì server chưa lưu số điện thoại) và **Đổi mật khẩu** (`#formChangePassword`).
@@ -102,6 +105,7 @@ Trong lượt làm việc này, đã giải quyết dứt điểm điểm nghẽ
 ## 3. Hướng dẫn chạy dự án (Dành cho TV3 và cả nhóm)
 
 ### Bước 0: Khởi tạo môi trường (khi mới clone repo)
+
 Ưu tiên **Python 3.12** (để tương thích artifact Deep Learning; với Backend + LightGBM có thể chạy trên Python 3.12–3.14). Từ **thư mục gốc repo**:
 
 ```powershell
@@ -111,11 +115,11 @@ python -m venv .venv
 .venv\Scripts\python.exe -m pip install -r ml\baseline\requirements.txt
 ```
 
-- *(Tùy chọn)* Nếu chạy mô hình Deep Learning (LSTM/GRU của TV6), cài thêm:
+- _(Tùy chọn)_ Nếu chạy mô hình Deep Learning (LSTM/GRU của TV6), cài thêm:
   ```powershell
   .venv\Scripts\python.exe -m pip install -r ml\requirements-dl.txt
   ```
-- *(Tùy chọn)* Nếu chạy kiểm tra cú pháp JS / lint (`npm run check:js`):
+- _(Tùy chọn)_ Nếu chạy kiểm tra cú pháp JS / lint (`npm run check:js`):
   ```powershell
   npm install
   ```
@@ -123,6 +127,7 @@ python -m venv .venv
 ---
 
 ### Cách 1: Chạy nhanh bản Demo (SQLite riêng + Model Naive mô phỏng)
+
 Từ thư mục gốc repo:
 
 ```powershell
@@ -140,11 +145,13 @@ Từ thư mục gốc repo:
 ### Cách 2: Chạy với Dữ liệu Vàng thật (`yfinance`) + Mô hình LightGBM thật (TV5 + TV3)
 
 **Bước 1 — Tải dữ liệu OHLCV thật (2 năm), lưu SQLite TV5, xuất CSV chuẩn và huấn luyện LightGBM:**
+
 ```powershell
 .venv/Scripts/python.exe -c "from ml.baseline.src import collector, database, model; df = collector.fetch_gold_data('2y'); database.init_db(); database.save_gold_data(df); collector.export_ohlcv_csv(df, '.local-artifacts/demo/ohlcv_tv5_vnd.csv'); print(model.train_and_evaluate(df, output_dir='ml/artifacts/lightgbm_tv5_v1'))"
 ```
 
 **Bước 2 — Nạp OHLCV vào DB của Backend, đăng ký model LightGBM và kiểm tra Parity 7 ngày:**
+
 ```powershell
 $env:PYTHONPATH = (Get-Location).Path
 $env:DATABASE_URL = "sqlite:///" + ((Resolve-Path .).Path -replace '\\','/') + "/.local-artifacts/demo/gold_tv5.db"
@@ -159,6 +166,7 @@ cd backend
 ```
 
 **Bước 3 — Chạy Uvicorn phục vụ giao diện và API với model LightGBM thật:**
+
 ```powershell
 ../.venv/Scripts/python.exe -m uvicorn app.main:app --host 127.0.0.1 --port 8000
 ```
@@ -167,14 +175,14 @@ cd backend
 
 ### Cách 3: Chạy trực tiếp từ `backend/` với MySQL thật & `backend/.env` (Khuyên dùng sau khi đã cài DB)
 
-1. **Khởi tạo MySQL & tạo `backend/.env`** *(làm 1 lần đầu)*:
+1. **Khởi tạo MySQL & tạo `backend/.env`** _(làm 1 lần đầu)_:
    - Chạy [`database/schema.sql`](../database/schema.sql) trên MySQL để tạo database `gold_predict` và 6 bảng.
    - Cấp quyền cho user MySQL trên `gold_predict.*` (ví dụ `GRANT ALL PRIVILEGES ON gold_predict.* TO '<db_user>'@'localhost'; FLUSH PRIVILEGES;`).
    - Copy `backend\.env.example` thành `backend\.env` và điền:
-     - `DATABASE_URL=mysql+pymysql://<db_user>:<password>@localhost:3306/gold_predict` *(nếu mật khẩu có ký tự `@`, phải mã hóa thành `%40`)*.
+     - `DATABASE_URL=mysql+pymysql://<db_user>:<password>@localhost:3306/gold_predict` _(nếu mật khẩu có ký tự `@`, phải mã hóa thành `%40`)_.
      - `JWT_SECRET` dài tối thiểu 32 ký tự.
      - `MODEL_DIR=../ml/artifacts` và `USE_STUB_MODEL=false`.
-2. **Nạp dữ liệu & đăng ký model vào MySQL** *(nếu DB mới chưa có dữ liệu; không dùng `--init-sqlite` khi chạy MySQL)*:
+2. **Nạp dữ liệu & đăng ký model vào MySQL** _(nếu DB mới chưa có dữ liệu; không dùng `--init-sqlite` khi chạy MySQL)_:
    ```powershell
    cd backend
    $repoRoot = (Resolve-Path ..).Path
@@ -182,25 +190,27 @@ cd backend
    ..\.venv\Scripts\python.exe -m app.tools.import_ohlcv ..\.local-artifacts\demo\ohlcv_tv5_vnd.csv --source TV5_GC_F_USDVND
    ..\.venv\Scripts\python.exe -m app.tools.register_model lightgbm_tv5_v1 --name LightGBM --algorithm lightgbm --version v1 --default
    ```
-   *(Nếu chưa có file CSV và artifact `ml/artifacts/lightgbm_tv5_v1`, chạy Bước 1 của Cách 2 ở thư mục gốc trước.)*
-3. **Khởi động server từ thư mục `backend/`** *(để nạp đúng `backend/.env` và `../ml/artifacts`, đồng thời đặt `PYTHONPATH` tới cả thư mục gốc để import `ml.*`)*:
+   _(Nếu chưa có file CSV và artifact `ml/artifacts/lightgbm_tv5_v1`, chạy Bước 1 của Cách 2 ở thư mục gốc trước.)_
+3. **Khởi động server từ thư mục `backend/`** _(để nạp đúng `backend/.env` và `../ml/artifacts`, đồng thời đặt `PYTHONPATH` tới cả thư mục gốc để import `ml.*`)_:
+
 ```powershell
 cd backend
 $repoRoot = (Resolve-Path ..).Path
 $env:PYTHONPATH = "$repoRoot;$repoRoot\backend"
 ..\.venv\Scripts\python.exe -m uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
 ```
+
 4. Mở `http://127.0.0.1:8000/` trên trình duyệt (nếu mới cập nhật `frontend/app.js`, nhấn `Ctrl + Shift + R` để bỏ qua cache trình duyệt).
 
 ---
 
 ## 4. Giới hạn hiện tại & Công việc còn lại theo từng thành viên
 
-| Thành viên | Trạng thái hiện tại | Việc cần làm tiếp theo |
-| :--- | :--- | :--- |
-| **TV3 (Backend)** | Đã xong toàn bộ API giá/lịch sử/dự báo/model/evaluation, API Profile/Password/Admin CRUD, công cụ CLI (`import_ohlcv`, `register_model`, `check_model_parity`) và đã chạy thực tế trên MySQL `gold_predict`. | - Nghiệm thu đầy đủ các luồng dự báo, hồ sơ, admin CRUD trên trình duyệt.<br>- Chạy `register_model` và `check_model_parity` cho model LSTM/GRU thật sau khi TV6 train xong. |
-| **TV5 (Data & Baseline)** | Đã sửa xong lỗi mất OHLC, lỗi `bfill` tỷ giá tương lai, lỗi `load_history_data`, lỗi target leakage và tách Validation độc lập + xuất đủ 5 metrics. | - Bổ sung biến kinh tế/chỉ báo mở rộng (`MA20/MA50, MACD, Bollinger, Giá dầu`) nếu nhóm muốn giữ đúng từng chữ trong bản phân công ban đầu, hoặc thống nhất báo cáo theo bộ đặc trưng `SMA7, SMA21, RSI14, Volatility14, Lags` hiện hành.<br>- Phối hợp TV3 thiết lập lịch cập nhật dữ liệu định kỳ (scheduler). |
-| **TV6 (Deep Learning)** | Code `ml/gold_dl/` và adapter `ml/src/predict.py` đã sẵn sàng; mới có artifact demo trên dữ liệu giả. | - Dùng dữ liệu thật từ `ml/baseline/gold_data.db` (hoặc CSV của TV5) để huấn luyện lại LSTM/GRU.<br>- Xuất artifact vào `ml/artifacts/lstm_v1/` kèm `meta.json` (`"gold_type": "XAU_VND_LUONG"`, `"price_source": "TV5_GC_F_USDVND"`). |
-| **TV4 (DB & Security)** | Đã hoàn thiện schema `database/schema.sql`, auth JWT (`/register`, `/login`, `/me`), cập nhật hồ sơ (`/profile`), đổi mật khẩu (`/change-password`) và phân quyền `require_admin` cho `/api/admin/*`. | - Đồng bộ ERD 6 bảng và tài liệu phân quyền vào báo cáo cuối kỳ.<br>- Phối hợp TV3 kiểm tra ràng buộc/bảo mật khi triển khai thật. |
-| **TV1 (Frontend Core)** | Giao diện chính, Auth JWT, Hồ sơ cá nhân, Đổi mật khẩu, form dự báo 1/3/7 ngày, xem/xuất CSV lịch sử đã nối API hoàn chỉnh. | - Bổ sung phân trang lịch sử dự đoán trên UI nếu dữ liệu lớn.<br>- Kiểm tra responsive trên 375/768/1024/1440px. |
-| **TV2 (Charts & Admin)** | Công cụ nghiên cứu đặt tại `/research/`; tab Quản trị trên trang chính đã nối bảng Users, Models và form thêm giá OHLC. | - Bổ sung biểu đồ Candlestick chuyên sâu và thao tác sửa/xóa giá trực tiếp trên bảng nếu cần mở rộng thêm ở trang chính. |
+| Thành viên                | Trạng thái hiện tại                                                                                                                                                                                                                                                                                                                                                          | Việc cần làm tiếp theo                                                                                                                                                                                                                                                                                           |
+| :------------------------ | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **TV3 (Backend)**         | Đã xong toàn bộ API giá/lịch sử/dự báo/model/evaluation, API Profile/Password/Admin CRUD, công cụ CLI (`import_ohlcv`, `register_model`, `check_model_parity`) và đã chạy thực tế trên MySQL `gold_predict`.                                                                                                                                                                 | - Nghiệm thu đầy đủ các luồng dự báo, hồ sơ, admin CRUD trên trình duyệt.<br>- Chạy `register_model` và `check_model_parity` cho model LSTM/GRU thật sau khi TV6 train xong.                                                                                                                                     |
+| **TV5 (Data & Baseline)** | Đã sửa xong lỗi mất OHLC, lỗi `bfill` tỷ giá tương lai, lỗi `load_history_data`, lỗi target leakage và tách Validation độc lập + xuất đủ 5 metrics.                                                                                                                                                                                                                          | - Bổ sung biến kinh tế/chỉ báo mở rộng (`MA20/MA50, MACD, Bollinger, Giá dầu`) nếu nhóm muốn giữ đúng từng chữ trong bản phân công ban đầu, hoặc thống nhất báo cáo theo bộ đặc trưng `SMA7, SMA21, RSI14, Volatility14, Lags` hiện hành.<br>- Phối hợp TV3 thiết lập lịch cập nhật dữ liệu định kỳ (scheduler). |
+| **TV6 (Deep Learning)**   | Đã train `ml/artifacts/lstm_v1`, `gru_v1` trên `ml/baseline/gold_data.db` (546 phiên, 30/09/2024–06/11/2026), có `meta.json` (`XAU_VND_LUONG`, `TV5_GC_F_USDVND`), `evaluation.json` kèm naive, `requirements.lock.txt`; `check_artifact` ĐẠT. **Chưa thắng naive** test T+1 (RMSE LSTM 1,79M, GRU 1,83M vs 1,74M VND/lượng). Quy trình: [`RUNBOOK_TV6.md`](RUNBOOK_TV6.md). | - Cải thiện khoảng sai số nhiều ngày (phủ 0,83–0,86 < 0,9) trước khi đề xuất default.<br>- Gửi thư mục artifact (`.keras` không lên Git) cho TV3.                                                                                                                                                                |
+| **TV4 (DB & Security)**   | Đã hoàn thiện schema `database/schema.sql`, auth JWT (`/register`, `/login`, `/me`), cập nhật hồ sơ (`/profile`), đổi mật khẩu (`/change-password`) và phân quyền `require_admin` cho `/api/admin/*`.                                                                                                                                                                        | - Đồng bộ ERD 6 bảng và tài liệu phân quyền vào báo cáo cuối kỳ.<br>- Phối hợp TV3 kiểm tra ràng buộc/bảo mật khi triển khai thật.                                                                                                                                                                               |
+| **TV1 (Frontend Core)**   | Giao diện chính, Auth JWT, Hồ sơ cá nhân, Đổi mật khẩu, form dự báo 1/3/7 ngày, xem/xuất CSV lịch sử đã nối API hoàn chỉnh.                                                                                                                                                                                                                                                  | - Bổ sung phân trang lịch sử dự đoán trên UI nếu dữ liệu lớn.<br>- Kiểm tra responsive trên 375/768/1024/1440px.                                                                                                                                                                                                 |
+| **TV2 (Charts & Admin)**  | Công cụ nghiên cứu đặt tại `/research/`; tab Quản trị trên trang chính đã nối bảng Users, Models và form thêm giá OHLC.                                                                                                                                                                                                                                                      | - Bổ sung biểu đồ Candlestick chuyên sâu và thao tác sửa/xóa giá trực tiếp trên bảng nếu cần mở rộng thêm ở trang chính.                                                                                                                                                                                         |

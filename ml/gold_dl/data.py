@@ -1,4 +1,5 @@
 """Đọc dữ liệu giá vàng của Thành viên 5, chia Train/Val/Test theo thời gian, chuẩn hóa, tạo cửa sổ trượt."""
+import hashlib
 import re
 from dataclasses import dataclass
 
@@ -99,6 +100,9 @@ def prepare(feat: pd.DataFrame, features: list, lookback=60, horizon=30, mode="r
             return ((fut / last[:, None] - 1 - np.array(meta["y_mean"])) / np.array(meta["y_std"])).astype("float32")
         return ((fut - meta["close_mean"]) / meta["close_scale"]).astype("float32")
 
+    d = lambda i: str(pd.Timestamp(feat[DATE].iloc[i]).date())
+    meta["split"] = {"train": [d(0), d(i_tr - 1)], "val": [d(i_tr), d(i_va - 1)], "test": [d(i_va), d(n - 1)],
+                     "rows": {"train": i_tr, "val": i_va - i_tr, "test": n - i_va}}
     splits = {k: Split(X, encode(fut, last), last, fut, dts) for k, (X, fut, last, dts) in raw.items()}
     return Prepared(features, scaler, meta, splits["train"], splits["val"], splits["test"], feat)
 
@@ -109,3 +113,15 @@ def decode(y_pred: np.ndarray, last_close: np.ndarray, meta: dict) -> np.ndarray
         rel = y_pred * np.array(meta["y_std"]) + np.array(meta["y_mean"])
         return last_close[:, None] * (1 + rel)
     return y_pred * meta["close_scale"] + meta["close_mean"]
+
+
+def data_provenance(raw: pd.DataFrame, feat: pd.DataFrame, source: str) -> dict:
+    """Dấu vết dữ liệu dùng để huấn luyện: nguồn, số dòng, khoảng ngày, mã băm nội dung và chất lượng chuỗi.
+    Mã băm tính trên (date, vnd_price) đã chuẩn hóa nên cùng dữ liệu luôn ra cùng mã, dù đọc từ CSV hay SQLite."""
+    canon = raw.assign(**{DATE: raw[DATE].dt.strftime("%Y-%m-%d")}).to_csv(index=False, float_format="%.6f")
+    gaps = raw[DATE].diff().dt.days.dropna()
+    return {"source": source, "rows_raw": int(len(raw)), "rows_featurized": int(len(feat)),
+            "date_start": str(raw[DATE].iloc[0].date()), "date_end": str(raw[DATE].iloc[-1].date()),
+            "sha256_date_vnd_price": hashlib.sha256(canon.encode("utf-8")).hexdigest(),
+            "max_gap_days": int(gaps.max()) if len(gaps) else 0, "gaps_over_4_days": int((gaps > 4).sum()),
+            "min_price": float(raw[TARGET].min()), "max_price": float(raw[TARGET].max())}

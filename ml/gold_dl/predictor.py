@@ -9,6 +9,8 @@ Tự kiểm tra nhanh:  python -m gold_dl.predictor --artifacts artifacts --csv 
 """
 import argparse
 import json
+import warnings
+from importlib import metadata as importlib_metadata
 from pathlib import Path
 
 import joblib
@@ -36,6 +38,22 @@ class GoldPredictor:
             raise PredictionError(f"Không tìm thấy file .keras nào trong '{artifact_dir}'.")
         self.features, self.lookback, self.horizon = self.meta["features"], self.meta["lookback"], self.meta["horizon"]
         self.min_rows = self.meta["min_history_rows"]
+        self.version_warnings = self._check_versions()
+
+    def _check_versions(self):
+        """Cảnh báo khi thư viện đang chạy khác bản đã dùng lúc huấn luyện (khác phiên bản chính hoặc phụ)."""
+        saved, notes = self.meta.get("versions", {}), []
+        for pkg in ("tensorflow", "keras", "scikit-learn", "numpy", "pandas"):
+            try:
+                have = importlib_metadata.version(pkg)
+            except importlib_metadata.PackageNotFoundError:
+                continue
+            want = saved.get(pkg)
+            if want and ".".join(want.split(".")[:2]) != ".".join(have.split(".")[:2]):
+                notes.append(f"{pkg}: artifact huấn luyện với {want}, đang chạy {have}")
+        for n in notes:
+            warnings.warn("Lệch phiên bản thư viện, " + n + ". Hãy cài đúng bản trong requirements.lock.txt của artifact.", RuntimeWarning)
+        return notes
 
     @property
     def available_models(self):

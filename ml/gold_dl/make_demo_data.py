@@ -1,7 +1,11 @@
 """Sinh dữ liệu GIẢ có đúng cấu trúc bảng gold_history của Thành viên 5 để thử khi chưa có dữ liệu thật.
 Chạy: python -m gold_dl.make_demo_data"""
+from pathlib import Path
+
 import numpy as np
 import pandas as pd
+
+Path("data").mkdir(exist_ok=True)
 
 rng = np.random.default_rng(7)
 n = 1800

@@ -162,7 +162,20 @@ Giữ schema **sáu bảng** thực tế của TV3/TV4: `users`, `gold_types`, `
 
 **Bằng chứng:** test HTTP sử dụng `.keras` thật của gói demo, so cả predicted_price/lower/upper với native predictor; đạt. Test Keras startup/parity có sẵn TV3 cũng chạy sau cài TensorFlow từ cache. Đây là bằng chứng nối model, không phải bằng chứng độ chính xác trên dữ liệu thật.
 
-**TV6 cần làm tiếp:** nhận dataset/split TV5 đã chốt, xuất artifact thật vào thư mục version mới, khóa các dependency đã train, giữ report/validation intervals và naive baseline cùng nguồn/horizon. TV3 chạy parity trên DB nhóm; TV2 dùng report đúng đơn vị/model.
+**TV6 cần làm tiếp (bản 06/11):** nhận dataset/split TV5 đã chốt, xuất artifact thật vào thư mục version mới, khóa các dependency đã train, giữ report/validation intervals và naive baseline cùng nguồn/horizon. TV3 chạy parity trên DB nhóm; TV2 dùng report đúng đơn vị/model.
+
+**Cập nhật 13–14/11/2026 (local, chưa commit):** thêm `ml.gold_dl.tune`, `check_artifact`, `make_demo_db`, train xuất `meta.json`/`evaluation.json`/`requirements.lock.txt`; quy trình ở [RUNBOOK_TV6](RUNBOOK_TV6.md). Đã train `ml/artifacts/lstm_v1`, `gru_v1` trên `ml/baseline/gold_data.db` bảng `gold_history` (546 dòng, 2024-09-30 → 2026-11-06, nguồn `TV5_GC_F_USDVND`, VND/lượng, SHA-256 (date, vnd_price) `a0af0c43…`), lookback 30, horizon 7, chọn cấu hình bằng RMSE validation. Split theo thời gian: train 368 / val 79 / test 79 dòng.
+
+| T+1 trên test (73 cửa sổ) | RMSE (VND/lượng) | MAE       | MAPE % | Phủ khoảng 90% T+1 / T+1..7 |
+| ------------------------- | ---------------- | --------- | ------ | --------------------------- |
+| Naive (giá hôm nay)       | 1.736.327        | 1.292.041 | 0,95   | —                           |
+| LSTM v1                   | 1.787.981        | 1.326.219 | 0,98   | 0,95 / 0,86                 |
+| GRU v1                    | 1.829.399        | 1.408.216 | 1,04   | 0,96 / 0,83                 |
+
+- **Cả hai mô hình chưa thắng naive** trên test T+1 (validation GRU thắng nhẹ, `val_vs_naive` 0,90). Đây là kết quả hợp lệ phải ghi đúng, không quảng cáo mô hình tốt hơn. Directional accuracy 0,42–0,45. Khoảng sai số đạt mục tiêu ở T+1 nhưng **thiếu phủ ở nhiều ngày** (0,83–0,86 < 0,9).
+- `check_artifact` qua adapter `ml.src.predict` đạt cả hai: manifest đủ nguồn, version thư viện khớp lock (scikit-learn 1.9.1, hết cảnh báo 1.8.0), dự đoán 1/7 phiên hữu hạn, ổn định, hash dữ liệu khớp lúc train.
+- Dữ liệu: `ml/baseline/gold_data.db` là bản TV5 đã chốt trên nhánh `fix/tv5-data-pipeline` (decision 12; bảng đã có cột open/high/low mới), khác bản bàn giao gốc 06/11. Giới hạn: Test chỉ 73 cửa sổ nên chỉ số dao động mạnh. Chưa đăng ký vào DB nhóm (`register_model`) và chưa chạy parity trên MySQL. `metrics.note` là chuỗi trong cùng object số liệu, FE/TV2 cần bỏ qua khóa không phải số.
+- **TV6 tiếp:** chờ TV5 chốt DB rồi train lại `v2` nếu hash đổi; thử cải thiện thiếu phủ nhiều ngày (khoảng theo horizon) trước khi đề xuất `--default`. **TV3:** đăng ký `lstm_v1` (tốt hơn GRU trên test) không đặt default trên Naive khi chưa thắng baseline, chạy parity. **TV2:** vẽ `series` kèm baseline.
 
 ## 9. Ưu tiên giao lại công việc
 
