@@ -2,7 +2,7 @@
 
 Website phân tích và dự báo giá vàng. Mã bàn giao đã được sắp xếp theo chức năng. Runtime chung: **FastAPI + HTML/CSS/JavaScript + SQLAlchemy**. LightGBM và LSTM/GRU giữ thành mô-đun riêng. Checkout chưa có React app, Docker Compose hoặc bằng chứng deploy cloud.
 
-Đọc [báo cáo từng TV](docs/BAO_CAO_HOP_NHAT_VA_TIEN_DO.md), [hợp đồng API](docs/api.md), [quyết định hợp nhất](docs/decisions.md), [quy tắc làm việc](AGENTS.md). Hai tài liệu gốc DOCX/PDF được giữ nguyên trong [docs/specs/](docs/specs/).
+Đọc [báo cáo từng TV](docs/BAO_CAO_HOP_NHAT_VA_TIEN_DO.md), [hợp đồng API](docs/api.md), [quyết định hợp nhất](docs/decisions.md), [quy tắc làm việc](CLAUDE.md), [runbook TV6](docs/RUNBOOK_TV6.md). Hai tài liệu gốc DOCX/PDF được giữ nguyên trong [docs/specs/](docs/specs/).
 
 ## Cấu trúc hiện hành
 
