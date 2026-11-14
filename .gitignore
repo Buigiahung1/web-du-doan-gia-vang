@@ -60,3 +60,6 @@ Thumbs.db
 Desktop.ini
 *.tmp
 *.bak
+
+# Cấu hình Claude Code riêng từng máy
+CLAUDE.local.md

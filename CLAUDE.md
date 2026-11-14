@@ -1,6 +1,6 @@
 # Gold AI — hướng dẫn cho Claude Code
 
-Website phân tích và dự báo giá vàng của nhóm 6 thành viên (TV1–TV6). **Người dùng là TV6 (Deep Learning)**: "làm tiếp nhiệm vụ" = việc TV6; phần của TV khác chỉ ghi thành yêu cầu phối hợp. Stack: HTML/CSS/JS thuần (không React, không build), FastAPI + SQLAlchemy, LightGBM (TV5), LSTM/GRU Keras (TV6). MySQL là đích tích hợp; SQLite chỉ cho local/test khi cấu hình rõ. Trả lời và bàn giao bằng **tiếng Việt**.
+Website phân tích và dự báo giá vàng của nhóm 6 thành viên (TV1–TV6). Mỗi thành viên ghi vai trò TV và công cụ riêng của mình trong `CLAUDE.local.md` (gitignored). Stack: HTML/CSS/JS thuần (không React, không build), FastAPI + SQLAlchemy, LightGBM (TV5), LSTM/GRU Keras (TV6). MySQL là đích tích hợp; SQLite chỉ cho local/test khi cấu hình rõ. Trả lời và bàn giao bằng **tiếng Việt**.
 
 ## Lệnh
 
@@ -14,7 +14,6 @@ npm run typecheck; npm run check:js; npm run test  # mypy, cú pháp JS, pytest 
 - Chạy pytest trực tiếp phải đặt `DATABASE_URL=sqlite://`, `USE_STUB_MODEL=false`, cwd `backend/` như wrapper. Không chạm `backend/.env`/DB thật.
 - `backend/tests/` gitignored (giữ local); clone mới thiếu tests thì hook `test` báo lỗi theo thiết kế.
 - Hook Husky pre-commit: lint-staged/Prettier → mypy → JS syntax → pytest. Không bỏ hook (`--no-verify`) để commit.
-- **Luôn chạy dự án qua anti (agy-worker)**: `MA = py -3 -X utf8 D:/Tools/multi_agent_windows_v3_0/connect.py`. Việc dài dùng `MA start --run test|review|edit|ask|docs` rồi `MA wait --job <id> --timeout 570`. Test command của bridge = `node scripts/python-check.cjs test` (đặt bằng `MA connect --test-cmd`). `.agents/rules/multi-agent-orchestrator.md` là rule của agy do `connect` sinh ra — giữ nguyên, không commit.
 
 ## Cấu trúc và chủ sở hữu
 
@@ -46,7 +45,7 @@ Một module sở hữu một quy tắc nghiệp vụ. Không tạo backend/DB/a
 ## Quy trình làm việc
 
 1. Đọc `docs/handoff.md` (handoff nhóm, có trên Git — bảng việc tiếp theo từng TV) và `.local-artifacts/handoff.md` (local, trạng thái hiện hành ở đầu file) và đúng tài liệu cần trong bảng Docs. **Không lặp lại việc đã có kết luận.** Ghi mục tiêu + tiêu chí nghiệm thu ngắn.
-2. **agy-worker làm việc tay chân** (đọc docs/báo cáo dài, khảo sát code, sửa nhiều file theo spec, viết test, review diff, chẩn đoán test fail). Claude lập kế hoạch, quyết định, kiểm chứng; tự làm khi việc nhỏ hoặc quá khó cho agy. Không gửi `.env`/secret/DB người dùng cho agy.
+2. **Nếu `CLAUDE.local.md` bật agy-worker thì agy làm việc tay chân** (đọc docs/báo cáo dài, khảo sát code, sửa nhiều file theo spec, viết test, review diff, chẩn đoán test fail). Claude lập kế hoạch, quyết định, kiểm chứng; tự làm khi việc nhỏ hoặc quá khó cho agy. Không gửi `.env`/secret/DB người dùng cho agy.
 3. Hành vi mới/bug: TDD (skill `tdd`) qua HTTP/browser/adapter — một test, red đúng lý do (lỗi setup không phải red), sửa tối thiểu, xanh rồi mới lát tiếp. Mock chỉ ở ranh giới Auth/API ngoài. Docs-only/di chuyển cơ học: kiểm đường dẫn + regression. Bug khó: `diagnosing-bugs` (tái hiện tại public interface, sửa nguyên nhân, giữ regression test).
 4. Thiết kế module: `codebase-design` (interface nhỏ, tái dùng engine/session/auth/contract chung). Refactor chỉ sau khi xanh.
 5. Trước bàn giao: `code-review` hai trục (chuẩn repo + yêu cầu/đặc tả) so với SHA base, hoặc agy `review`. Nghiên cứu: `research`. Nhu cầu mới chưa có skill: `find-skills` (chỉ cài khi người dùng đồng ý).
@@ -57,10 +56,9 @@ Một module sở hữu một quy tắc nghiệp vụ. Không tạo backend/DB/a
 
 - 2026-11-06: Hợp nhất 6 bản TV1–TV6 thành một cây; chỉ ghép mã và sửa điểm nối, không tự phát triển MVP còn thiếu (CRUD admin, hồ sơ, scheduler, alert). Auth Bearer JWT, login form-urlencoded, register JSON, bcrypt; token hỏng bị từ chối, không hạ xuống khách.
 - 2026-11-07: Sắp xếp root theo chức năng, commit `976241f` push thẳng `main` (quyền cấp riêng lượt đó, không mở rộng cho lượt sau).
-- 2026-11-14: Chuyển từ Codex sang Claude Code: CLAUDE.md thay AGENTS.md (`.agents/rules/` do bridge anti sinh lại, giữ local); index CodeGraph (`.codegraph/`). Husky pre-commit giữ nguyên; thêm hook Claude chặn lệnh git nguy hiểm (global).
+- 2026-11-14: Chuyển từ Codex sang Claude Code: CLAUDE.md thay AGENTS.md (`.agents/rules/` do bridge anti sinh lại, giữ local); index CodeGraph (`.codegraph/`). Husky pre-commit giữ nguyên.
 - 2026-11-14: Được xóa file thừa/thư mục rỗng sau kiểm kê.
 - 2026-11-14: Chuyển làm việc sang nhánh `fix/tv5-data-pipeline` (main cũ); mang theo việc chuyển Codex→Claude và code TV6 chưa commit. Nhánh này đã có admin CRUD/hồ sơ do TV3/TV4 làm — mục 2026-11-06 "không phát triển CRUD admin" chỉ áp dụng lượt hợp nhất. TV6 dùng `ml/baseline/gold_data.db` làm dữ liệu chốt.
-- 2026-11-14: **Luôn dùng anti (agy-worker) để chạy dự án** (test, train/check, review, sửa nhiều file); Claude lập kế hoạch và kiểm chứng.
 
 ## Docs
 
