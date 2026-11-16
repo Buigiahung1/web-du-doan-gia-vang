@@ -1,5 +1,15 @@
+import re
 from pydantic import BaseModel, EmailStr, Field, field_validator
 
+def _validate_vn_phone(value: str | None) -> str | None:
+    if value is None:
+        return None
+    cleaned = re.sub(r"[\s.-]+", "", value.strip())
+    if not cleaned:
+        return None
+    if not re.fullmatch(r"^(0|\+84)(3|5|7|8|9)[0-9]{8}$", cleaned):
+        raise ValueError("Số điện thoại Việt Nam không hợp lệ (ví dụ: 0912345678 hoặc +84912345678).")
+    return "0" + cleaned[3:] if cleaned.startswith("+84") else cleaned
 
 def _check_password_bytes(value: str) -> str:
     if len(value.encode("utf-8")) > 72:
@@ -12,16 +22,28 @@ class UserRegister(BaseModel):
     email: EmailStr = Field(max_length=255)
     password: str = Field(min_length=8)
     full_name: str | None = Field(default=None, max_length=100)
+    phone: str | None = Field(default=None, max_length=20)
 
     @field_validator("password")
     @classmethod
     def password_bytes(cls, value: str) -> str:
         return _check_password_bytes(value)
 
+    @field_validator("phone")
+    @classmethod
+    def validate_phone(cls, value: str | None) -> str | None:
+        return _validate_vn_phone(value)
+
 
 class ProfileUpdateRequest(BaseModel):
     full_name: str | None = Field(default=None, max_length=100)
     email: EmailStr | None = Field(default=None, max_length=255)
+    phone: str | None = Field(default=None, max_length=20)
+
+    @field_validator("phone")
+    @classmethod
+    def validate_phone(cls, value: str | None) -> str | None:
+        return _validate_vn_phone(value)
 
 
 class ChangePasswordRequest(BaseModel):
@@ -32,3 +54,4 @@ class ChangePasswordRequest(BaseModel):
     @classmethod
     def new_password_bytes(cls, value: str) -> str:
         return _check_password_bytes(value)
+

@@ -104,3 +104,5 @@ CREATE TABLE prediction_items (
 ;
 
 CREATE INDEX ix_prediction_items_prediction_id ON prediction_items (prediction_id);
+
+ALTER TABLE users ADD COLUMN phone VARCHAR(20) NULL UNIQUE AFTER full_name;

@@ -584,7 +584,8 @@ document.addEventListener("DOMContentLoaded", async () => {
         AppState.currentUser.full_name || "";
       document.getElementById("profEmail").value =
         AppState.currentUser.email || "";
-      document.getElementById("profPhone").value = "";
+      document.getElementById("profPhone").value =
+        AppState.currentUser.phone || "";
     }
     openModal("modalProfile");
   });
@@ -758,6 +759,22 @@ document.addEventListener("DOMContentLoaded", async () => {
   // -----------------------------------------------------------------------
   // 2. FORM ĐĂNG KÝ (KẾT NỐI POST /api/auth/register & REGEX VALIDATION)
   // -----------------------------------------------------------------------
+  function parseVnPhone(rawValue) {
+    const cleaned = String(rawValue || "").trim().replace(/[\s.-]+/g, "");
+    if (!cleaned) return { valid: true, phone: null };
+    if (!/^(0|\+84)(3|5|7|8|9)\d{8}$/.test(cleaned)) {
+      return {
+        valid: false,
+        error:
+          "Số điện thoại Việt Nam không hợp lệ (ví dụ: 0912345678 hoặc +84912345678).",
+      };
+    }
+    return {
+      valid: true,
+      phone: cleaned.startsWith("+84") ? "0" + cleaned.slice(3) : cleaned,
+    };
+  }
+
   document
     .getElementById("formRegister")
     .addEventListener("submit", async (e) => {
@@ -766,6 +783,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
       const uInput = document.getElementById("regUsername");
       const eInput = document.getElementById("regEmail");
+      const pInput = document.getElementById("regPhone");
       const passInput = document.getElementById("regPassword");
       const confInput = document.getElementById("regConfirmPassword");
       const btn = document.getElementById("btnSubmitRegister");
@@ -797,6 +815,13 @@ document.addEventListener("DOMContentLoaded", async () => {
         errE.textContent =
           "Định dạng email không hợp lệ (ví dụ: user@example.com).";
         errE.classList.remove("hidden");
+        isValid = false;
+      }
+
+      const phoneCheck = parseVnPhone(pInput.value);
+      if (!phoneCheck.valid) {
+        errP.textContent = phoneCheck.error;
+        errP.classList.remove("hidden");
         isValid = false;
       }
 
@@ -837,7 +862,12 @@ document.addEventListener("DOMContentLoaded", async () => {
         // GỌI THỰC TẾ API POST /api/auth/register
         const res = await apiRequest("/api/auth/register", {
           method: "POST",
-          body: JSON.stringify({ username, email, password }),
+          body: JSON.stringify({
+            username,
+            email,
+            password,
+            phone: phoneCheck.phone,
+          }),
         });
 
         showToast(res.message || "Đăng ký thành công!");
@@ -1146,12 +1176,20 @@ document.addEventListener("DOMContentLoaded", async () => {
       event.preventDefault();
       const fullName = document.getElementById("profFullName").value.trim();
       const email = document.getElementById("profEmail").value.trim();
+      const phoneCheck = parseVnPhone(
+        document.getElementById("profPhone").value
+      );
+      if (!phoneCheck.valid) {
+        showToast(phoneCheck.error, "error");
+        return;
+      }
       try {
         const updated = await apiRequest("/api/auth/profile", {
           method: "PATCH",
           body: JSON.stringify({
             full_name: fullName || null,
             email: email || null,
+            phone: phoneCheck.phone,
           }),
         });
         AppState.currentUser = updated;

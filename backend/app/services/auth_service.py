@@ -24,18 +24,22 @@ def _bcrypt():
 
 
 def register(db: Session, data: UserRegister) -> None:
-    existing = db.scalar(
-        select(User).where(
-            or_(User.username == data.username, User.email == str(data.email))
-        )
-    )
+    conditions = [User.username == data.username, User.email == str(data.email)]
+    if data.phone is not None:
+        conditions.append(User.phone == data.phone)
+    existing = db.scalar(select(User).where(or_(*conditions)))
     if existing:
-        raise AppError(409, "ACCOUNT_EXISTS", "Tên đăng nhập hoặc email đã tồn tại.")
+        raise AppError(
+            409,
+            "ACCOUNT_EXISTS",
+            "Tên đăng nhập, email hoặc số điện thoại đã tồn tại.",
+        )
     bcrypt = _bcrypt()
     user = User(
         username=data.username,
         email=str(data.email),
         full_name=data.full_name,
+        phone=data.phone,
         password_hash=bcrypt.hashpw(data.password.encode(), bcrypt.gensalt()).decode(),
         role="user",
     )
@@ -45,7 +49,9 @@ def register(db: Session, data: UserRegister) -> None:
     except IntegrityError:
         db.rollback()
         raise AppError(
-            409, "ACCOUNT_EXISTS", "Tên đăng nhập hoặc email đã tồn tại."
+            409,
+            "ACCOUNT_EXISTS",
+            "Tên đăng nhập, email hoặc số điện thoại đã tồn tại.",
         ) from None
 
 
@@ -74,6 +80,17 @@ def login(db: Session, username: str, password: str) -> str:
 
 
 def update_profile(db: Session, user: User, data: ProfileUpdateRequest) -> User:
+    if data.phone is not None:
+        from app.schemas.auth import _validate_vn_phone
+
+        phone = _validate_vn_phone(data.phone)
+        if phone is not None:
+            conflict = db.scalar(
+                select(User).where(User.phone == phone, User.id != user.id)
+            )
+            if conflict:
+                raise AppError(409, "ACCOUNT_EXISTS", "Số điện thoại đã được sử dụng.")
+        user.phone = phone
     if data.email is not None and str(data.email) != user.email:
         conflict = db.scalar(
             select(User).where(User.email == str(data.email), User.id != user.id)
