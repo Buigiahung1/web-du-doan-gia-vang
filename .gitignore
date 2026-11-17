@@ -63,3 +63,4 @@ Desktop.ini
 
 # Cấu hình Claude Code riêng từng máy
 CLAUDE.local.md
+.claude/
