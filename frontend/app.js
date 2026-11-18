@@ -15,7 +15,8 @@ const AppState = {
 // Client-side Validation RegEx Rules (Mục 3.2)
 const ValidationRules = {
   emailRegex: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
-  phoneVietnamRegex: /^(03|05|07|08|09)[0-9]{8}$/,
+  phoneRegex: /^(0|\+84)[0-9]{9,10}$/,
+  phoneVietnamRegex: /^(0|\+84)[0-9]{9,10}$/,
   passwordLen: 8,
   hasUpper: /[A-Z]/,
   hasLower: /[a-z]/,
@@ -32,14 +33,14 @@ function showToast(message, type = "success") {
 
   toast.className = `p-3 rounded-lg border text-xs font-medium flex items-center gap-2.5 transition-all duration-300 transform translate-x-10 pointer-events-auto shadow-subtle ${
     isSuccess
-      ? "bg-slate-900 border-emerald-500/40 text-emerald-300"
+      ? "bg-slate-900 border-[#997E67]/40 text-[#C4B4A5]"
       : isError
         ? "bg-slate-900 border-rose-500/40 text-rose-300"
         : "bg-slate-900 border-brand-gold/40 text-amber-300"
   }`;
 
   toast.innerHTML = `
-        <i class="${isSuccess ? "fa-solid fa-circle-check text-emerald-400" : isError ? "fa-solid fa-circle-exclamation text-rose-400" : "fa-solid fa-circle-info text-brand-gold"} text-xs"></i>
+        <i class="${isSuccess ? "fa-solid fa-circle-check text-[#C4B4A5]" : isError ? "fa-solid fa-circle-exclamation text-rose-400" : "fa-solid fa-circle-info text-brand-gold"} text-xs"></i>
         <span></span>
       `;
 
@@ -95,12 +96,7 @@ function switchTab(tabId) {
   };
 
   document.querySelectorAll(".nav-item").forEach((btn) => {
-    btn.classList.remove(
-      "bg-slate-800/80",
-      "border",
-      "border-brand-gold/40",
-      "text-brand-gold"
-    );
+    btn.classList.remove("nav-tab-active", "bg-brand-primary", "text-white");
     btn.classList.add("text-brand-textSecondary");
   });
 
@@ -108,12 +104,7 @@ function switchTab(tabId) {
   if (activeBtnId) {
     const btn = document.getElementById(activeBtnId);
     if (btn) {
-      btn.classList.add(
-        "bg-slate-800/80",
-        "border",
-        "border-brand-gold/40",
-        "text-brand-gold"
-      );
+      btn.classList.add("nav-tab-active", "bg-brand-primary", "text-white");
       btn.classList.remove("text-brand-textSecondary");
     }
   }
@@ -151,11 +142,21 @@ async function apiRequest(endpoint, options = {}) {
     }));
 
     if (!res.ok) {
-      const errMsg =
-        data.message ||
-        data.detail ||
-        (data.error && data.error.message) ||
-        `Lỗi HTTP ${res.status}`;
+      let errMsg = data.message;
+      if (!errMsg && Array.isArray(data.detail)) {
+        errMsg = data.detail
+          .map((d) => {
+            const field = d.loc ? d.loc[d.loc.length - 1] : "Thông tin";
+            return `${field}: ${d.msg}`;
+          })
+          .join("; ");
+      } else if (!errMsg && typeof data.detail === "string") {
+        errMsg = data.detail;
+      } else if (!errMsg && data.error && data.error.message) {
+        errMsg = data.error.message;
+      } else if (!errMsg) {
+        errMsg = `Lỗi HTTP ${res.status}`;
+      }
       throw new Error(errMsg);
     }
 
@@ -183,13 +184,13 @@ function setBackendStatus(online) {
   const homeTag = document.getElementById("homeApiSyncTag");
 
   if (online) {
-    dot.className = "w-2 h-2 rounded-full bg-emerald-400";
+    dot.className = "w-2 h-2 rounded-full bg-[#997E67]";
     text.textContent = "API đã kết nối";
     btn.className =
-      "inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded text-[11px] font-mono transition border border-emerald-500/30 bg-emerald-950/40 text-emerald-300";
+      "inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded text-[11px] font-mono transition border border-[#997E67]/40 bg-[#997E67]/20 text-[#C4B4A5]";
     if (homeTag) {
       homeTag.textContent = "● Đã đồng bộ API";
-      homeTag.className = "text-[11px] font-mono text-emerald-400";
+      homeTag.className = "text-[11px] font-mono text-[#C4B4A5]";
     }
   } else {
     dot.className = "w-2 h-2 rounded-full bg-amber-400";
@@ -287,13 +288,13 @@ function updateAuthUI() {
     if (AppState.currentRole === "ADMIN") {
       roleBadge.textContent = "ADMIN";
       roleBadge.className =
-        "text-[9px] uppercase px-1 py-0.2 rounded font-semibold bg-amber-500/20 text-amber-300 border border-amber-600/30";
+        "text-[10px] uppercase px-1.5 py-0.5 rounded font-extrabold bg-[#997E67] text-white shadow-xs";
       navAdmin.classList.remove("hidden");
       mNavAdmin.classList.remove("hidden");
     } else {
       roleBadge.textContent = "USER";
       roleBadge.className =
-        "text-[9px] uppercase px-1 py-0.2 rounded font-semibold bg-blue-500/20 text-blue-400";
+        "text-[10px] uppercase px-1.5 py-0.5 rounded font-extrabold bg-slate-700 text-white shadow-xs";
       navAdmin.classList.add("hidden");
       mNavAdmin.classList.add("hidden");
     }
@@ -408,9 +409,9 @@ function updatePasswordMeter(password) {
     label.className = "font-bold text-yellow-300";
   } else {
     bar.style.width = "100%";
-    bar.className = "h-full transition-all duration-300 bg-emerald-500";
+    bar.className = "h-full transition-all duration-300 bg-[#997E67]";
     label.textContent = "Mạnh & An toàn";
-    label.className = "font-bold text-emerald-400";
+    label.className = "font-bold text-[#C4B4A5]";
   }
 }
 
@@ -418,50 +419,143 @@ function updatePasswordMeter(password) {
 // API CALLS: GOLD DATA, PREDICTIONS & HISTORY (Mục 2.1, 2.8)
 // =========================================================================
 function renderPriceChart(rows) {
-  if (typeof Chart === "undefined") return;
+  if (typeof Chart === "undefined" || !rows || !rows.length) return;
   const ctx = document.getElementById("priceChartCanvas");
   if (!ctx) return;
   if (AppState.chartInstances.priceChart)
     AppState.chartInstances.priceChart.destroy();
 
-  AppState.chartInstances.priceChart = new Chart(ctx, {
-    type: "line",
-    data: {
-      labels: rows.map((r) => r.date),
-      datasets: [
-        {
-          label: AppState.unit || "Giá đóng cửa",
-          data: rows.map((r) => r.close),
-          borderColor: "#C5A059",
-          backgroundColor: "rgba(197, 160, 89, 0.05)",
-          borderWidth: 2,
-          pointRadius: 1,
-          tension: 0.2,
-          fill: true,
-        },
-      ],
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: { labels: { color: "#94A3B8", font: { size: 10 } } },
+  const mode = AppState.chartMode || "line";
+  const displayRows = mode === "candle" ? rows.slice(-60) : rows;
+
+  if (mode === "candle") {
+    // Biểu đồ Nến Nhật (Candlestick OHLC)
+    const candlestickWicksPlugin = {
+      id: "candlestickWicks",
+      afterDatasetsDraw(chart) {
+        const c = chart.ctx;
+        const meta = chart.getDatasetMeta(0);
+        const yScale = chart.scales.y;
+        c.save();
+        meta.data.forEach((bar, index) => {
+          const r = displayRows[index];
+          if (!r || r.high == null || r.low == null) return;
+          const x = bar.x;
+          const yHigh = yScale.getPixelForValue(Number(r.high));
+          const yLow = yScale.getPixelForValue(Number(r.low));
+          c.strokeStyle =
+            Number(r.close) >= Number(r.open) ? "#997E67" : "#B13F36";
+          c.lineWidth = 1.5;
+          c.beginPath();
+          c.moveTo(x, yHigh);
+          c.lineTo(x, yLow);
+          c.stroke();
+        });
+        c.restore();
       },
-      scales: {
-        x: {
-          grid: { color: "rgba(255, 255, 255, 0.03)" },
-          ticks: { color: "#94A3B8", maxTicksLimit: 8 },
+    };
+
+    AppState.chartInstances.priceChart = new Chart(ctx, {
+      type: "bar",
+      data: {
+        labels: displayRows.map((r) => r.date),
+        datasets: [
+          {
+            label: "Nến Nhật (OHLC)",
+            data: displayRows.map((r) => [
+              Math.min(Number(r.open || r.close), Number(r.close)),
+              Math.max(Number(r.open || r.close), Number(r.close)),
+            ]),
+            backgroundColor: displayRows.map((r) =>
+              Number(r.close) >= Number(r.open)
+                ? "rgba(153, 126, 103, 0.8)"
+                : "rgba(177, 63, 54, 0.8)"
+            ),
+            borderColor: displayRows.map((r) =>
+              Number(r.close) >= Number(r.open) ? "#997E67" : "#B13F36"
+            ),
+            borderWidth: 1,
+            barPercentage: 0.6,
+          },
+        ],
+      },
+      plugins: [candlestickWicksPlugin],
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { labels: { color: "#67716C", font: { size: 10 } } },
+          tooltip: {
+            callbacks: {
+              label(context) {
+                const r = displayRows[context.dataIndex];
+                if (!r) return "";
+                return [
+                  `Mở cửa (Open): ${Number(r.open || r.close).toLocaleString("vi-VN")}`,
+                  `Cao nhất (High): ${Number(r.high || r.close).toLocaleString("vi-VN")}`,
+                  `Thấp nhất (Low): ${Number(r.low || r.close).toLocaleString("vi-VN")}`,
+                  `Đóng cửa (Close): ${Number(r.close).toLocaleString("vi-VN")}`,
+                ];
+              },
+            },
+          },
         },
-        y: {
-          grid: { color: "rgba(255, 255, 255, 0.03)" },
-          ticks: {
-            color: "#94A3B8",
-            callback: (v) => Number(v).toLocaleString("vi-VN"),
+        scales: {
+          x: {
+            grid: { color: "rgba(228, 230, 223, 0.8)" },
+            ticks: { color: "#67716C", maxTicksLimit: 10 },
+          },
+          y: {
+            grid: { color: "rgba(228, 230, 223, 0.8)" },
+            ticks: {
+              color: "#4B5563",
+              callback: (v) => Number(v).toLocaleString("vi-VN"),
+            },
           },
         },
       },
-    },
-  });
+    });
+  } else {
+    // Biểu đồ Đường truyền thống (Line Chart)
+    AppState.chartInstances.priceChart = new Chart(ctx, {
+      type: "line",
+      data: {
+        labels: displayRows.map((r) => r.date),
+        datasets: [
+          {
+            label: AppState.unit || "Giá đóng cửa",
+            data: displayRows.map((r) => r.close),
+            borderColor: "#997E67",
+            backgroundColor: "rgba(153, 126, 103, 0.08)",
+            borderWidth: 2,
+            pointRadius: 1,
+            tension: 0.2,
+            fill: true,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { labels: { color: "#67716C", font: { size: 10 } } },
+        },
+        scales: {
+          x: {
+            grid: { color: "rgba(228, 230, 223, 0.8)" },
+            ticks: { color: "#67716C", maxTicksLimit: 8 },
+          },
+          y: {
+            grid: { color: "rgba(228, 230, 223, 0.8)" },
+            ticks: {
+              color: "#4B5563",
+              callback: (v) => Number(v).toLocaleString("vi-VN"),
+            },
+          },
+        },
+      },
+    });
+  }
 }
 
 // =========================================================================
@@ -555,6 +649,28 @@ document.addEventListener("DOMContentLoaded", async () => {
       loadGoldCurrentAndHistory();
       showToast("Đang làm mới dữ liệu từ API...");
     });
+
+  // Chuyển đổi chế độ biểu đồ: Đường (Line) vs Nến Nhật (Candlestick)
+  const btnLine = document.getElementById("btnChartModeLine");
+  const btnCandle = document.getElementById("btnChartModeCandle");
+  if (btnLine && btnCandle) {
+    btnLine.addEventListener("click", () => {
+      AppState.chartMode = "line";
+      btnLine.className =
+        "px-2.5 py-1 rounded-md font-semibold bg-brand-gold text-slate-950 transition";
+      btnCandle.className =
+        "px-2.5 py-1 rounded-md font-semibold text-slate-300 hover:text-white transition";
+      renderPriceChart(AppState.priceHistoryData);
+    });
+    btnCandle.addEventListener("click", () => {
+      AppState.chartMode = "candle";
+      btnCandle.className =
+        "px-2.5 py-1 rounded-md font-semibold bg-brand-gold text-slate-950 transition";
+      btnLine.className =
+        "px-2.5 py-1 rounded-md font-semibold text-slate-300 hover:text-white transition";
+      renderPriceChart(AppState.priceHistoryData);
+    });
+  }
   document.getElementById("btnRefreshHistory").addEventListener("click", () => {
     loadPredictionHistory();
   });
@@ -584,7 +700,8 @@ document.addEventListener("DOMContentLoaded", async () => {
         AppState.currentUser.full_name || "";
       document.getElementById("profEmail").value =
         AppState.currentUser.email || "";
-      document.getElementById("profPhone").value = "";
+      document.getElementById("profPhone").value =
+        AppState.currentUser.phone || "";
     }
     openModal("modalProfile");
   });
@@ -646,7 +763,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       ? "Đã kết nối (Online)"
       : "Chưa kết nối (Offline)";
     document.getElementById("apiConfigStatus").className = API_ONLINE
-      ? "font-mono text-emerald-400"
+      ? "font-mono text-[#C4B4A5]"
       : "font-mono text-rose-400";
     document.getElementById("apiConfigToken").textContent = AppState.jwtToken
       ? AppState.jwtToken.slice(0, 15) + "..."
@@ -668,7 +785,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       try {
         const res = await apiRequest("/api/health");
         statusEl.textContent = "Thành công (200 OK)";
-        statusEl.className = "font-mono text-emerald-400";
+        statusEl.className = "font-mono text-[#C4B4A5]";
         showToast("Kết nối thành công đến FastAPI Backend!");
       } catch (e) {
         statusEl.textContent = "Thất bại: " + e.message;
@@ -766,6 +883,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
       const uInput = document.getElementById("regUsername");
       const eInput = document.getElementById("regEmail");
+      const pInput = document.getElementById("regPhone");
       const passInput = document.getElementById("regPassword");
       const confInput = document.getElementById("regConfirmPassword");
       const btn = document.getElementById("btnSubmitRegister");
@@ -775,22 +893,30 @@ document.addEventListener("DOMContentLoaded", async () => {
       const errP = document.getElementById("errRegPhone");
       const errPass = document.getElementById("errRegPassword");
       const errConf = document.getElementById("errRegConfirmPassword");
+      const generalErr = document.getElementById("errRegGeneral");
 
-      [errU, errE, errP, errPass, errConf].forEach((el) =>
-        el.classList.add("hidden")
-      );
+      [errU, errE, errP, errPass, errConf].forEach((el) => {
+        if (el) el.classList.add("hidden");
+      });
+      if (generalErr) generalErr.classList.add("hidden");
 
-      // Client-side Validation RegEx (Mục 3.2)
+      // Validate Username
       const username = uInput.value.trim();
       if (!username || username.length < 3) {
         errU.textContent = "Tên đăng nhập phải có ít nhất 3 ký tự.";
         errU.classList.remove("hidden");
         isValid = false;
+      } else if (!/^[a-zA-Z0-9_.-]+$/.test(username)) {
+        errU.textContent =
+          "Tên đăng nhập chỉ được chứa chữ không dấu, số, dấu gạch nối (-) hoặc gạch dưới (_), không có dấu cách.";
+        errU.classList.remove("hidden");
+        isValid = false;
       }
 
+      // Validate Email
       const email = eInput.value.trim();
       if (!email) {
-        errE.textContent = "Vui lòng nhập email.";
+        errE.textContent = "Vui lòng nhập địa chỉ email.";
         errE.classList.remove("hidden");
         isValid = false;
       } else if (!ValidationRules.emailRegex.test(email)) {
@@ -800,23 +926,29 @@ document.addEventListener("DOMContentLoaded", async () => {
         isValid = false;
       }
 
+      // Validate Phone (optional)
+      const rawPhone = pInput ? pInput.value.trim() : "";
+      const cleanPhone = rawPhone.replace(/[\s.-]/g, "");
+      if (cleanPhone && !/^(0|\+84)[0-9]{9,10}$/.test(cleanPhone)) {
+        errP.textContent =
+          "Số điện thoại không hợp lệ (cần 10 số, ví dụ: 0912345678).";
+        errP.classList.remove("hidden");
+        isValid = false;
+      }
+
+      // Validate Password
       const password = passInput.value;
-      const { score, rules } = evaluatePasswordStrength(password);
       if (!password) {
         errPass.textContent = "Vui lòng nhập mật khẩu.";
         errPass.classList.remove("hidden");
         isValid = false;
-      } else if (!rules.len) {
-        errPass.textContent = "Mật khẩu phải dài ít nhất 8 ký tự.";
-        errPass.classList.remove("hidden");
-        isValid = false;
-      } else if (score < 3) {
-        errPass.textContent =
-          "Mật khẩu chưa đủ mạnh. Cần kết hợp chữ hoa, chữ số hoặc ký tự đặc biệt.";
+      } else if (password.length < 8) {
+        errPass.textContent = "Mật khẩu phải dài tối thiểu 8 ký tự.";
         errPass.classList.remove("hidden");
         isValid = false;
       }
 
+      // Validate Confirm Password
       const confirmPass = confInput.value;
       if (!confirmPass) {
         errConf.textContent = "Vui lòng xác nhận mật khẩu.";
@@ -828,25 +960,45 @@ document.addEventListener("DOMContentLoaded", async () => {
         isValid = false;
       }
 
-      if (!isValid) return;
+      if (!isValid) {
+        showToast(
+          "Vui lòng kiểm tra lại các trường thông tin có dấu (*)",
+          "error"
+        );
+        return;
+      }
 
       btn.disabled = true;
-      btn.textContent = "Đang đăng ký qua API...";
+      btn.textContent = "Đang xử lý đăng ký qua API...";
 
       try {
-        // GỌI THỰC TẾ API POST /api/auth/register
         const res = await apiRequest("/api/auth/register", {
           method: "POST",
-          body: JSON.stringify({ username, email, password }),
+          body: JSON.stringify({
+            username,
+            email,
+            password,
+            phone: cleanPhone || null,
+          }),
         });
 
-        showToast(res.message || "Đăng ký thành công!");
+        showToast(
+          res.message || "Đăng ký thành công! Bạn có thể đăng nhập ngay.",
+          "success"
+        );
         closeModal("modalRegister");
         openModal("modalLogin");
-        document.getElementById("loginUsername").value = username;
+        const loginU = document.getElementById("loginUsername");
+        if (loginU) {
+          loginU.value = username;
+          document.getElementById("loginPassword")?.focus();
+        }
       } catch (apiErr) {
-        errE.textContent = apiErr.message;
-        errE.classList.remove("hidden");
+        if (generalErr) {
+          generalErr.textContent = "Lỗi đăng ký: " + apiErr.message;
+          generalErr.classList.remove("hidden");
+        }
+        showToast("Lỗi đăng ký: " + apiErr.message, "error");
       } finally {
         btn.disabled = false;
         btn.textContent = "Hoàn Tất Đăng Ký Tài Khoản";
@@ -892,14 +1044,20 @@ document.addEventListener("DOMContentLoaded", async () => {
     const thead = document.createElement("thead");
     thead.className = "bg-slate-900/80 text-brand-textSecondary";
     const headRow = document.createElement("tr");
-    ["ID", "Username", "Họ tên", "Email", "Role", "Trạng thái", "Thao tác"].forEach(
-      (col) => {
-        const th = document.createElement("th");
-        th.className = "px-3 py-2 font-semibold";
-        th.textContent = col;
-        headRow.appendChild(th);
-      }
-    );
+    [
+      "ID",
+      "Username",
+      "Họ tên",
+      "Email",
+      "Role",
+      "Trạng thái",
+      "Thao tác",
+    ].forEach((col) => {
+      const th = document.createElement("th");
+      th.className = "px-3 py-2 font-semibold";
+      th.textContent = col;
+      headRow.appendChild(th);
+    });
     thead.appendChild(headRow);
     table.appendChild(thead);
 
@@ -922,7 +1080,8 @@ document.addEventListener("DOMContentLoaded", async () => {
       });
 
       const actionTd = document.createElement("td");
-      actionTd.className = "px-3 py-2 flex items-center gap-1.5 whitespace-nowrap";
+      actionTd.className =
+        "px-3 py-2 flex items-center gap-1.5 whitespace-nowrap";
       const nextRole = u.role === "admin" ? "user" : "admin";
       actionTd.appendChild(
         createActionBtn(
@@ -948,7 +1107,7 @@ document.addEventListener("DOMContentLoaded", async () => {
           u.is_active ? "Khóa" : "Mở khóa",
           u.is_active
             ? "bg-rose-950/70 hover:bg-rose-900 text-rose-300 border border-rose-800/60"
-            : "bg-emerald-950/70 hover:bg-emerald-900 text-emerald-300 border border-emerald-800/60",
+            : "bg-[#997E67]/20 hover:bg-[#997E67]/30 text-[#C4B4A5] border border-[#997E67]/40",
           async () => {
             try {
               const updated = await apiRequest(`/api/admin/users/${u.id}`, {
@@ -966,6 +1125,132 @@ document.addEventListener("DOMContentLoaded", async () => {
           }
         )
       );
+      tr.appendChild(actionTd);
+      tbody.appendChild(tr);
+    });
+    table.appendChild(tbody);
+    wrap.appendChild(table);
+    adminTableContainer.appendChild(wrap);
+  }
+
+  async function loadAndRenderAdminPrices() {
+    adminTableContainer.textContent = "Đang tải bảng giá từ API...";
+    consoleLog.textContent = "Đang gọi GET /api/gold/history?page_size=20...";
+    try {
+      const history = await apiRequest(
+        "/api/gold/history?page_size=20&order=desc"
+      );
+      const items = history.items || [];
+      renderAdminPricesTable(items);
+      consoleLog.textContent = `Tải thành công ${items.length} phiên giá gần nhất.`;
+    } catch (err) {
+      adminTableContainer.textContent = "Lỗi tải bảng giá: " + err.message;
+      showToast(err.message, "error");
+    }
+  }
+
+  function renderAdminPricesTable(prices) {
+    adminTableContainer.textContent = "";
+    if (!prices || prices.length === 0) {
+      const empty = document.createElement("p");
+      empty.className = "text-xs text-brand-textSecondary";
+      empty.textContent = "Chưa có bản ghi giá nào.";
+      adminTableContainer.appendChild(empty);
+      return;
+    }
+
+    const wrap = document.createElement("div");
+    wrap.className = "overflow-x-auto border border-brand-border rounded-lg";
+    const table = document.createElement("table");
+    table.className = "w-full text-left text-xs";
+    const thead = document.createElement("thead");
+    thead.className =
+      "bg-slate-950 text-slate-400 border-b border-brand-border";
+    const headRow = document.createElement("tr");
+    ["ID", "Ngày", "Mở", "Cao", "Thấp", "Đóng", "Thao tác"].forEach((text) => {
+      const th = document.createElement("th");
+      th.className = "px-3 py-2";
+      th.textContent = text;
+      headRow.appendChild(th);
+    });
+    thead.appendChild(headRow);
+    table.appendChild(thead);
+
+    const tbody = document.createElement("tbody");
+    tbody.className = "divide-y divide-brand-border/60";
+    prices.forEach((p) => {
+      const tr = document.createElement("tr");
+      [
+        String(p.id),
+        p.date,
+        Number(p.open).toLocaleString("vi-VN"),
+        Number(p.high).toLocaleString("vi-VN"),
+        Number(p.low).toLocaleString("vi-VN"),
+        Number(p.close).toLocaleString("vi-VN"),
+      ].forEach((val) => {
+        const td = document.createElement("td");
+        td.className = "px-3 py-2 text-slate-200 whitespace-nowrap";
+        td.textContent = val;
+        tr.appendChild(td);
+      });
+
+      const actionTd = document.createElement("td");
+      actionTd.className =
+        "px-3 py-2 flex items-center gap-1.5 whitespace-nowrap";
+
+      // Nút Sửa giá (PATCH /api/admin/prices/{id})
+      actionTd.appendChild(
+        createActionBtn(
+          "Sửa",
+          "bg-slate-800 hover:bg-slate-700 text-brand-gold border border-brand-border",
+          async () => {
+            const newClose = prompt(
+              `Cập nhật giá Close cho ngày ${p.date}:`,
+              p.close
+            );
+            if (newClose === null) return;
+            const closeVal = parseFloat(newClose);
+            if (isNaN(closeVal) || closeVal <= 0) {
+              showToast("Giá Close không hợp lệ", "error");
+              return;
+            }
+            try {
+              await apiRequest(`/api/admin/prices/${p.id}`, {
+                method: "PATCH",
+                body: JSON.stringify({ close: closeVal }),
+              });
+              showToast(`Đã sửa giá ngày ${p.date}!`);
+              loadAndRenderAdminPrices();
+            } catch (err) {
+              showToast(err.message, "error");
+            }
+          }
+        )
+      );
+
+      // Nút Xóa giá (DELETE /api/admin/prices/{id})
+      actionTd.appendChild(
+        createActionBtn(
+          "Xóa",
+          "bg-rose-950/70 hover:bg-rose-900 text-rose-300 border border-rose-800/60",
+          async () => {
+            if (
+              !confirm(`Xác nhận xóa bản ghi giá ngày ${p.date} (ID: ${p.id})?`)
+            )
+              return;
+            try {
+              await apiRequest(`/api/admin/prices/${p.id}`, {
+                method: "DELETE",
+              });
+              showToast(`Đã xóa bản ghi ngày ${p.date}!`);
+              loadAndRenderAdminPrices();
+            } catch (err) {
+              showToast(err.message, "error");
+            }
+          }
+        )
+      );
+
       tr.appendChild(actionTd);
       tbody.appendChild(tr);
     });
@@ -992,14 +1277,19 @@ document.addEventListener("DOMContentLoaded", async () => {
     const thead = document.createElement("thead");
     thead.className = "bg-slate-900/80 text-brand-textSecondary";
     const headRow = document.createElement("tr");
-    ["ID", "Tên model", "Thuật toán", "Phiên bản", "Trạng thái", "Thao tác"].forEach(
-      (col) => {
-        const th = document.createElement("th");
-        th.className = "px-3 py-2 font-semibold";
-        th.textContent = col;
-        headRow.appendChild(th);
-      }
-    );
+    [
+      "ID",
+      "Tên model",
+      "Thuật toán",
+      "Phiên bản",
+      "Trạng thái",
+      "Thao tác",
+    ].forEach((col) => {
+      const th = document.createElement("th");
+      th.className = "px-3 py-2 font-semibold";
+      th.textContent = col;
+      headRow.appendChild(th);
+    });
     thead.appendChild(headRow);
     table.appendChild(thead);
 
@@ -1024,7 +1314,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       actionTd.className = "px-3 py-2 whitespace-nowrap";
       if (m.is_active) {
         const badge = document.createElement("span");
-        badge.className = "text-[11px] text-emerald-400 font-semibold";
+        badge.className = "text-[11px] text-[#C4B4A5] font-semibold";
         badge.textContent = "Mặc định";
         actionTd.appendChild(badge);
       } else {
@@ -1089,6 +1379,13 @@ document.addEventListener("DOMContentLoaded", async () => {
       }
     });
 
+  const btnAdminPrices = document.getElementById("btnAdminLoadPrices");
+  if (btnAdminPrices) {
+    btnAdminPrices.addEventListener("click", () => {
+      loadAndRenderAdminPrices();
+    });
+  }
+
   document
     .getElementById("formAdminAddPrice")
     .addEventListener("submit", async (event) => {
@@ -1146,12 +1443,14 @@ document.addEventListener("DOMContentLoaded", async () => {
       event.preventDefault();
       const fullName = document.getElementById("profFullName").value.trim();
       const email = document.getElementById("profEmail").value.trim();
+      const phone = document.getElementById("profPhone").value.trim();
       try {
         const updated = await apiRequest("/api/auth/profile", {
           method: "PATCH",
           body: JSON.stringify({
             full_name: fullName || null,
             email: email || null,
+            phone: phone || null,
           }),
         });
         AppState.currentUser = updated;

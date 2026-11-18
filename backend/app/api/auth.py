@@ -1,6 +1,6 @@
 """Authentication shared by the frontend and prediction routes (TV4)."""
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Request
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 
@@ -24,6 +24,7 @@ def _user_out(user: User) -> dict:
         "email": user.email,
         "role": user.role,
         "full_name": user.full_name,
+        "phone": getattr(user, "phone", None),
     }
 
 
@@ -58,8 +59,30 @@ def register(data: UserRegister, db: Session = Depends(get_db)):
 
 
 @router.post("/login")
-def login(form: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+async def login(request: Request, db: Session = Depends(get_db)):
+    content_type = request.headers.get("content-type", "")
+    if "application/json" in content_type:
+        raw = await request.json()
+        ident = str(raw.get("username") or raw.get("email") or "")
+        pwd = str(raw.get("password") or "")
+    else:
+        form = await request.form()
+        ident = str(form.get("username") or form.get("email") or "")
+        pwd = str(form.get("password") or "")
+    return {
+        "access_token": auth_service.login(db, ident, pwd),
+        "token_type": "bearer",
+    }
+
+
+@router.post("/token")
+def login_token(form: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
     return {
         "access_token": auth_service.login(db, form.username, form.password),
         "token_type": "bearer",
     }
+
+
+@router.post("/logout")
+def logout(user: User = Depends(get_current_user)):
+    return {"message": "Đăng xuất thành công."}

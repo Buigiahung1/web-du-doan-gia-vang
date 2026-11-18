@@ -7,14 +7,18 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.core.errors import AppError
-from app.models import GoldPrice, MlModel, User
+from app.core.timeutil import to_vn
+from app.models import GoldPrice, MlModel, Prediction, User
 from app.repositories import model_repo, prediction_repo
 from app.schemas.admin import (
     AdminModelOut,
     AdminModelUpdate,
+    AdminPredictionListOut,
+    AdminPredictionSummaryOut,
     AdminPriceCreate,
     AdminPriceOut,
     AdminPriceUpdate,
+    AdminStatsOut,
     AdminUserListOut,
     AdminUserOut,
     AdminUserUpdate,
@@ -165,3 +169,53 @@ def update_model(
     db.commit()
     db.refresh(row)
     return AdminModelOut.model_validate(row)
+
+
+def list_predictions(db: Session, page: int, page_size: int) -> AdminPredictionListOut:
+    total, rows = prediction_repo.list_all(db, (page - 1) * page_size, page_size)
+    items = []
+    for p in rows:
+        final = p.items[-1] if p.items else None
+        model_info = (
+            {
+                "id": p.ml_model.id,
+                "name": p.ml_model.name,
+                "version": p.ml_model.version,
+            }
+            if p.ml_model
+            else None
+        )
+        items.append(
+            AdminPredictionSummaryOut(
+                id=p.id,
+                created_at=to_vn(p.created_at) if p.created_at else p.created_at,
+                user_id=p.user_id,
+                username=p.user.username if p.user else "Khách (Anonymous)",
+                gold_type=p.gold_type.code if p.gold_type else "XAUUSD",
+                model=model_info,
+                horizon_days=p.horizon_days,
+                final_target_date=final.target_date if final else None,
+                final_predicted_price=float(final.predicted_price) if final else None,
+            )
+        )
+    return AdminPredictionListOut(
+        page=page,
+        page_size=page_size,
+        total=total,
+        items=items,
+    )
+
+
+def get_stats(db: Session) -> AdminStatsOut:
+    total_users = db.scalar(select(func.count(User.id))) or 0
+    total_prices = db.scalar(select(func.count(GoldPrice.id))) or 0
+    total_models = db.scalar(select(func.count(MlModel.id))) or 0
+    active_m = db.scalar(select(MlModel).where(MlModel.is_active.is_(True)))
+    total_preds = db.scalar(select(func.count(Prediction.id))) or 0
+    return AdminStatsOut(
+        total_users=total_users,
+        total_prices=total_prices,
+        total_models=total_models,
+        active_model_name=f"{active_m.name} (v{active_m.version})" if active_m else None,
+        total_predictions=total_preds,
+    )

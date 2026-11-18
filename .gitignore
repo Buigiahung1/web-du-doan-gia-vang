@@ -64,3 +64,7 @@ Desktop.ini
 # Cấu hình Claude Code riêng từng máy
 CLAUDE.local.md
 .claude/
+
+# Chỉ mục CodeGraph và bản báo cáo Word/slide đã sửa: giữ local
+.codegraph/
+/docs/bao-cao/

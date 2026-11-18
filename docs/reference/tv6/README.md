@@ -1,3 +1,5 @@
+> **Lưu ý (18/11/2026):** hai file mẫu `api_output_mau.json` và `metrics_json_mau.json` nhắc trong tài liệu này đã được gỡ vì chỉ là số liệu minh họa. Kết quả thật nằm trong `ml/artifacts/<model>/evaluation.json` (đủ MAE, MSE, RMSE, MAPE, R²); quy trình hiện hành xem `docs/RUNBOOK_TV6.md`.
+
 # Mô-đun Deep Learning, Website dự đoán giá vàng (Thành viên 6)
 
 LSTM/GRU dự đoán **nhiều ngày** (tối đa 30) giá vàng **vnd_price (VNĐ/lượng)**, tính 5 chỉ số (MAE, MSE, RMSE, MAPE, R²),

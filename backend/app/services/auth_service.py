@@ -36,6 +36,7 @@ def register(db: Session, data: UserRegister) -> None:
         username=data.username,
         email=str(data.email),
         full_name=data.full_name,
+        phone=data.phone,
         password_hash=bcrypt.hashpw(data.password.encode(), bcrypt.gensalt()).decode(),
         role="user",
     )
@@ -56,7 +57,8 @@ def login(db: Session, username: str, password: str) -> str:
             "AUTH_UNAVAILABLE",
             "Máy chủ chưa cấu hình JWT_SECRET tối thiểu 32 ký tự.",
         )
-    user = db.scalar(select(User).where(User.username == username))
+    ident = (username or "").strip()
+    user = db.scalar(select(User).where(or_(User.username == ident, User.email == ident)))
     valid = False
     if user and user.is_active and len(password.encode()) <= 72:
         try:
@@ -83,6 +85,8 @@ def update_profile(db: Session, user: User, data: ProfileUpdateRequest) -> User:
         user.email = str(data.email)
     if "full_name" in data.model_fields_set:
         user.full_name = data.full_name
+    if "phone" in data.model_fields_set:
+        user.phone = data.phone
     try:
         db.commit()
     except IntegrityError:

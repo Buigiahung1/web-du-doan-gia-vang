@@ -20,6 +20,8 @@ import lightgbm as lgb
 import numpy as np
 import pandas as pd
 import sklearn
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 
 from .config import FEATURE_COLUMNS
@@ -168,10 +170,23 @@ def train_and_evaluate(
         dates.iloc[i_va],
     )
 
+    y_true = y_test.to_numpy(dtype=float)
+
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
         model = lgb.LGBMRegressor(**_LGBM_PARAMS)
         model.fit(X_train, y_train)
+
+        # Baseline Models đối sánh theo đặc tả: Linear Regression & Random Forest
+        lr_model = LinearRegression()
+        lr_model.fit(X_train, y_train)
+        lr_pred = np.asarray(lr_model.predict(X_test), dtype=float)
+        lr_metrics = _compute_metrics(y_true, lr_pred)
+
+        rf_model = RandomForestRegressor(n_estimators=100, random_state=42, n_jobs=1)
+        rf_model.fit(X_train, y_train)
+        rf_pred = np.asarray(rf_model.predict(X_test), dtype=float)
+        rf_metrics = _compute_metrics(y_true, rf_pred)
 
     val_pred = np.asarray(model.predict(X_val), dtype=float)
     val_true = y_val.to_numpy(dtype=float)
@@ -179,15 +194,25 @@ def train_and_evaluate(
     val_metrics = _compute_metrics(val_true, val_pred)
 
     y_pred = np.asarray(model.predict(X_test), dtype=float)
-    y_true = y_test.to_numpy(dtype=float)
     metrics = _compute_metrics(y_true, y_pred)
 
+    baseline_comparison = {
+        "linear_regression": lr_metrics,
+        "random_forest": rf_metrics,
+        "lightgbm": metrics,
+    }
+
     logger.info(
-        "Test -> MAE: %s | RMSE: %s | MAPE: %.2f%% | R2: %.4f",
+        "Test -> LightGBM MAE: %s | RMSE: %s | MAPE: %.2f%% | R2: %.4f",
         f"{metrics['mae']:,.0f}",
         f"{metrics['rmse']:,.0f}",
         metrics["mape"],
         metrics["r2"],
+    )
+    logger.info(
+        "Baseline đối sánh -> LinearRegression RMSE: %s | RandomForest RMSE: %s",
+        f"{lr_metrics['rmse']:,.0f}",
+        f"{rf_metrics['rmse']:,.0f}",
     )
 
     importance_scores: np.ndarray = model.feature_importances_
@@ -212,6 +237,7 @@ def train_and_evaluate(
     evaluation = {
         "metrics": metrics,
         "val_metrics": val_metrics,
+        "baseline_comparison": baseline_comparison,
         "train_size": len(X_train),
         "val_size": len(X_val),
         "test_size": len(X_test),

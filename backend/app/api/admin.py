@@ -9,9 +9,11 @@ from app.models import User
 from app.schemas.admin import (
     AdminModelOut,
     AdminModelUpdate,
+    AdminPredictionListOut,
     AdminPriceCreate,
     AdminPriceOut,
     AdminPriceUpdate,
+    AdminStatsOut,
     AdminUserListOut,
     AdminUserOut,
     AdminUserUpdate,
@@ -86,3 +88,21 @@ def update_model(
     db: Session = Depends(get_db),
 ):
     return admin_service.update_model(db, model_id, data)
+
+
+@router.get("/stats", response_model=AdminStatsOut)
+def get_stats(
+    admin: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    return admin_service.get_stats(db)
+
+
+@router.get("/predictions", response_model=AdminPredictionListOut)
+def list_predictions(
+    page: int = Query(1, ge=1),
+    page_size: int = Query(20, ge=1, le=100),
+    admin: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    return admin_service.list_predictions(db, page, page_size)

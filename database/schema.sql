@@ -37,6 +37,7 @@ CREATE TABLE users (
 	email VARCHAR(255) NOT NULL, 
 	password_hash VARCHAR(255) NOT NULL, 
 	full_name VARCHAR(100), 
+	phone VARCHAR(20), 
 	`role` VARCHAR(10) NOT NULL, 
 	is_active BOOL NOT NULL, 
 	created_at DATETIME NOT NULL DEFAULT now(), 
@@ -104,3 +105,15 @@ CREATE TABLE prediction_items (
 ;
 
 CREATE INDEX ix_prediction_items_prediction_id ON prediction_items (prediction_id);
+
+-- Backward compatibility views for specification matching (Mục 5.5 & TV4)
+CREATE OR REPLACE VIEW models AS
+SELECT id, name AS model_name, algorithm AS type, metrics AS metrics_json,
+       artifact_path AS file_path, is_active AS status, trained_at
+FROM ml_models;
+
+CREATE OR REPLACE VIEW prediction_history AS
+SELECT p.id, p.user_id, p.id AS prediction_id, p.created_at AS timestamp,
+       p.horizon_days, p.ml_model_id AS model_id, p.gold_type_id
+FROM predictions p;
+

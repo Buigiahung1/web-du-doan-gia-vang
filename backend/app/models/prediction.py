@@ -16,6 +16,7 @@ class Prediction(Base):
     horizon_days: Mapped[int]
     created_at: Mapped[dt.datetime] = mapped_column(DateTime)
 
+    user = relationship("User")
     gold_type = relationship("GoldType")
     ml_model = relationship("MlModel")
     items: Mapped[list["PredictionItem"]] = relationship(

@@ -61,6 +61,25 @@ def list_for_user(
     return total, list(rows)
 
 
+def list_all(
+    db: Session, offset: int, limit: int
+) -> tuple[int, list[Prediction]]:
+    total = db.scalar(select(func.count(Prediction.id))) or 0
+    rows = db.scalars(
+        select(Prediction)
+        .options(
+            selectinload(Prediction.user),
+            selectinload(Prediction.items),
+            selectinload(Prediction.gold_type),
+            selectinload(Prediction.ml_model),
+        )
+        .order_by(Prediction.created_at.desc(), Prediction.id.desc())
+        .offset(offset)
+        .limit(limit)
+    )
+    return total, list(rows)
+
+
 def get(db: Session, prediction_id: int) -> Prediction | None:
     return db.scalar(
         select(Prediction)

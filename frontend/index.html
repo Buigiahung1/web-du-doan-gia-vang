@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="vi" class="dark">
+<html lang="vi">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -23,18 +23,21 @@
           extend: {
             colors: {
               brand: {
-                gold: "#C5A059",
-                goldLight: "#E8D5B5",
-                goldDark: "#9A7836",
-                bg: "#0B0F17",
-                surface: "#111827",
-                card: "#161F33",
-                border: "#1F293D",
-                borderLight: "#2B3852",
-                textPrimary: "#F1F5F9",
-                textSecondary: "#94A3B8",
-                profit: "#10B981",
-                loss: "#F43F5E",
+                gold: "#B88A30",
+                goldLight: "#E1BF76",
+                goldDark: "#976B18",
+                primary: "#997E67",
+                primaryLight: "#C4B4A5",
+                primaryDark: "#7A614D",
+                bg: "#FAF9F6",
+                surface: "#FFFFFF",
+                card: "#FFFFFF",
+                border: "#E4E6DF",
+                borderLight: "#EDEDE8",
+                textPrimary: "#182D29",
+                textSecondary: "#67716C",
+                profit: "#997E67",
+                loss: "#B13F36",
               },
             },
             fontFamily: {
@@ -107,6 +110,518 @@
           transform: translate3d(-50%, 0, 0);
         }
       }
+
+      /* High-visibility Admin / User Block */
+      #btnUserMenu {
+        background-color: #ffffff !important;
+        border: 2px solid #997e67 !important;
+        box-shadow: 0 1px 4px rgba(153, 126, 103, 0.15) !important;
+      }
+      #btnUserMenu:hover {
+        background-color: #f8f6f2 !important;
+      }
+      #btnUserMenu #userAvatar {
+        background-color: #997e67 !important;
+        color: #ffffff !important;
+        font-weight: 800 !important;
+      }
+      #btnUserMenu #userNameDisplay {
+        color: #111827 !important;
+        font-weight: 800 !important;
+        font-size: 13px !important;
+      }
+      #btnUserMenu #userRoleBadge {
+        background-color: #997e67 !important;
+        color: #ffffff !important;
+        font-weight: 800 !important;
+        font-size: 10px !important;
+        padding: 2px 6px !important;
+        border-radius: 4px !important;
+      }
+      #btnUserMenu #userJwtStatus {
+        color: #047857 !important;
+        font-weight: 700 !important;
+        font-size: 10.5px !important;
+      }
+      #btnUserMenu i {
+        color: #111827 !important;
+        font-weight: 700 !important;
+      }
+
+      /* Bold AI Model Styling */
+      #homeLiveModelName {
+        color: #7a614d !important;
+        font-weight: 800 !important;
+        font-size: 18px !important;
+      }
+      #homeLiveMAPE {
+        color: #111827 !important;
+        font-weight: 700 !important;
+        font-size: 12px !important;
+      }
+      #predictModel {
+        font-weight: 700 !important;
+        color: #111827 !important;
+        border: 2px solid #997e67 !important;
+      }
+      #introMae,
+      #introMse,
+      #introRmse,
+      #introMape,
+      #introR2 {
+        color: #111827 !important;
+        font-weight: 800 !important;
+        font-size: 18px !important;
+      }
+
+      /* Modal Backdrop Stacking Fix */
+      #modalBackdrop {
+        z-index: 49 !important;
+      }
+      [id^="modal"]:not(#modalBackdrop) {
+        z-index: 50 !important;
+      }
+      #modalRegister,
+      #modalLogin,
+      #modalProfile,
+      #modalPassword,
+      #modalApiConfig {
+        z-index: 50 !important;
+      }
+    </style>
+
+    <!-- Figma Warm Linen & #997E67 High-Contrast Sharp Palette System -->
+    <style id="figmaThemeOverride">
+      :root {
+        --color-canvas: #faf9f6;
+        --color-card: #ffffff;
+        --color-border: #dde1da;
+        --color-primary: #997e67;
+        --color-primary-dark: #7a614d;
+        --color-gold: #b88a30;
+        --color-text-main: #111827;
+        --color-text-body: #2d3748;
+        --color-text-muted: #4b5563;
+        --color-loss: #b13f36;
+      }
+
+      /* 1. Global Canvas & Body */
+      html,
+      body {
+        background-color: #faf9f6 !important;
+        color: #111827 !important;
+      }
+
+      body.bg-brand-bg,
+      .bg-brand-bg {
+        background-color: #faf9f6 !important;
+      }
+
+      /* 2. Cards, Surfaces & Panels */
+      .bg-brand-surface,
+      .bg-brand-card,
+      .bg-slate-950,
+      .bg-slate-900,
+      .bg-slate-800,
+      div.bg-slate-950,
+      div.bg-slate-900,
+      div.bg-slate-800,
+      div.bg-slate-900\/50,
+      div.bg-slate-900\/80,
+      div.bg-slate-800\/50,
+      div.bg-slate-950\/80 {
+        background-color: #ffffff !important;
+        border-color: #dde1da !important;
+        color: #111827 !important;
+      }
+
+      /* Borders */
+      .border-brand-border,
+      .border-slate-800,
+      .border-slate-700,
+      .border-slate-800\/60,
+      .border-slate-700\/50 {
+        border-color: #dde1da !important;
+      }
+
+      /* 3. Header & Navigation */
+      header.sticky {
+        background-color: rgba(255, 255, 255, 0.98) !important;
+        border-bottom: 1px solid #dde1da !important;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04) !important;
+      }
+
+      header div.bg-slate-950,
+      div.ticker-wrap,
+      header > div:first-child {
+        background-color: #f4efea !important;
+        border-bottom: 1px solid #dde1da !important;
+        color: #374151 !important;
+      }
+
+      .ticker-move,
+      .ticker-move strong {
+        color: #111827 !important;
+      }
+
+      /* Nav buttons */
+      header nav button,
+      header nav a,
+      nav button,
+      nav a,
+      .nav-item {
+        color: #374151 !important;
+        font-weight: 600 !important;
+        font-size: 13px !important;
+      }
+      header nav button:hover,
+      header nav a:hover,
+      nav button:hover,
+      nav a:hover,
+      .nav-item:hover {
+        color: #111827 !important;
+        background-color: #f5f0eb !important;
+      }
+
+      /* Active Nav item */
+      .nav-tab-active,
+      [data-page].active,
+      button.nav-item.bg-slate-800\/80,
+      button.nav-item.border-brand-gold\/40,
+      button.border-brand-gold,
+      button.bg-brand-gold\/10 {
+        background-color: #997e67 !important;
+        color: #ffffff !important;
+        border: 1px solid #7a614d !important;
+        font-weight: 700 !important;
+        box-shadow: 0 1px 3px rgba(153, 126, 103, 0.25) !important;
+      }
+
+      /* 4. Typography - High Contrast & Sharp */
+      h1,
+      h2,
+      h3,
+      h4,
+      h5,
+      h6 {
+        color: #111827 !important;
+        font-weight: 700 !important;
+      }
+
+      /* Body text, descriptions, labels */
+      p,
+      span,
+      div,
+      label {
+        color: #2d3748;
+      }
+
+      .text-white:not(button *):not(button):not(.badge-white):not(
+          [class*="bg-brand-primary"]
+        ):not([class*="bg-brand-gold"]):not(#adminConsoleLog) {
+        color: #111827 !important;
+      }
+      .text-brand-textPrimary {
+        color: #111827 !important;
+      }
+
+      /* Clear, readable secondary & muted text (contrast AAA) */
+      .text-brand-textSecondary,
+      .text-slate-400,
+      .text-slate-500,
+      .text-slate-300,
+      .text-slate-200,
+      .text-slate-100 {
+        color: #374151 !important;
+        font-weight: 500 !important;
+      }
+
+      .text-brand-gold {
+        color: #976b18 !important;
+        font-weight: 600 !important;
+      }
+      .text-brand-primary {
+        color: #997e67 !important;
+      }
+
+      /* 5. User Dropdown Menu (#userDropdownPanel) */
+      #userDropdownPanel {
+        background-color: #ffffff !important;
+        border: 1px solid #dde1da !important;
+        box-shadow:
+          0 10px 25px -5px rgba(0, 0, 0, 0.12),
+          0 8px 10px -6px rgba(0, 0, 0, 0.08) !important;
+      }
+      #userDropdownPanel p {
+        color: #374151 !important;
+      }
+      #userDropdownPanel #userEmailDisplay {
+        color: #111827 !important;
+        font-weight: 700 !important;
+        font-size: 13px !important;
+      }
+      #userDropdownPanel button {
+        color: #1f2937 !important;
+        font-weight: 600 !important;
+        font-size: 12.5px !important;
+      }
+      #userDropdownPanel button:hover {
+        background-color: #f5f0eb !important;
+        color: #997e67 !important;
+      }
+      #userDropdownPanel button i {
+        color: #997e67 !important;
+      }
+      #userDropdownPanel #btnLogout {
+        color: #dc2626 !important;
+      }
+      #userDropdownPanel #btnLogout:hover {
+        background-color: #fef2f2 !important;
+        color: #b91c1c !important;
+      }
+      #userDropdownPanel #btnLogout i {
+        color: #dc2626 !important;
+      }
+
+      /* 6. Inputs, Selects, Forms & Placeholders */
+      input,
+      select,
+      textarea {
+        background-color: #ffffff !important;
+        border: 1.5px solid #cbd5e1 !important;
+        color: #111827 !important;
+        font-weight: 500 !important;
+      }
+      input:focus,
+      select:focus,
+      textarea:focus {
+        border-color: #997e67 !important;
+        outline: none !important;
+        box-shadow: 0 0 0 3px rgba(153, 126, 103, 0.2) !important;
+      }
+
+      /* Input placeholder styling - High Legibility */
+      ::placeholder {
+        color: #64748b !important;
+        opacity: 1 !important;
+        font-weight: 500 !important;
+      }
+      ::-webkit-input-placeholder {
+        color: #64748b !important;
+        opacity: 1 !important;
+        font-weight: 500 !important;
+      }
+      :-moz-placeholder {
+        color: #64748b !important;
+        opacity: 1 !important;
+        font-weight: 500 !important;
+      }
+      ::-moz-placeholder {
+        color: #64748b !important;
+        opacity: 1 !important;
+        font-weight: 500 !important;
+      }
+      :-ms-input-placeholder {
+        color: #64748b !important;
+        opacity: 1 !important;
+        font-weight: 500 !important;
+      }
+
+      /* 7. Action Buttons */
+      button.bg-brand-primary,
+      button.bg-brand-gold,
+      button#btnTriggerPrediction,
+      button[type="submit"] {
+        background-color: #997e67 !important;
+        color: #ffffff !important;
+        border: 1px solid #7a614d !important;
+        font-weight: 600 !important;
+      }
+      button.bg-brand-primary:hover,
+      button.bg-brand-gold:hover,
+      button#btnTriggerPrediction:hover,
+      button[type="submit"]:hover {
+        background-color: #7a614d !important;
+        color: #ffffff !important;
+      }
+      button.bg-brand-primary *,
+      button.bg-brand-gold *,
+      button#btnTriggerPrediction *,
+      button[type="submit"] * {
+        color: #ffffff !important;
+      }
+
+      /* Secondary Buttons (e.g. "Tải Danh Sách Users", "Ping Kiểm Tra Database") */
+      button.bg-slate-800,
+      button.bg-slate-900,
+      button.border-brand-border,
+      button.border-slate-700 {
+        background-color: #f7f5f0 !important;
+        border: 1.5px solid #d2dad4 !important;
+        color: #111827 !important;
+        font-weight: 600 !important;
+      }
+      button.bg-slate-800:hover,
+      button.bg-slate-900:hover,
+      button.border-brand-border:hover,
+      button.border-slate-700:hover {
+        background-color: #efeae1 !important;
+        border-color: #997e67 !important;
+        color: #997e67 !important;
+      }
+
+      /* 8. Tables */
+      table th {
+        background-color: #f4efea !important;
+        color: #111827 !important;
+        font-weight: 700 !important;
+        border-bottom: 1.5px solid #dde1da !important;
+      }
+      table td {
+        background-color: #ffffff !important;
+        color: #1f2937 !important;
+        font-weight: 500 !important;
+        border-bottom: 1px solid #e5e7eb !important;
+      }
+      table tr:hover td {
+        background-color: #faf9f6 !important;
+      }
+
+      /* 9. Badges & Tags */
+      .bg-emerald-500\/10,
+      .bg-emerald-950\/30 {
+        background-color: #ecfdf5 !important;
+        border: 1px solid #a7f3d0 !important;
+      }
+      .text-emerald-400,
+      .text-emerald-300 {
+        color: #047857 !important;
+        font-weight: 700 !important;
+      }
+      .bg-brand-gold\/10,
+      .bg-amber-500\/10 {
+        background-color: #fef3c7 !important;
+        border: 1px solid #fde68a !important;
+      }
+      .text-brand-gold,
+      .text-amber-400 {
+        color: #976b18 !important;
+        font-weight: 700 !important;
+      }
+
+      /* 10. Console Output Box */
+      #adminConsoleLog {
+        background-color: #18201e !important;
+        color: #a7f3d0 !important;
+        border: 1px solid #2d3d39 !important;
+        font-weight: 500 !important;
+      }
+
+      /* 11. Cards & Dialogs */
+      .rounded-xl,
+      .rounded-2xl,
+      .rounded-lg {
+        border: 1px solid #dde1da;
+        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+      }
+      .modal-content,
+      [role="dialog"],
+      #apiConfigModal > div,
+      #authModal > div {
+        background-color: #ffffff !important;
+        border: 1px solid #dde1da !important;
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.12) !important;
+      }
+
+      /* 12. Custom Scrollbars */
+      ::-webkit-scrollbar-track {
+        background: #faf9f6 !important;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #cbd5e1 !important;
+        border-radius: 4px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #997e67 !important;
+      }
+
+      /* High-visibility Admin / User Block */
+      #btnUserMenu {
+        background-color: #ffffff !important;
+        border: 2px solid #997e67 !important;
+        box-shadow: 0 1px 4px rgba(153, 126, 103, 0.15) !important;
+      }
+      #btnUserMenu:hover {
+        background-color: #f8f6f2 !important;
+      }
+      #btnUserMenu #userAvatar {
+        background-color: #997e67 !important;
+        color: #ffffff !important;
+        font-weight: 800 !important;
+      }
+      #btnUserMenu #userNameDisplay {
+        color: #111827 !important;
+        font-weight: 800 !important;
+        font-size: 13px !important;
+      }
+      #btnUserMenu #userRoleBadge {
+        background-color: #997e67 !important;
+        color: #ffffff !important;
+        font-weight: 800 !important;
+        font-size: 10px !important;
+        padding: 2px 6px !important;
+        border-radius: 4px !important;
+      }
+      #btnUserMenu #userJwtStatus {
+        color: #047857 !important;
+        font-weight: 700 !important;
+        font-size: 10.5px !important;
+      }
+      #btnUserMenu i {
+        color: #111827 !important;
+        font-weight: 700 !important;
+      }
+
+      /* Bold AI Model Styling */
+      #homeLiveModelName {
+        color: #7a614d !important;
+        font-weight: 800 !important;
+        font-size: 18px !important;
+      }
+      #homeLiveMAPE {
+        color: #111827 !important;
+        font-weight: 700 !important;
+        font-size: 12px !important;
+      }
+      #predictModel {
+        font-weight: 700 !important;
+        color: #111827 !important;
+        border: 2px solid #997e67 !important;
+      }
+      #introMae,
+      #introMse,
+      #introRmse,
+      #introMape,
+      #introR2 {
+        color: #111827 !important;
+        font-weight: 800 !important;
+        font-size: 18px !important;
+      }
+
+      /* Modal Backdrop Stacking Fix */
+      #modalBackdrop {
+        z-index: 49 !important;
+      }
+      [id^="modal"]:not(#modalBackdrop) {
+        z-index: 50 !important;
+      }
+      #modalRegister,
+      #modalLogin,
+      #modalProfile,
+      #modalPassword,
+      #modalApiConfig {
+        z-index: 50 !important;
+      }
     </style>
   </head>
   <body
@@ -119,11 +634,7 @@
       Không tải được thư viện biểu đồ từ CDN. Dữ liệu dạng số vẫn có thể xem;
       cần kết nối mạng để tải biểu đồ và giao diện đầy đủ.
     </p>
-    <p role="note">
-      Bản ghép local: xem nguồn/đơn vị dữ liệu trước khi sử dụng. DEV-SEED và
-      model Naive là mô phỏng.
-      <a href="research/">Mở công cụ nghiên cứu TV2 (offline)</a>.
-    </p>
+
     <header
       class="sticky top-0 z-40 bg-brand-bg/95 backdrop-blur border-b border-brand-border"
     >
@@ -142,10 +653,8 @@
                 <strong class="text-white font-mono" id="topTickerPrice"
                   >—</strong
                 >
-                <span id="topTickerDelta"
-                  >Đơn vị và nguồn theo dữ liệu bên dưới</span
-                ></span
-              >
+                <span id="topTickerDelta"></span
+              ></span>
             </div>
           </div>
 
@@ -158,7 +667,7 @@
             >
               <span
                 id="backendStatusDot"
-                class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"
+                class="w-2 h-2 rounded-full bg-[#997E67] animate-pulse"
               ></span>
               <span id="backendStatusText" class="text-slate-300"
                 >FastAPI: 127.0.0.1:8000</span
@@ -276,7 +785,7 @@
             <div id="authBlock" class="hidden relative">
               <button
                 id="btnUserMenu"
-                class="flex items-center gap-2 px-2.5 py-1 rounded-lg hover:bg-slate-800/60 border border-brand-border transition"
+                class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white hover:bg-[#F5F0EB] border-2 border-[#997E67] shadow-sm transition"
               >
                 <div
                   id="userAvatar"
@@ -287,7 +796,7 @@
                 <div class="text-left hidden sm:block">
                   <p
                     id="userNameDisplay"
-                    class="text-xs font-semibold text-white leading-tight"
+                    class="text-xs font-extrabold text-gray-900 leading-tight"
                   >
                     user1
                   </p>
@@ -299,7 +808,7 @@
                     >
                     <span
                       id="userJwtStatus"
-                      class="text-[9px] text-emerald-400 font-mono"
+                      class="text-[9px] text-[#C4B4A5] font-mono"
                       >● JWT Active</span
                     >
                   </div>
@@ -327,21 +836,21 @@
                 </div>
                 <button
                   id="btnMenuProfile"
-                  class="w-full text-left px-4 py-2 text-xs text-slate-200 hover:bg-slate-800 flex items-center gap-2"
+                  class="w-full text-left px-4 py-2 text-xs text-slate-800 hover:bg-[#F5F0EB] flex items-center gap-2"
                 >
                   <i class="fa-solid fa-id-card text-brand-gold w-4"></i> Thông
                   tin cá nhân
                 </button>
                 <button
                   id="btnMenuPassword"
-                  class="w-full text-left px-4 py-2 text-xs text-slate-200 hover:bg-slate-800 flex items-center gap-2"
+                  class="w-full text-left px-4 py-2 text-xs text-slate-800 hover:bg-[#F5F0EB] flex items-center gap-2"
                 >
                   <i class="fa-solid fa-key text-slate-400 w-4"></i> Đổi mật
                   khẩu
                 </button>
                 <button
                   id="btnMenuHistory"
-                  class="w-full text-left px-4 py-2 text-xs text-slate-200 hover:bg-slate-800 flex items-center gap-2"
+                  class="w-full text-left px-4 py-2 text-xs text-slate-800 hover:bg-[#F5F0EB] flex items-center gap-2"
                 >
                   <i
                     class="fa-solid fa-clock-rotate-left text-brand-gold w-4"
@@ -502,90 +1011,146 @@
           </div>
 
           <!-- Real Live Data Fetched from Backend API (/api/gold/current & /api/model/evaluation) -->
-          <div class="pt-6 border-t border-brand-border">
-            <div class="flex items-center justify-between mb-3">
-              <p
-                class="text-xs font-semibold text-brand-textSecondary uppercase tracking-wider"
-              >
-                Dữ liệu thị trường kết nối trực tiếp từ Backend API (GET
-                /api/gold/current):
-              </p>
+          <div class="pt-6 border-t border-brand-border space-y-4">
+            <div class="flex flex-wrap items-center justify-between gap-3">
+              <div class="flex flex-wrap items-center gap-2.5">
+                <span
+                  class="text-xs font-semibold text-brand-textSecondary uppercase tracking-wider"
+                >
+                  Dữ liệu thị trường trực tiếp:
+                </span>
+                <div
+                  class="flex items-center gap-1.5 bg-slate-950 border border-brand-border rounded-lg px-2.5 py-1"
+                >
+                  <label
+                    for="homeGoldTypeSelect"
+                    class="text-[11px] text-slate-400 font-medium"
+                    >Loại vàng:</label
+                  >
+                  <select
+                    id="homeGoldTypeSelect"
+                    class="bg-transparent text-brand-gold text-xs font-bold focus:outline-none cursor-pointer"
+                  >
+                    <!-- Populated dynamically from GET /api/gold/types -->
+                  </select>
+                </div>
+                <span
+                  id="homeLiveChangePct"
+                  class="px-2.5 py-1 rounded text-xs font-mono font-bold bg-[#997E67]/20 text-[#C4B4A5] border border-[#997E67]/40"
+                >
+                  +0.00%
+                </span>
+              </div>
               <span
                 id="homeApiSyncTag"
-                class="text-[11px] font-mono text-emerald-400"
+                class="text-[11px] font-mono text-[#C4B4A5]"
                 >● Đã đồng bộ API</span
               >
             </div>
 
-            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3.5">
               <div
-                class="p-4 rounded-lg bg-slate-950 border border-brand-border"
+                class="p-3.5 rounded-lg bg-slate-950 border border-brand-border"
               >
                 <span class="text-xs text-brand-textSecondary block"
-                  >Giá đóng cửa gần nhất (Close)</span
+                  >Giá đóng cửa (Close)</span
                 >
                 <p
                   id="homeLiveClosePrice"
-                  class="text-2xl font-bold font-mono text-white mt-1"
+                  class="text-xl font-bold font-mono text-white mt-1"
                 >
                   —
                 </p>
                 <span
                   id="homeLiveDate"
-                  class="text-[11px] text-slate-500 font-mono mt-0.5 block"
+                  class="text-[11px] text-slate-500 font-mono mt-0.5 block truncate"
                   >—</span
                 >
               </div>
 
               <div
-                class="p-4 rounded-lg bg-slate-950 border border-brand-border"
+                class="p-3.5 rounded-lg bg-slate-950 border border-brand-border"
               >
                 <span class="text-xs text-brand-textSecondary block"
-                  >Mức giá cao nhất (High)</span
+                  >Giá mua vào (Buy)</span
+                >
+                <p
+                  id="homeLiveBuyPrice"
+                  class="text-xl font-bold font-mono text-[#C4B4A5] mt-1"
+                >
+                  —
+                </p>
+                <span class="text-[11px] text-slate-500 mt-0.5 block"
+                  >Thị trường niêm yết</span
+                >
+              </div>
+
+              <div
+                class="p-3.5 rounded-lg bg-slate-950 border border-brand-border"
+              >
+                <span class="text-xs text-brand-textSecondary block"
+                  >Giá bán ra (Sell)</span
+                >
+                <p
+                  id="homeLiveSellPrice"
+                  class="text-xl font-bold font-mono text-amber-300 mt-1"
+                >
+                  —
+                </p>
+                <span class="text-[11px] text-slate-500 mt-0.5 block"
+                  >Thị trường niêm yết</span
+                >
+              </div>
+
+              <div
+                class="p-3.5 rounded-lg bg-slate-950 border border-brand-border"
+              >
+                <span class="text-xs text-brand-textSecondary block"
+                  >Giá cao nhất (High)</span
                 >
                 <p
                   id="homeLiveHighPrice"
-                  class="text-2xl font-bold font-mono text-emerald-400 mt-1"
+                  class="text-xl font-bold font-mono text-blue-400 mt-1"
                 >
                   —
                 </p>
                 <span class="text-[11px] text-slate-500 mt-0.5 block"
-                  >Đơn vị theo chuỗi giá API</span
+                  >Phiên gần nhất</span
                 >
               </div>
 
               <div
-                class="p-4 rounded-lg bg-slate-950 border border-brand-border"
+                class="p-3.5 rounded-lg bg-slate-950 border border-brand-border"
               >
                 <span class="text-xs text-brand-textSecondary block"
-                  >Mức giá thấp nhất (Low)</span
+                  >Giá thấp nhất (Low)</span
                 >
                 <p
                   id="homeLiveLowPrice"
-                  class="text-2xl font-bold font-mono text-rose-400 mt-1"
+                  class="text-xl font-bold font-mono text-rose-400 mt-1"
                 >
                   —
                 </p>
                 <span class="text-[11px] text-slate-500 mt-0.5 block"
-                  >Khung thời gian 1D</span
+                  >Phiên gần nhất</span
                 >
               </div>
 
               <div
-                class="p-4 rounded-lg bg-slate-950 border border-brand-border"
+                class="p-3.5 rounded-lg bg-slate-950 border border-brand-border"
               >
                 <span class="text-xs text-brand-textSecondary block"
                   >Mô hình AI dự báo</span
                 >
                 <p
                   id="homeLiveModelName"
-                  class="text-lg font-bold text-brand-gold mt-1"
+                  class="text-lg font-extrabold text-[#7A614D] mt-1 truncate"
                 >
                   —
                 </p>
                 <span
                   id="homeLiveMAPE"
-                  class="text-[11px] text-emerald-400 font-mono mt-0.5 block"
+                  class="text-xs font-bold text-gray-900 font-mono mt-0.5 block truncate"
                   >—</span
                 >
               </div>
@@ -622,17 +1187,182 @@
         <div
           class="rounded-xl bg-brand-surface border border-brand-border p-5 space-y-4 shadow-subtle"
         >
-          <div class="flex items-center justify-between">
+          <div class="flex flex-wrap items-center justify-between gap-2">
             <h3 class="text-sm font-bold text-white flex items-center gap-2">
               <i class="fa-solid fa-chart-line text-brand-gold"></i> Lịch Sử
               Biến Động Chuỗi Giá Đã Chọn
             </h3>
-            <span class="text-xs font-mono text-brand-textSecondary"
-              >GET /api/gold/history?page_size=365</span
-            >
+            <div class="flex items-center gap-2">
+              <div
+                class="inline-flex rounded-lg bg-slate-950 p-0.5 border border-brand-border text-xs"
+              >
+                <button
+                  type="button"
+                  id="btnChartModeLine"
+                  class="px-2.5 py-1 rounded-md font-semibold bg-brand-gold text-slate-950 transition"
+                >
+                  <i class="fa-solid fa-chart-line"></i> Đường (Line)
+                </button>
+                <button
+                  type="button"
+                  id="btnChartModeCandle"
+                  class="px-2.5 py-1 rounded-md font-semibold text-slate-300 hover:text-white transition"
+                >
+                  <i class="fa-solid fa-chart-simple"></i> Nến Nhật
+                  (Candlestick)
+                </button>
+              </div>
+              <span
+                class="text-xs font-mono text-brand-textSecondary hidden sm:inline"
+                >GET /api/gold/history?page_size=365</span
+              >
+            </div>
           </div>
           <div class="relative h-72 w-full">
             <canvas id="priceChartCanvas"></canvas>
+          </div>
+        </div>
+
+        <!-- Bảng Dữ Liệu Lịch Sử OHLCV & Bộ Lọc Thời Gian (Mục 2.3 & TV2) -->
+        <div
+          class="rounded-xl bg-brand-surface border border-brand-border p-5 space-y-4 shadow-subtle"
+        >
+          <div
+            class="flex flex-col md:flex-row md:items-center justify-between gap-3 pb-3 border-b border-brand-border"
+          >
+            <div>
+              <h3 class="text-sm font-bold text-white flex items-center gap-2">
+                <i class="fa-solid fa-table-list text-brand-gold"></i> Bảng Dữ
+                Liệu Lịch Sử OHLCV
+              </h3>
+              <p class="text-xs text-brand-textSecondary">
+                Tra cứu dữ liệu giá lịch sử chi tiết kết nối trực tiếp GET
+                /api/gold/history
+              </p>
+            </div>
+
+            <!-- Form Bộ Lọc Thời Gian & Loại Vàng (#priceFilterForm) -->
+            <form
+              id="priceFilterForm"
+              class="flex flex-wrap items-center gap-2 text-xs"
+            >
+              <div
+                class="flex items-center gap-1 bg-slate-950 border border-brand-border rounded-lg px-2.5 py-1.5"
+              >
+                <label for="filterGoldType" class="text-slate-400 font-medium"
+                  >Loại:</label
+                >
+                <select
+                  id="filterGoldType"
+                  class="bg-transparent text-white font-semibold focus:outline-none cursor-pointer"
+                >
+                  <!-- Populated dynamically -->
+                </select>
+              </div>
+
+              <div
+                class="flex items-center gap-1 bg-slate-950 border border-brand-border rounded-lg px-2.5 py-1.5"
+              >
+                <label for="filterDateFrom" class="text-slate-400 font-medium"
+                  >Từ:</label
+                >
+                <input
+                  type="date"
+                  id="filterDateFrom"
+                  class="bg-transparent text-white font-mono focus:outline-none cursor-pointer"
+                />
+              </div>
+
+              <div
+                class="flex items-center gap-1 bg-slate-950 border border-brand-border rounded-lg px-2.5 py-1.5"
+              >
+                <label for="filterDateTo" class="text-slate-400 font-medium"
+                  >Đến:</label
+                >
+                <input
+                  type="date"
+                  id="filterDateTo"
+                  class="bg-transparent text-white font-mono focus:outline-none cursor-pointer"
+                />
+              </div>
+
+              <div
+                class="flex items-center gap-1 bg-slate-950 border border-brand-border rounded-lg px-2.5 py-1.5"
+              >
+                <label for="filterInterval" class="text-slate-400 font-medium"
+                  >Khung:</label
+                >
+                <select
+                  id="filterInterval"
+                  class="bg-transparent text-white font-semibold focus:outline-none cursor-pointer"
+                >
+                  <option value="day" selected>Ngày (1D)</option>
+                  <option value="week">Tuần (1W)</option>
+                  <option value="month">Tháng (1M)</option>
+                </select>
+              </div>
+
+              <button
+                type="submit"
+                id="btnFilterPriceHistory"
+                class="px-3.5 py-1.5 rounded-lg font-semibold bg-brand-gold hover:bg-brand-goldLight text-slate-950 transition flex items-center gap-1.5 shadow-sm"
+              >
+                <i class="fa-solid fa-filter text-[10px]"></i> Lọc Dữ Liệu
+              </button>
+            </form>
+          </div>
+
+          <!-- Table Container -->
+          <div class="overflow-x-auto rounded-lg border border-brand-border">
+            <table class="w-full text-left text-xs text-slate-300">
+              <thead
+                class="bg-slate-950 text-brand-textSecondary uppercase font-semibold text-[11px] border-b border-brand-border"
+              >
+                <tr>
+                  <th class="py-2.5 px-3">Ngày ghi nhận</th>
+                  <th class="py-2.5 px-3 text-right">Giá mở cửa (Open)</th>
+                  <th class="py-2.5 px-3 text-right">Giá cao nhất (High)</th>
+                  <th class="py-2.5 px-3 text-right">Giá thấp nhất (Low)</th>
+                  <th class="py-2.5 px-3 text-right">Giá đóng cửa (Close)</th>
+                  <th class="py-2.5 px-3 text-right">Khối lượng (Volume)</th>
+                  <th class="py-2.5 px-3 text-center">Biến động phiên</th>
+                </tr>
+              </thead>
+              <tbody
+                id="goldHistoryTableBody"
+                class="divide-y divide-brand-border/60 font-mono"
+              >
+                <!-- Populated dynamically via loadGoldHistoryTable(page) -->
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Pagination Bar -->
+          <div
+            class="flex flex-wrap items-center justify-between gap-3 text-xs text-brand-textSecondary pt-1"
+          >
+            <span id="priceHistoryTotalCount">Đang tải dữ liệu lịch sử...</span>
+            <div class="inline-flex items-center gap-2">
+              <button
+                type="button"
+                id="btnPriceHistoryPrev"
+                class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-brand-border transition disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                &larr; Trang trước
+              </button>
+              <span
+                id="priceHistoryPageIndicator"
+                class="font-mono text-slate-300"
+                >Trang 1</span
+              >
+              <button
+                type="button"
+                id="btnPriceHistoryNext"
+                class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-brand-border transition disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                Trang sau &rarr;
+              </button>
+            </div>
           </div>
         </div>
       </section>
@@ -660,6 +1390,47 @@
             </h3>
 
             <form id="predictionForm" class="space-y-3.5">
+              <div>
+                <label
+                  for="predictGoldType"
+                  class="block text-xs font-semibold text-slate-300 mb-1"
+                  >Loại vàng cần dự đoán</label
+                >
+                <select
+                  id="predictGoldType"
+                  class="w-full bg-slate-950 border border-brand-border rounded-lg px-3 py-2 text-xs text-brand-gold font-semibold focus:outline-none focus:border-brand-gold cursor-pointer"
+                >
+                  <!-- Populated from GET /api/gold/types -->
+                </select>
+              </div>
+
+              <div class="grid grid-cols-2 gap-2">
+                <div>
+                  <label
+                    for="predictDateFrom"
+                    class="block text-xs font-semibold text-slate-300 mb-1"
+                    >Từ ngày</label
+                  >
+                  <input
+                    type="date"
+                    id="predictDateFrom"
+                    class="w-full bg-slate-950 border border-brand-border rounded-lg px-2.5 py-2 text-xs text-white font-mono focus:outline-none focus:border-brand-gold"
+                  />
+                </div>
+                <div>
+                  <label
+                    for="predictDateTo"
+                    class="block text-xs font-semibold text-slate-300 mb-1"
+                    >Đến ngày</label
+                  >
+                  <input
+                    type="date"
+                    id="predictDateTo"
+                    class="w-full bg-slate-950 border border-brand-border rounded-lg px-2.5 py-2 text-xs text-white font-mono focus:outline-none focus:border-brand-gold"
+                  />
+                </div>
+              </div>
+
               <div>
                 <label
                   for="predictDays"
@@ -739,7 +1510,7 @@
                 </div>
                 <span
                   id="predictResultBadge"
-                  class="px-2.5 py-0.5 rounded text-xs font-mono font-semibold bg-emerald-950 text-emerald-400 border border-emerald-500/20"
+                  class="px-2.5 py-0.5 rounded text-xs font-mono font-semibold bg-[#997E67]/20 text-[#C4B4A5] border border-[#997E67]/30"
                   >—</span
                 >
               </div>
@@ -812,8 +1583,7 @@
               id="btnExportCSV"
               class="px-3 py-1.5 rounded-lg text-xs font-medium text-slate-200 bg-slate-800 hover:bg-slate-700 border border-brand-border flex items-center gap-1.5 transition"
             >
-              <i class="fa-solid fa-file-csv text-emerald-400"></i> Xuất File
-              CSV
+              <i class="fa-solid fa-file-csv text-[#C4B4A5]"></i> Xuất File CSV
             </button>
           </div>
         </div>
@@ -873,9 +1643,26 @@
         </div>
 
         <div
-          class="flex items-center justify-between text-xs text-brand-textSecondary px-1"
+          class="flex flex-wrap items-center justify-between gap-3 text-xs text-brand-textSecondary px-1"
         >
           <span id="historyRowCount">Đang tải lịch sử từ API...</span>
+          <div class="inline-flex items-center gap-2">
+            <button
+              id="btnHistoryPrev"
+              class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-brand-border transition disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              &larr; Trang trước
+            </button>
+            <span id="historyPageIndicator" class="font-mono text-slate-300"
+              >Trang 1</span
+            >
+            <button
+              id="btnHistoryNext"
+              class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-brand-border transition disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              Trang sau &rarr;
+            </button>
+          </div>
         </div>
       </section>
 
@@ -917,13 +1704,21 @@
             ghép này; chỉ số bên dưới lấy từ báo cáo API khi có dữ liệu.
           </p>
 
-          <!-- Metric Scorecard from GET /api/model/evaluation -->
-          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
+          <!-- Metric Scorecard from GET /api/model/evaluation (Đủ 5 chỉ số MAE, MSE, RMSE, MAPE, R2) -->
+          <div class="grid grid-cols-2 sm:grid-cols-5 gap-3 pt-2">
             <div class="p-3 bg-slate-950 rounded-lg border border-brand-border">
               <span class="text-xs text-brand-textSecondary block">MAE</span>
               <span
                 id="introMae"
-                class="text-base font-bold text-white font-mono"
+                class="text-lg font-extrabold text-gray-900 font-mono"
+                >—</span
+              >
+            </div>
+            <div class="p-3 bg-slate-950 rounded-lg border border-brand-border">
+              <span class="text-xs text-brand-textSecondary block">MSE</span>
+              <span
+                id="introMse"
+                class="text-lg font-extrabold text-gray-900 font-mono"
                 >—</span
               >
             </div>
@@ -931,7 +1726,7 @@
               <span class="text-xs text-brand-textSecondary block">RMSE</span>
               <span
                 id="introRmse"
-                class="text-base font-bold text-white font-mono"
+                class="text-lg font-extrabold text-gray-900 font-mono"
                 >—</span
               >
             </div>
@@ -939,7 +1734,7 @@
               <span class="text-xs text-brand-textSecondary block">MAPE</span>
               <span
                 id="introMape"
-                class="text-base font-bold text-brand-profit font-mono"
+                class="text-lg font-extrabold text-[#7A614D] font-mono"
                 >—</span
               >
             </div>
@@ -949,10 +1744,95 @@
               >
               <span
                 id="introR2"
-                class="text-base font-bold text-brand-gold font-mono"
+                class="text-lg font-extrabold text-[#B88A30] font-mono"
                 >—</span
               >
             </div>
+          </div>
+        </div>
+
+        <!-- Biểu Đồ Đối Sánh Actual Price vs Predicted Price (Mục 2.4 & TV2) -->
+        <div
+          class="rounded-xl bg-brand-surface border border-brand-border p-6 space-y-4 shadow-subtle"
+        >
+          <div
+            class="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-brand-border"
+          >
+            <div>
+              <h3 class="text-sm font-bold text-white flex items-center gap-2">
+                <i class="fa-solid fa-chart-line text-brand-gold"></i> Biểu Đồ
+                Đối Sánh Giá Thực Tế vs Giá Dự Báo (Actual vs Predicted)
+              </h3>
+              <p class="text-xs text-brand-textSecondary">
+                Kiểm thử suy luận mô hình trên tập kiểm thử (Test Set) - Nguồn:
+                GET /api/model/evaluation
+              </p>
+            </div>
+            <div class="flex items-center gap-3 text-xs font-mono">
+              <span class="inline-flex items-center gap-1.5 text-[#C4B4A5]">
+                <span class="w-3 h-0.5 bg-[#997E67] inline-block"></span> Giá
+                thực tế (Actual)
+              </span>
+              <span class="inline-flex items-center gap-1.5 text-brand-gold">
+                <span
+                  class="w-3 h-0.5 bg-brand-gold border-t border-dashed border-brand-gold inline-block"
+                ></span>
+                Giá dự báo (Predicted)
+              </span>
+            </div>
+          </div>
+
+          <div class="relative h-72 w-full">
+            <canvas id="evalComparisonChartCanvas"></canvas>
+          </div>
+        </div>
+
+        <!-- Bảng Đối Chuẩn Baseline Models (Mục 2.6 & TV2/TV5/TV6) -->
+        <div
+          class="rounded-xl bg-brand-surface border border-brand-border p-6 space-y-4 shadow-subtle"
+        >
+          <div
+            class="flex items-center justify-between pb-3 border-b border-brand-border"
+          >
+            <div>
+              <h3 class="text-sm font-bold text-white flex items-center gap-2">
+                <i class="fa-solid fa-scale-balanced text-brand-gold"></i> Bảng
+                Đối Chuẩn Các Mô Hình Cơ Sở (Baseline Comparison)
+              </h3>
+              <p class="text-xs text-brand-textSecondary">
+                So sánh hiệu năng giữa Linear Regression, Random Forest và
+                LightGBM trên cùng tập dữ liệu kiểm thử
+              </p>
+            </div>
+            <span
+              class="px-2 py-0.5 rounded text-[11px] font-mono text-brand-gold bg-brand-gold/10 border border-brand-gold/20"
+            >
+              5 Chỉ Số Bắt Buộc
+            </span>
+          </div>
+
+          <div class="overflow-x-auto rounded-lg border border-brand-border">
+            <table class="w-full text-left text-xs text-slate-300">
+              <thead
+                class="bg-slate-950 text-brand-textSecondary uppercase font-semibold text-[11px] border-b border-brand-border"
+              >
+                <tr>
+                  <th class="py-2.5 px-3">Mô hình (Model)</th>
+                  <th class="py-2.5 px-3">Kiến trúc / Thuật toán</th>
+                  <th class="py-2.5 px-3 text-right">MAE</th>
+                  <th class="py-2.5 px-3 text-right">MSE</th>
+                  <th class="py-2.5 px-3 text-right">RMSE</th>
+                  <th class="py-2.5 px-3 text-right">MAPE (%)</th>
+                  <th class="py-2.5 px-3 text-right">Hệ số R²</th>
+                </tr>
+              </thead>
+              <tbody
+                id="baselineComparisonTableBody"
+                class="divide-y divide-brand-border/60 font-mono"
+              >
+                <!-- Populated dynamically via updateModelEvaluation -->
+              </tbody>
+            </table>
           </div>
         </div>
 
@@ -1030,18 +1910,17 @@
           </span>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
           <div
             class="rounded-xl bg-brand-surface border border-brand-border p-4 space-y-3 shadow-subtle"
           >
             <h3 class="text-xs font-bold text-white flex items-center gap-2">
-              <i class="fa-solid fa-users text-brand-gold"></i> Danh Sách Người
-              Dùng (Admin API)
+              <i class="fa-solid fa-users text-brand-gold"></i> Danh Sách Users
             </h3>
             <p class="text-xs text-brand-textSecondary">
               Gọi endpoint
               <code class="text-brand-gold">GET /api/admin/users</code> kiểm tra
-              tài khoản hệ thống.
+              tài khoản.
             </p>
             <button
               id="btnFetchAdminUsers"
@@ -1055,13 +1934,13 @@
             class="rounded-xl bg-brand-surface border border-brand-border p-4 space-y-3 shadow-subtle"
           >
             <h3 class="text-xs font-bold text-white flex items-center gap-2">
-              <i class="fa-solid fa-microchip text-brand-gold"></i> Quản Lý Mô
-              Hình (Admin API)
+              <i class="fa-solid fa-microchip text-brand-gold"></i> Quản Lý
+              Models
             </h3>
             <p class="text-xs text-brand-textSecondary">
               Gọi endpoint
-              <code class="text-brand-gold">GET /api/admin/models</code> xem và
-              đổi model mặc định.
+              <code class="text-brand-gold">GET /api/admin/models</code> đổi
+              model mặc định.
             </p>
             <button
               id="btnTestAdminToken"
@@ -1075,13 +1954,51 @@
             class="rounded-xl bg-brand-surface border border-brand-border p-4 space-y-3 shadow-subtle"
           >
             <h3 class="text-xs font-bold text-white flex items-center gap-2">
-              <i class="fa-solid fa-database text-brand-gold"></i> Sức Khỏe Cơ
-              Sở Dữ Liệu
+              <i class="fa-solid fa-coins text-brand-gold"></i> CRUD Giá Vàng
+            </h3>
+            <p class="text-xs text-brand-textSecondary">
+              Xem bảng giá, gọi
+              <code class="text-brand-gold">PATCH/DELETE</code> giá trực tiếp.
+            </p>
+            <button
+              id="btnAdminLoadPrices"
+              class="w-full py-2 rounded-lg text-xs font-semibold bg-[#997E67] hover:bg-[#8B715C] text-slate-950 transition font-bold"
+            >
+              Tải Bảng Giá & CRUD
+            </button>
+          </div>
+
+          <div
+            class="rounded-xl bg-brand-surface border border-brand-border p-4 space-y-3 shadow-subtle"
+          >
+            <h3 class="text-xs font-bold text-white flex items-center gap-2">
+              <i class="fa-solid fa-chart-line text-brand-gold"></i> Lịch Sử Dự
+              Đoán
             </h3>
             <p class="text-xs text-brand-textSecondary">
               Gọi endpoint
-              <code class="text-brand-gold">GET /api/health</code> kiểm tra kết
-              nối MySQL.
+              <code class="text-brand-gold">GET /api/admin/predictions</code>
+              toàn hệ thống.
+            </p>
+            <button
+              id="btnAdminLoadPredictions"
+              class="w-full py-2 rounded-lg text-xs font-semibold bg-indigo-600 hover:bg-indigo-500 text-white transition font-bold"
+            >
+              Tải Lịch Sử Dự Đoán
+            </button>
+          </div>
+
+          <div
+            class="rounded-xl bg-brand-surface border border-brand-border p-4 space-y-3 shadow-subtle"
+          >
+            <h3 class="text-xs font-bold text-white flex items-center gap-2">
+              <i class="fa-solid fa-database text-brand-gold"></i> Database
+              Health
+            </h3>
+            <p class="text-xs text-brand-textSecondary">
+              Gọi endpoint
+              <code class="text-brand-gold">GET /api/health</code> kiểm tra
+              database.
             </p>
             <button
               id="btnCheckHealth"
@@ -1180,7 +2097,7 @@
           >
           <pre
             id="adminConsoleLog"
-            class="text-xs font-mono text-emerald-400 bg-black/60 p-3 rounded-lg overflow-x-auto max-h-48"
+            class="text-xs font-mono text-[#C4B4A5] bg-black/60 p-3 rounded-lg overflow-x-auto max-h-48"
           >
 // Sẵn sàng nhận kết quả API...</pre>
         </div>
@@ -1256,7 +2173,7 @@
             />
             <p
               id="errLoginUsername"
-              class="text-[11px] text-rose-400 mt-0.5 hidden"
+              class="text-[11px] text-rose-600 font-bold mt-0.5 hidden"
             ></p>
           </div>
 
@@ -1292,7 +2209,7 @@
             </div>
             <p
               id="errLoginPassword"
-              class="text-[11px] text-rose-400 mt-0.5 hidden"
+              class="text-[11px] text-rose-600 font-bold mt-0.5 hidden"
             ></p>
           </div>
 
@@ -1334,11 +2251,22 @@
           <i class="fa-solid fa-xmark"></i>
         </button>
 
-        <div class="space-y-1 text-center">
-          <h3 class="text-lg font-bold text-white">Đăng Ký Thành Viên Mới</h3>
-          <p class="text-xs text-brand-textSecondary">
-            Client-side RegEx Validation & Gửi API POST /api/auth/register
+        <div class="space-y-2 text-center">
+          <h3 class="text-lg font-bold text-gray-900">
+            Đăng Ký Thành Viên Mới
+          </h3>
+          <p
+            class="text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded-lg p-2 text-left leading-relaxed"
+          >
+            <i class="fa-solid fa-circle-info mr-1 text-amber-700"></i>
+            Tài khoản được <strong>kích hoạt ngay lập tức</strong> và lưu vào cơ
+            sở dữ liệu hệ thống (không gửi email xác nhận). Sau khi bấm đăng ký,
+            bạn có thể đăng nhập ngay.
           </p>
+          <div
+            id="errRegGeneral"
+            class="hidden p-2 rounded-lg bg-rose-50 border border-rose-300 text-rose-700 text-xs font-semibold text-left"
+          ></div>
         </div>
 
         <form id="formRegister" class="space-y-3">
@@ -1358,7 +2286,7 @@
             />
             <p
               id="errRegUsername"
-              class="text-[11px] text-rose-400 mt-0.5 hidden"
+              class="text-[11px] text-rose-600 font-bold mt-0.5 hidden"
             ></p>
           </div>
 
@@ -1377,7 +2305,7 @@
             />
             <p
               id="errRegEmail"
-              class="text-[11px] text-rose-400 mt-0.5 hidden"
+              class="text-[11px] text-rose-600 font-bold mt-0.5 hidden"
             ></p>
           </div>
 
@@ -1386,18 +2314,17 @@
             <label
               for="regPhone"
               class="block text-xs font-medium text-slate-300 mb-1"
-              >Số điện thoại (chưa được API hỗ trợ)</label
+              >Số điện thoại</label
             >
             <input
               id="regPhone"
-              disabled
               type="text"
               placeholder="0912345678"
               class="w-full bg-slate-950 border border-brand-border rounded-lg px-3 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-brand-gold"
             />
             <p
               id="errRegPhone"
-              class="text-[11px] text-rose-400 mt-0.5 hidden"
+              class="text-[11px] text-rose-600 font-bold mt-0.5 hidden"
             ></p>
           </div>
 
@@ -1463,7 +2390,7 @@
             </div>
             <p
               id="errRegPassword"
-              class="text-[11px] text-rose-400 mt-0.5 hidden"
+              class="text-[11px] text-rose-600 font-bold mt-0.5 hidden"
             ></p>
           </div>
 
@@ -1482,7 +2409,7 @@
             />
             <p
               id="errRegConfirmPassword"
-              class="text-[11px] text-rose-400 mt-0.5 hidden"
+              class="text-[11px] text-rose-600 font-bold mt-0.5 hidden"
             ></p>
           </div>
 
@@ -1567,14 +2494,13 @@
             <label
               for="profPhone"
               class="block text-xs font-medium text-slate-300 mb-1"
-              >Số điện thoại (chưa hỗ trợ lưu trên server)</label
+              >Số điện thoại</label
             >
             <input
               id="profPhone"
               type="text"
-              disabled
-              placeholder="Chưa hỗ trợ"
-              class="w-full bg-slate-950/50 border border-brand-border rounded-lg px-3 py-1.5 text-xs text-slate-500 cursor-not-allowed"
+              placeholder="0912345678"
+              class="w-full bg-slate-950 border border-brand-border rounded-lg px-3 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-brand-gold"
             />
           </div>
 
@@ -1713,7 +2639,7 @@
           >
             <div class="flex justify-between">
               <span class="text-brand-textSecondary">Trạng thái kết nối:</span>
-              <span id="apiConfigStatus" class="font-mono text-emerald-400"
+              <span id="apiConfigStatus" class="font-mono text-[#C4B4A5]"
                 >Kiểm tra kết nối...</span
               >
             </div>
@@ -1842,7 +2768,7 @@
               <span class="text-brand-textSecondary font-sans"
                 >Nguồn dữ liệu:</span
               >
-              <span class="text-emerald-400 font-sans"
+              <span class="text-[#C4B4A5] font-sans"
                 >FastAPI / MySQL Backend</span
               >
             </div>
@@ -1890,7 +2816,7 @@
     <!-- ========================================================================= -->
     <!-- JAVASCRIPT: FRONTEND LOGIC & FASTAPI BACKEND API CLIENT -->
     <!-- ========================================================================= -->
-    <script src="app.js"></script>
-    <script src="data.js"></script>
+    <script src="app.js?v=auth_robust_v2"></script>
+    <script src="data.js?v=auth_robust_v2"></script>
   </body>
 </html>

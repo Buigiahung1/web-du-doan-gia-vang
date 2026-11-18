@@ -76,10 +76,26 @@ def build_technical_features(df: pd.DataFrame) -> pd.DataFrame:
 
     # ── Simple Moving Averages ────────────────────────────────────────────────
     feat["sma_7"] = price.rolling(window=7, min_periods=7).mean()
+    feat["sma_20"] = price.rolling(window=20, min_periods=20).mean()
     feat["sma_21"] = price.rolling(window=21, min_periods=21).mean()
+    feat["sma_50"] = price.rolling(window=50, min_periods=50).mean()
 
     # ── RSI 14 ───────────────────────────────────────────────────────────────
     feat["rsi_14"] = _compute_rsi(price, period=14)
+
+    # ── MACD (12, 26, 9) ──────────────────────────────────────────────────────
+    ema_12 = price.ewm(span=12, adjust=False).mean()
+    ema_26 = price.ewm(span=26, adjust=False).mean()
+    feat["macd"] = ema_12 - ema_26
+    feat["macd_signal"] = feat["macd"].ewm(span=9, adjust=False).mean()
+    feat["macd_hist"] = feat["macd"] - feat["macd_signal"]
+
+    # ── Bollinger Bands (20, 2) ───────────────────────────────────────────────
+    bb_mid = price.rolling(window=20, min_periods=20).mean()
+    bb_std = price.rolling(window=20, min_periods=20).std()
+    feat["bb_middle"] = bb_mid
+    feat["bb_upper"] = bb_mid + 2 * bb_std
+    feat["bb_lower"] = bb_mid - 2 * bb_std
 
     # ── Volatility 14 (Std Dev of daily returns) ─────────────────────────────
     daily_returns = price.pct_change()
@@ -95,8 +111,10 @@ def build_technical_features(df: pd.DataFrame) -> pd.DataFrame:
     feat = feat.dropna(subset=[c for c in FEATURE_COLUMNS if c != "date"])
     feat = feat.reset_index(drop=True)
 
-    # ── Đảm bảo thứ tự cột đúng theo spec ───────────────────────────────────
-    feat = feat[FEATURE_COLUMNS]
+    # ── Đảm bảo thứ tự cột đúng theo spec gốc (và giữ các cột mở rộng) ────────
+    preserved_cols = [c for c in FEATURE_COLUMNS if c in feat.columns]
+    extended_cols = [c for c in feat.columns if c not in preserved_cols]
+    feat = feat[preserved_cols + extended_cols]
 
     logger.info(
         "build_technical_features: %d rows, rsi_14 in [%.2f, %.2f].",
