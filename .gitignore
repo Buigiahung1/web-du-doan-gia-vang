@@ -65,6 +65,5 @@ Desktop.ini
 CLAUDE.local.md
 .claude/
 
-# Chỉ mục CodeGraph và bản báo cáo Word/slide đã sửa: giữ local
+# Chỉ mục CodeGraph: giữ local
 .codegraph/
-/docs/bao-cao/

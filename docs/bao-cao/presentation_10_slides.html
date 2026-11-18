@@ -1,0 +1,1357 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Báo Cáo Đồ Án Lập Trình Web & AI - UTH (11 Slides Chuẩn)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    />
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap");
+
+      body {
+        font-family: "Inter", sans-serif;
+        background-color: #0b0c0e;
+        color: #f5efe3;
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+      }
+      .font-head {
+        font-family: "Space Grotesk", sans-serif;
+      }
+      .font-mono-code {
+        font-family: "JetBrains Mono", monospace;
+      }
+
+      .slide {
+        display: none;
+        width: 100vw;
+        height: 100vh;
+        box-sizing: border-box;
+        padding: 3rem 4rem;
+      }
+      .slide.active {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+      }
+
+      /* THEME DARK */
+      .theme-dark {
+        background-color: #141413;
+        color: #f5efe3;
+      }
+      .theme-dark .card {
+        background-color: #221d13;
+        border: 1px solid #3a311f;
+      }
+      .theme-dark .text-muted {
+        color: #cfc6b2;
+      }
+      .theme-dark .badge {
+        background-color: #2a2215;
+        border: 1px solid #3a311f;
+        color: #e3b04b;
+      }
+
+      /* THEME LIGHT */
+      .theme-light {
+        background-color: #faf5ea;
+        color: #16130d;
+      }
+      .theme-light .card {
+        background-color: #fffbf2;
+        border: 1px solid #eae1cf;
+      }
+      .theme-light .text-muted {
+        color: #4a4132;
+      }
+      .theme-light .badge {
+        background-color: #f0e7d3;
+        border: 1px solid #eae1cf;
+        color: #9a6b12;
+      }
+
+      .accent-gold {
+        color: #e3b04b;
+      }
+      .accent-gold-deep {
+        color: #9a6b12;
+      }
+      .accent-green {
+        color: #4e9a51;
+      }
+      .accent-blue {
+        color: #4a90e2;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Controls overlay -->
+    <div
+      class="fixed bottom-4 right-6 z-50 flex items-center gap-2 bg-black/60 backdrop-blur-md px-4 py-2 rounded-full border border-white/10 text-xs"
+    >
+      <button
+        id="prevBtn"
+        class="px-2 py-1 hover:text-amber-400 font-bold transition"
+      >
+        &larr; Trước
+      </button>
+      <span id="slideIndicator" class="font-mono px-2 text-amber-300 font-bold"
+        >01 / 11</span
+      >
+      <button
+        id="nextBtn"
+        class="px-2 py-1 hover:text-amber-400 font-bold transition"
+      >
+        Sau &rarr;
+      </button>
+      <span class="text-slate-500">|</span>
+      <button
+        id="fsBtn"
+        class="px-2 py-1 hover:text-white transition"
+        title="Toàn màn hình"
+      >
+        <i class="fa-solid fa-expand"></i>
+      </button>
+    </div>
+
+    <!-- SLIDE 1: TRANG BÌA (DARK) -->
+    <section class="slide active theme-dark" data-num="01 / 11">
+      <div>
+        <div
+          class="inline-block badge px-4 py-1.5 rounded-full text-xs font-bold font-head uppercase mb-6 tracking-wide"
+        >
+          TRƯỜNG ĐẠI HỌC GIAO THÔNG VẬN TẢI TP.HCM · UTH
+        </div>
+        <h3
+          class="text-sm md:text-base font-bold font-head text-muted uppercase tracking-wider mb-2"
+        >
+          BÁO CÁO ĐỒ ÁN MÔN HỌC: LẬP TRÌNH WEB & TRÍ TUỆ NHÂN TẠO
+        </h3>
+        <h1
+          class="text-3xl md:text-5xl font-black font-head leading-tight text-white mb-4"
+        >
+          HỆ THỐNG PHÂN TÍCH & DỰ BÁO<br /><span class="accent-gold"
+            >GIÁ VÀNG TRỰC TUYẾN</span
+          >
+        </h1>
+        <p class="text-sm md:text-base font-medium accent-gold max-w-3xl">
+          Nền tảng Single Page Application (SPA) tích hợp mô hình Machine
+          Learning & Deep Learning (FastAPI + MySQL)
+        </p>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+        <div class="card p-5 rounded-2xl">
+          <h4 class="font-head font-bold text-xs accent-gold mb-2 uppercase">
+            MỤC TIÊU NGHIỆM THU
+          </h4>
+          <p class="text-xs text-muted leading-relaxed">
+            Đáp ứng 100% chuẩn yêu cầu UTH:<br />
+            • Sơ đồ 3 tầng kiến trúc hệ thống<br />
+            • Kết nối API & CSDL MySQL chuẩn 3NF<br />
+            • Minh chứng thực hành thao tác CRUD
+          </p>
+        </div>
+        <div class="card p-5 rounded-2xl">
+          <h4 class="font-head font-bold text-xs accent-gold mb-2 uppercase">
+            THÀNH VIÊN THỰC HIỆN
+          </h4>
+          <p class="text-xs text-muted leading-relaxed">
+            Nhóm 6 thành viên phụ trách:<br />
+            • TV1: Frontend Core & Auth · TV2: Visualization & Admin UI<br />
+            • TV3: Backend Architecture · TV4: Database & Security<br />
+            • TV5: Data ML · TV6: Deep Learning
+          </p>
+        </div>
+        <div class="card p-5 rounded-2xl">
+          <h4 class="font-head font-bold text-xs accent-gold mb-2 uppercase">
+            GIẢNG VIÊN HƯỚNG DẪN
+          </h4>
+          <p class="text-xs text-muted leading-relaxed">
+            Khoa Công Nghệ Thông Tin · UTH<br />
+            • Bộ môn: Phát triển ứng dụng Web<br />
+            • Nền tảng: FastAPI + MySQL + AI<br />
+            • Năm học: 2026 - 2027
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 2: MỤC 1 - SƠ ĐỒ KIẾN TRÚC (LIGHT) -->
+    <section class="slide theme-light" data-num="02 / 11">
+      <div>
+        <div class="flex justify-between items-center mb-3">
+          <span
+            class="badge px-3 py-1 rounded-full text-xs font-bold font-head uppercase"
+            >MỤC 1 · SƠ ĐỒ KIẾN TRÚC WEBSITE</span
+          >
+          <span class="font-head font-bold text-sm accent-gold-deep"
+            >02 / 11</span
+          >
+        </div>
+        <h2 class="text-2xl font-black font-head uppercase mb-1">
+          1. KIẾN TRÚC TỔNG THỂ: FRONT-END → BACK-END → DATABASE
+        </h2>
+        <p class="text-xs text-muted">
+          Hệ thống phân tách 4 tầng độc lập (Separation of Concerns), giao tiếp
+          qua RESTful JSON API chuẩn RFC
+        </p>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4 my-auto">
+        <div class="card p-4 rounded-xl">
+          <span class="font-head font-bold text-xs accent-gold-deep block mb-1"
+            >01 · FRONT-END LAYER</span
+          >
+          <span class="text-[11px] font-bold text-muted block mb-2"
+            >Presentation & UI Client</span
+          >
+          <ul class="text-[11px] space-y-1.5 leading-snug">
+            <li>
+              • Vanilla JS ES6+, HTML5 Semantic, Tailwind CSS (Dark Mode).
+            </li>
+            <li>
+              • Chart.js vẽ nến Nhật OHLCV & dải sai số dự báo (90–95% tùy mô
+              hình).
+            </li>
+            <li>• Fetch API bất đồng bộ với Helper tự động gắn JWT Bearer.</li>
+            <li>• Cập nhật DOM động không reload trang (SPA).</li>
+          </ul>
+        </div>
+        <div class="card p-4 rounded-xl">
+          <span class="font-head font-bold text-xs accent-blue block mb-1"
+            >02 · BACK-END LAYER</span
+          >
+          <span class="text-[11px] font-bold text-muted block mb-2"
+            >Service & RESTful API</span
+          >
+          <ul class="text-[11px] space-y-1.5 leading-snug">
+            <li>• FastAPI (Python 3.12/3.13) với máy chủ Uvicorn ASGI.</li>
+            <li>• OAuth2 Password Flow, JWT HS256 stateless, mã hóa Bcrypt.</li>
+            <li>• Pydantic V2 schemas kiểm tra chặt chẽ payload & query.</li>
+            <li>• Bộ đệm TTLCache giảm tải DB, Token Bucket Rate Limiter.</li>
+          </ul>
+        </div>
+        <div class="card p-4 rounded-xl">
+          <span class="font-head font-bold text-xs accent-green block mb-1"
+            >03 · AI INFERENCE ENGINE</span
+          >
+          <span class="text-[11px] font-bold text-muted block mb-2"
+            >Học Máy & Học Sâu</span
+          >
+          <ul class="text-[11px] space-y-1.5 leading-snug">
+            <li>• Data Pipeline tính toán SMA, RSI, Volatility, Lags trễ.</li>
+            <li>• LightGBM Regressor tối ưu chuỗi thời gian.</li>
+            <li>• Mạng nơ-ron LSTM xử lý chuỗi trượt đa chiều.</li>
+            <li>• ModelRegistry nạp artifact nhị phân suy luận trực tiếp.</li>
+          </ul>
+        </div>
+        <div class="card p-4 rounded-xl">
+          <span class="font-head font-bold text-xs accent-gold-deep block mb-1"
+            >04 · DATABASE LAYER</span
+          >
+          <span class="text-[11px] font-bold text-muted block mb-2"
+            >Cơ Sở Dữ Liệu Quan Hệ</span
+          >
+          <ul class="text-[11px] space-y-1.5 leading-snug">
+            <li>• MySQL / SQLite thông qua lớp ánh xạ SQLAlchemy 2.0 ORM.</li>
+            <li>
+              • Cấu trúc 3NF: 06 bảng thực thể lưu trữ người dùng, giá, dự đoán.
+            </li>
+            <li>• 02 SQL Views (models, prediction_history) theo đề bài.</li>
+            <li>• Giao dịch ACID, ràng buộc khóa ngoại (FK) và Index.</li>
+          </ul>
+        </div>
+      </div>
+      <div class="card p-3 rounded-xl border border-amber-600/30 text-xs">
+        <span class="font-head font-bold accent-gold-deep"
+          >LUỒNG DỮ LIỆU ĐỒNG BỘ:</span
+        >
+        Client gửi Request (Fetch JSON) ➔ Backend FastAPI thẩm định & xác thực
+        JWT ➔ Nạp dữ liệu DB + Chạy AI Inference ➔ Trả về JSON Response ➔ DOM
+        cập nhật biểu đồ & bảng không reload.
+      </div>
+    </section>
+
+    <!-- SLIDE 3: MỤC 2 - DANH SÁCH CHỨC NĂNG (DARK) -->
+    <section class="slide theme-dark" data-num="03 / 11">
+      <div>
+        <div class="flex justify-between items-center mb-3">
+          <span
+            class="badge px-3 py-1 rounded-full text-xs font-bold font-head uppercase"
+            >MỤC 2 · TIẾN ĐỘ DỰ ÁN</span
+          >
+          <span class="font-head font-bold text-sm accent-gold">03 / 11</span>
+        </div>
+        <h2 class="text-2xl font-black font-head uppercase mb-1">
+          2. DANH SÁCH CHỨC NĂNG ĐÃ HOÀN THÀNH & CHƯA HOÀN THÀNH
+        </h2>
+        <p class="text-xs text-muted">
+          Báo cáo chi tiết hiện trạng phát triển tính năng so với yêu cầu đề
+          cương môn học
+        </p>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-12 gap-5 my-auto">
+        <div class="card md:col-span-7 p-5 rounded-2xl border-emerald-800/60">
+          <h4
+            class="font-head font-bold text-xs text-emerald-400 mb-3 uppercase flex items-center gap-1.5"
+          >
+            <i class="fa-solid fa-circle-check"></i> CHỨC NĂNG ĐÃ HOÀN THÀNH
+            (100% TIÊU CHÍ BẮT BUỘC)
+          </h4>
+          <div class="space-y-2 text-xs leading-relaxed">
+            <p>
+              <strong class="accent-gold"
+                >✔ Dashboard thị trường thời gian thực:</strong
+              >
+              Giá Close, Mua vào, Bán ra, High, Low; chọn loại vàng, tính biến
+              động (+X.X%), đồng bộ API.
+            </p>
+            <p>
+              <strong class="accent-gold"
+                >✔ Bảng dữ liệu lịch sử OHLCV & Bộ lọc:</strong
+              >
+              Bảng giá đầy đủ Open/High/Low/Close/Volume/Biến động; lọc Từ ngày
+              - Đến ngày, khung 1D/1W/1M; phân trang.
+            </p>
+            <p>
+              <strong class="accent-gold">✔ Biểu đồ kỹ thuật tương tác:</strong>
+              Nến Nhật (Candlestick OHLC) và Đường (Line) đa khung thời gian; tự
+              động scale responsive.
+            </p>
+            <p>
+              <strong class="accent-gold"
+                >✔ Dự đoán giá vàng AI đa tham số:</strong
+              >
+              Chọn loại vàng, khoảng ngày, số phiên (1-7 ngày), Model AI; dải
+              biên sai số dự báo (90–95% tùy mô hình).
+            </p>
+            <p>
+              <strong class="accent-gold"
+                >✔ Giới thiệu mô hình & Bảng Benchmark:</strong
+              >
+              Đủ 5 chỉ số MAE, MSE, RMSE, MAPE, R2; biểu đồ Actual vs Predicted;
+              bảng 3 baseline models.
+            </p>
+            <p>
+              <strong class="accent-gold"
+                >✔ Xác thực người dùng & Phân quyền RBAC:</strong
+              >
+              Đăng ký, Đăng nhập JWT, kiểm tra mật khẩu client-side, phân quyền
+              chặt chẽ User/Admin.
+            </p>
+            <p>
+              <strong class="accent-gold"
+                >✔ Quản trị hệ thống Admin (CRUD):</strong
+              >
+              Xem danh sách Users; kích hoạt Model mặc định; Thêm, Sửa (PATCH),
+              Xóa (DELETE) bản ghi giá.
+            </p>
+          </div>
+        </div>
+        <div class="card md:col-span-5 p-5 rounded-2xl">
+          <h4
+            class="font-head font-bold text-xs accent-gold mb-3 uppercase flex items-center gap-1.5"
+          >
+            <i class="fa-solid fa-hourglass-half"></i> CHƯA HOÀN THÀNH / HƯỚNG
+            PHÁT TRIỂN (GIAI ĐOẠN 2)
+          </h4>
+          <div class="space-y-3 text-xs leading-relaxed">
+            <div>
+              <p class="font-bold text-muted mb-0.5">
+                ⏳ Tích hợp tin tức tài chính & NLP:
+              </p>
+              <p class="text-muted text-[11px]">
+                Hiện tại mô hình chỉ dự báo dựa trên chuỗi thời gian OHLCV. Chưa
+                nhúng phân tích cảm xúc tin tức vĩ mô (FinBERT).
+              </p>
+            </div>
+            <div>
+              <p class="font-bold text-muted mb-0.5">
+                ⏳ Kiến trúc Transformer chuỗi thời gian:
+              </p>
+              <p class="text-muted text-[11px]">
+                Chưa triển khai kiến trúc PatchTST / Informer vào môi trường
+                production (mới nghiệm thu LightGBM và LSTM Recurrent Net).
+              </p>
+            </div>
+            <div>
+              <p class="font-bold text-muted mb-0.5">
+                ⏳ Cảnh báo biến động giá đa kênh:
+              </p>
+              <p class="text-muted text-[11px]">
+                Chưa tích hợp Webhook gửi tin nhắn tự động qua Telegram Bot /
+                Email khi giá vàng chạm ngưỡng cảnh báo do người dùng thiết lập.
+              </p>
+            </div>
+            <div>
+              <p class="font-bold text-muted mb-0.5">
+                ⏳ Triển khai hạ tầng Cloud Kubernetes:
+              </p>
+              <p class="text-muted text-[11px]">
+                Hệ thống hiện đóng gói và vận hành local qua Docker / Uvicorn;
+                chưa cấu hình cụm Auto-scaling trên AWS/GCP.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 4: MỤC 3 - GIAO DIỆN CÁC TRANG CHÍNH (LIGHT) -->
+    <section class="slide theme-light" data-num="04 / 11">
+      <div>
+        <div class="flex justify-between items-center mb-3">
+          <span
+            class="badge px-3 py-1 rounded-full text-xs font-bold font-head uppercase"
+            >MỤC 3 · GIAO DIỆN HỆ THỐNG</span
+          >
+          <span class="font-head font-bold text-sm accent-gold-deep"
+            >04 / 11</span
+          >
+        </div>
+        <h2 class="text-2xl font-black font-head uppercase mb-1">
+          3. GIAO DIỆN CÁC PHÂN HỆ CHÍNH CỦA ỨNG DỤNG (UI/UX DESIGN)
+        </h2>
+        <p class="text-xs text-muted">
+          Trải nghiệm Single Page Application (SPA) chuẩn Dark Mode tài chính,
+          tương thích mọi thiết bị
+        </p>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 my-auto">
+        <div class="card p-4 rounded-xl">
+          <span class="font-head font-bold text-xs accent-gold-deep block mb-1"
+            >1. TRANG CHỦ (DASHBOARD THỊ TRƯỜNG)</span
+          >
+          <ul class="text-[11px] space-y-1.5 leading-snug">
+            <li>
+              • <strong>Header Bar:</strong> Thanh ticker cập nhật giá tự động,
+              nút chuyển Tab nhanh, trạng thái API (Online/Offline).
+            </li>
+            <li>
+              • <strong>Thẻ chỉ số trực tiếp:</strong> Giá đóng cửa (Close), Giá
+              mua vào (Buy), Giá bán ra (Sell), Giá cao/thấp nhất (High/Low).
+            </li>
+            <li>
+              •
+              <strong>Bộ chọn loại vàng linh hoạt</strong> (#homeGoldTypeSelect)
+              & nhãn tỷ lệ biến động 1D trực quan màu xanh/đỏ.
+            </li>
+            <li>
+              • <strong>Khối CTA:</strong> Truy cập nhanh tính năng dự đoán,
+              lịch sử cá nhân và thông tin đánh giá mô hình.
+            </li>
+          </ul>
+        </div>
+        <div class="card p-4 rounded-xl">
+          <span class="font-head font-bold text-xs accent-gold-deep block mb-1"
+            >2. GIÁ VÀNG TRỰC TUYẾN & BIỂU ĐỒ NẾN</span
+          >
+          <ul class="text-[11px] space-y-1.5 leading-snug">
+            <li>
+              • <strong>Biểu đồ kỹ thuật:</strong> Tùy chọn chuyển đổi tức thì
+              giữa Biểu đồ Nến Nhật (Candlestick) và Đường (Line).
+            </li>
+            <li>
+              • <strong>Form bộ lọc:</strong> Chọn loại vàng, Ngày bắt đầu, Ngày
+              kết thúc, Khung thời gian Ngày/Tuần/Tháng.
+            </li>
+            <li>
+              • <strong>Bảng dữ liệu lịch sử OHLCV:</strong> Đầy đủ Open, High,
+              Low, Close, Volume, % Biến động phiên.
+            </li>
+            <li>
+              • <strong>Cụm phân trang động:</strong> Nút Trước/Sau, chỉ số
+              trang, tổng số bản ghi; cập nhật DOM động không reload.
+            </li>
+          </ul>
+        </div>
+        <div class="card p-4 rounded-xl">
+          <span class="font-head font-bold text-xs accent-gold-deep block mb-1"
+            >3. PHÂN HỆ DỰ ĐOÁN GIÁ VÀNG AI</span
+          >
+          <ul class="text-[11px] space-y-1.5 leading-snug">
+            <li>
+              • <strong>Form tham số:</strong> Chọn loại vàng, khoảng ngày dữ
+              liệu mẫu, số phiên (1-7 ngày), Model AI.
+            </li>
+            <li>
+              • <strong>Biểu đồ dự báo:</strong> Đường giá dự phóng kết nối mượt
+              mà từ phiên thực tế gần nhất.
+            </li>
+            <li>
+              •
+              <strong
+                >Dải phân kỳ độ sai số dự báo (90–95% tùy mô hình):</strong
+              >
+              Cận trên (+q95) và Cận dưới (-q05) bao bọc dự báo, trực quan hóa
+              rủi ro.
+            </li>
+            <li>
+              • <strong>Thẻ kết quả chi tiết:</strong> Danh sách từng ngày dự
+              báo kèm giá trị dự đoán, xu hướng (Tăng/Giảm) và biên độ.
+            </li>
+          </ul>
+        </div>
+        <div class="card p-4 rounded-xl">
+          <span class="font-head font-bold text-xs accent-gold-deep block mb-1"
+            >4. GIỚI THIỆU MÔ HÌNH & ADMIN PORTAL</span
+          >
+          <ul class="text-[11px] space-y-1.5 leading-snug">
+            <li>
+              • <strong>Scorecard 5 chỉ số:</strong> MAE, MSE, RMSE, MAPE, R2
+              của mô hình kích hoạt kết nối GET /api/model/evaluation.
+            </li>
+            <li>
+              • <strong>Biểu đồ đối sánh Actual vs Predicted:</strong> Đường giá
+              thực tế (xanh ngọc) đối sánh giá mô hình học được (vàng nét đứt).
+            </li>
+            <li>
+              • <strong>Bảng đối chuẩn 3 Baseline:</strong> So sánh Linear
+              Regression, Random Forest và LightGBM trên cùng tập Test.
+            </li>
+            <li>
+              • <strong>Cổng Quản trị Admin:</strong> Danh sách Users, kích hoạt
+              đổi Model mặc định, thao tác Thêm / Sửa / Xóa bản ghi giá.
+            </li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 5: MỤC 4 - CÁC CHỨC NĂNG KẾT NỐI BACKEND (DARK) -->
+    <section class="slide theme-dark" data-num="05 / 11">
+      <div>
+        <div class="flex justify-between items-center mb-3">
+          <span
+            class="badge px-3 py-1 rounded-full text-xs font-bold font-head uppercase"
+            >MỤC 4 · KẾT NỐI HỆ THỐNG</span
+          >
+          <span class="font-head font-bold text-sm accent-gold">05 / 11</span>
+        </div>
+        <h2 class="text-2xl font-black font-head uppercase mb-1">
+          4. CÁC CHỨC NĂNG ĐÃ KẾT NỐI THÀNH CÔNG VỚI FASTAPI BACK-END
+        </h2>
+        <p class="text-xs text-muted">
+          100% các tính năng giao diện đều được ánh xạ và giao tiếp trực tiếp
+          qua RESTful Endpoints
+        </p>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 my-auto">
+        <div class="card p-4 rounded-xl">
+          <span class="font-head font-bold text-xs accent-gold block mb-1"
+            >DỮ LIỆU GIÁ & THỊ TRƯỜNG</span
+          >
+          <ul class="text-[11px] space-y-1.5 text-muted leading-snug">
+            <li>
+              •
+              <strong class="text-white font-mono">GET /api/gold/types:</strong>
+              Lấy danh mục các loại vàng hỗ trợ (XAU_VND_LUONG,...).
+            </li>
+            <li>
+              •
+              <strong class="text-white font-mono"
+                >GET /api/gold/current:</strong
+              >
+              Lấy mức giá Close, Buy, Sell phiên giao dịch mới nhất.
+            </li>
+            <li>
+              •
+              <strong class="text-white font-mono"
+                >GET /api/gold/summary:</strong
+              >
+              Thống kê tỷ lệ biến động 1 phiên (1D), 7 ngày và 30 ngày.
+            </li>
+            <li>
+              •
+              <strong class="text-white font-mono"
+                >GET /api/gold/history:</strong
+              >
+              Truy vấn dữ liệu nến lịch sử có phân trang, lọc ngày và khung
+              1D/1W/1M.
+            </li>
+          </ul>
+        </div>
+        <div class="card p-4 rounded-xl">
+          <span class="font-head font-bold text-xs accent-gold block mb-1"
+            >SUY LUẬN AI & ĐÁNH GIÁ MÔ HÌNH</span
+          >
+          <ul class="text-[11px] space-y-1.5 text-muted leading-snug">
+            <li>
+              •
+              <strong class="text-white font-mono">POST /api/predict:</strong>
+              Gửi tham số dự đoán lên Backend để mô hình AI suy luận giá tương
+              lai.
+            </li>
+            <li>
+              •
+              <strong class="text-white font-mono"
+                >GET /api/predictions/history:</strong
+              >
+              Tải danh sách lịch sử các lượt dự đoán đã lưu của người dùng.
+            </li>
+            <li>
+              •
+              <strong class="text-white font-mono"
+                >GET /api/predictions/{id}:</strong
+              >
+              Xem chi tiết từng điểm dự báo, khoảng sai số dự báo (90–95% tùy mô
+              hình) và xu hướng.
+            </li>
+            <li>
+              •
+              <strong class="text-white font-mono"
+                >GET /api/model/evaluation:</strong
+              >
+              Báo cáo 5 chỉ số kiểm thử, bảng đối sánh baseline và chuỗi đối
+              sánh.
+            </li>
+          </ul>
+        </div>
+        <div class="card p-4 rounded-xl">
+          <span class="font-head font-bold text-xs accent-gold block mb-1"
+            >XÁC THỰC & HỒ SƠ TÀI KHOẢN</span
+          >
+          <ul class="text-[11px] space-y-1.5 text-muted leading-snug">
+            <li>
+              •
+              <strong class="text-white font-mono"
+                >POST /api/auth/register:</strong
+              >
+              Đăng ký tài khoản người dùng mới, tự động băm mật khẩu bằng
+              Bcrypt.
+            </li>
+            <li>
+              •
+              <strong class="text-white font-mono"
+                >POST /api/auth/login:</strong
+              >
+              Xác thực danh tính và trả về chuỗi JSON Web Token (JWT Bearer).
+            </li>
+            <li>
+              •
+              <strong class="text-white font-mono">GET /api/auth/me:</strong>
+              Kiểm tra phiên làm việc hiện tại, lấy thông tin cá nhân và vai trò
+              (User/Admin).
+            </li>
+            <li>
+              •
+              <strong class="text-white font-mono"
+                >PATCH /api/auth/profile:</strong
+              >
+              Cập nhật họ tên, email, số điện thoại cá nhân vào cơ sở dữ liệu.
+            </li>
+          </ul>
+        </div>
+        <div class="card p-4 rounded-xl">
+          <span class="font-head font-bold text-xs accent-gold block mb-1"
+            >QUẢN TRỊ ADMIN PORTAL (RBAC)</span
+          >
+          <ul class="text-[11px] space-y-1.5 text-muted leading-snug">
+            <li>
+              •
+              <strong class="text-white font-mono"
+                >GET /api/admin/users:</strong
+              >
+              Truy vấn danh sách toàn bộ người dùng trong hệ thống (chỉ cấp cho
+              Admin).
+            </li>
+            <li>
+              •
+              <strong class="text-white font-mono"
+                >GET /api/admin/models:</strong
+              >
+              Xem danh sách các phiên bản mô hình AI đã đăng ký trong bảng
+              ml_models.
+            </li>
+            <li>
+              •
+              <strong class="text-white font-mono"
+                >PATCH /api/admin/models/{id}:</strong
+              >
+              Kích hoạt mô hình AI mặc định phục vụ luồng dự đoán chung.
+            </li>
+            <li>
+              •
+              <strong class="text-white font-mono"
+                >PATCH / DELETE /api/admin/prices/{id}:</strong
+              >
+              Sửa đổi trực tiếp giá Close hoặc xóa bản ghi giá vàng trong DB.
+            </li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 6: MỤC 5 - CÁCH GỬI DỮ LIỆU TỪ FRONTEND (LIGHT) -->
+    <section class="slide theme-light" data-num="06 / 11">
+      <div>
+        <div class="flex justify-between items-center mb-3">
+          <span
+            class="badge px-3 py-1 rounded-full text-xs font-bold font-head uppercase"
+            >MỤC 5 · TRUYỀN DỮ LIỆU TỪ CLIENT</span
+          >
+          <span class="font-head font-bold text-sm accent-gold-deep"
+            >06 / 11</span
+          >
+        </div>
+        <h2 class="text-2xl font-black font-head uppercase mb-1">
+          5. CÁCH GỬI DỮ LIỆU TỪ FRONT-END LÊN MÁY CHỦ (GET & POST)
+        </h2>
+        <p class="text-xs text-muted">
+          Chuẩn hóa phương thức truyền tải qua URL Query Parameters, JSON
+          Request Body và Form URL-Encoded
+        </p>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 my-auto">
+        <div class="card p-4 rounded-xl">
+          <span class="font-head font-bold text-xs accent-gold-deep block mb-1"
+            >PHƯƠNG THỨC GET (QUERY PARAMS)</span
+          >
+          <span class="text-[11px] font-bold text-muted block mb-2"
+            >Lọc dữ liệu lịch sử, lấy giá hiện tại, thống kê</span
+          >
+          <ul class="text-[11px] space-y-1.5 leading-snug">
+            <li>• Nối trực tiếp key=value vào sau URL qua ký tự '?' và '&'.</li>
+            <li>
+              • Mã hóa an toàn: Sử dụng
+              <code class="font-mono-code text-[10px]"
+                >encodeURIComponent()</code
+              >
+              trong JavaScript.
+            </li>
+            <li>
+              • Cấu trúc Request thực tế:<br /><code
+                class="font-mono-code text-[9.5px] bg-slate-200 px-1 py-0.5 rounded block mt-1 break-all"
+                >GET
+                /api/gold/history?type=XAU_VND_LUONG&from=2026-01-01&to=2026-10-30&interval=day&page=1&page_size=20</code
+              >
+            </li>
+            <li>• Hỗ trợ caching phía client và trình duyệt web.</li>
+          </ul>
+        </div>
+        <div class="card p-4 rounded-xl">
+          <span class="font-head font-bold text-xs accent-gold-deep block mb-1"
+            >PHƯƠNG THỨC POST (JSON PAYLOAD)</span
+          >
+          <span class="text-[11px] font-bold text-muted block mb-2"
+            >Dự đoán giá vàng AI, Đăng ký người dùng mới</span
+          >
+          <ul class="text-[11px] space-y-1.5 leading-snug">
+            <li>
+              • Header bắt buộc:
+              <code class="font-mono-code text-[10px]"
+                >Content-Type: application/json</code
+              >.
+            </li>
+            <li>
+              • Đóng gói Payload qua
+              <code class="font-mono-code text-[10px]">JSON.stringify()</code>.
+            </li>
+            <li>
+              • Cấu trúc Request thực tế gửi lên
+              <code class="font-mono-code text-[10px]">POST /api/predict</code
+              >:<br />
+              <pre
+                class="font-mono-code text-[9.5px] bg-slate-200 p-1.5 rounded mt-1 overflow-x-auto leading-tight"
+              >
+{
+  "gold_type": "XAU_VND_LUONG",
+  "horizon_days": 7,
+  "model_id": 2,
+  "date_from": "2026-01-01",
+  "date_to": "2026-10-30"
+}</pre>
+            </li>
+            <li>• Truyền tải cấu trúc phức tạp và an toàn dữ liệu.</li>
+          </ul>
+        </div>
+        <div class="card p-4 rounded-xl">
+          <span class="font-head font-bold text-xs accent-gold-deep block mb-1"
+            >FORM-DATA & XÁC THỰC JWT</span
+          >
+          <span class="text-[11px] font-bold text-muted block mb-2"
+            >Đăng nhập OAuth2 Password & Giao dịch bảo mật</span
+          >
+          <ul class="text-[11px] space-y-1.5 leading-snug">
+            <li>
+              • Đăng nhập:
+              <code class="font-mono-code text-[10px]"
+                >application/x-www-form-urlencoded</code
+              >.<br />Payload:
+              <code class="font-mono-code text-[10px]"
+                >URLSearchParams({ username, password })</code
+              >.
+            </li>
+            <li>
+              • Cơ chế tự động hóa trong Helper
+              <code class="font-mono-code text-[10px]">apiRequest()</code
+              >:<br />
+              <pre
+                class="font-mono-code text-[9.5px] bg-slate-200 p-1.5 rounded mt-1 overflow-x-auto leading-tight"
+              >
+if (AppState.jwtToken) {
+  headers['Authorization'] = 
+    'Bearer ' + AppState.jwtToken;
+}</pre>
+            </li>
+            <li>
+              • Token JWT lưu trong localStorage và giải phóng khi đăng xuất.
+            </li>
+          </ul>
+        </div>
+      </div>
+      <div class="card p-3 rounded-xl border border-amber-600/30 text-xs">
+        <span class="font-head font-bold accent-gold-deep"
+          >NGUYÊN TẮC AN TOÀN TRUYỀN DỮ LIỆU:</span
+        >
+        Mọi request gửi lên đều được validate Regex phía Client trước khi gửi.
+        Toàn bộ tham số nhạy cảm (mật khẩu) tuyệt đối không đưa vào URL Query
+        Params mà bắt buộc truyền qua Body với kết nối bảo mật.
+      </div>
+    </section>
+
+    <!-- SLIDE 7: MỤC 6 - CÁCH BACKEND XỬ LÝ (DARK) -->
+    <section class="slide theme-dark" data-num="07 / 11">
+      <div>
+        <div class="flex justify-between items-center mb-3">
+          <span
+            class="badge px-3 py-1 rounded-full text-xs font-bold font-head uppercase"
+            >MỤC 6 · QUY TRÌNH XỬ LÝ BACK-END</span
+          >
+          <span class="font-head font-bold text-sm accent-gold">07 / 11</span>
+        </div>
+        <h2 class="text-2xl font-black font-head uppercase mb-1">
+          6. CÁCH BACK-END TIẾP NHẬN, XỬ LÝ & TRẢ KẾT QUẢ VỀ CLIENT
+        </h2>
+        <p class="text-xs text-muted">
+          Quy trình xử lý khép kín 4 bước từ tiếp nhận, kiểm soát bảo mật, chạy
+          mô hình AI đến đóng gói JSON
+        </p>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4 my-auto">
+        <div class="card p-4 rounded-xl">
+          <span class="font-head font-bold text-xs accent-gold block mb-1"
+            >BƯỚC 1: TIẾP NHẬN & VALIDATE</span
+          >
+          <span class="text-[11px] font-bold text-muted block mb-2"
+            >Request Validation (Pydantic)</span
+          >
+          <ul class="text-[11px] space-y-1.5 text-muted leading-snug">
+            <li>• FastAPI đón nhận Request qua Router tương ứng.</li>
+            <li>• Pydantic V2 kiểm tra kiểu số, ngày tháng hợp lệ.</li>
+            <li>
+              • Kiểm tra logic: ngày bắt đầu <= ngày kết thúc; horizon_days ∈
+              [1, 7].
+            </li>
+            <li>
+              • Nếu sai: Trả về HTTP 422 Unprocessable Entity kèm mô tả lỗi.
+            </li>
+          </ul>
+        </div>
+        <div class="card p-4 rounded-xl">
+          <span class="font-head font-bold text-xs accent-gold block mb-1"
+            >BƯỚC 2: XÁC THỰC & BẢO MẬT</span
+          >
+          <span class="text-[11px] font-bold text-muted block mb-2"
+            >Security & Middleware Layer</span
+          >
+          <ul class="text-[11px] space-y-1.5 text-muted leading-snug">
+            <li>• Middleware giải mã JWT: Trích xuất user_id và role.</li>
+            <li>
+              • RBAC: Endpoint Admin chặn ngay nếu role != 'admin' (HTTP 403).
+            </li>
+            <li>• TTLCache: Nếu dữ liệu giá có trong cache, trả về tức thì.</li>
+            <li>• Token Bucket Rate Limiter giới hạn tần suất gọi API.</li>
+          </ul>
+        </div>
+        <div class="card p-4 rounded-xl">
+          <span class="font-head font-bold text-xs accent-gold block mb-1"
+            >BƯỚC 3: XỬ LÝ DỮ LIỆU & AI</span
+          >
+          <span class="text-[11px] font-bold text-muted block mb-2"
+            >Business Logic & Inference</span
+          >
+          <ul class="text-[11px] space-y-1.5 text-muted leading-snug">
+            <li>• SQLAlchemy truy vấn N phiên giá lịch sử từ gold_prices.</li>
+            <li>
+              • Tính toán SMA7, SMA21, RSI14, Volatility lùi 1 phiên
+              (.shift(1)).
+            </li>
+            <li>
+              • Chạy AI Inference (LightGBM/LSTM), tính cận sai số dự báo
+              (90–95% tùy mô hình).
+            </li>
+            <li>• Ghi nhận bản ghi vào bảng predictions & prediction_items.</li>
+          </ul>
+        </div>
+        <div class="card p-4 rounded-xl">
+          <span class="font-head font-bold text-xs accent-gold block mb-1"
+            >BƯỚC 4: ĐÓNG GÓI & PHẢN HỒI</span
+          >
+          <span class="text-[11px] font-bold text-muted block mb-2"
+            >Response Serialization & GZip</span
+          >
+          <ul class="text-[11px] space-y-1.5 text-muted leading-snug">
+            <li>
+              • Pydantic Out Schema chuyển đổi Python Dict sang JSON chuẩn.
+            </li>
+            <li>
+              • Gắn Header thời gian thực thi: X-Process-Time-ms (< 15ms).
+            </li>
+            <li>• Middleware GZip nén dữ liệu nếu dung lượng > 1000 bytes.</li>
+            <li>
+              • Trả về HTTP 200 OK; Frontend gọi hàm renderDOM cập nhật UI.
+            </li>
+          </ul>
+        </div>
+      </div>
+      <div
+        class="card p-3 rounded-xl border border-white/10 text-xs font-mono-code text-[10px]"
+      >
+        <span class="font-head font-bold accent-gold"
+          >MẪU KẾT QUẢ JSON TRẢ VỀ (POST /api/predict):</span
+        >
+        {"prediction_id": 12, "trend": "Tăng", "last_actual": {"date":
+        "2026-10-30", "price": 88500000}, "items": [{"target_date":
+        "2026-11-02", "predicted_price": 89100000, "lower": 87800000, "upper":
+        90400000}, ...]}
+      </div>
+    </section>
+
+    <!-- SLIDE 8: MỤC 7 - THIẾT KẾ CƠ SỞ DỮ LIỆU (LIGHT) -->
+    <section class="slide theme-light" data-num="08 / 11">
+      <div>
+        <div class="flex justify-between items-center mb-3">
+          <span
+            class="badge px-3 py-1 rounded-full text-xs font-bold font-head uppercase"
+            >MỤC 7 · THIẾT KẾ CƠ SỞ DỮ LIỆU</span
+          >
+          <span class="font-head font-bold text-sm accent-gold-deep"
+            >08 / 11</span
+          >
+        </div>
+        <h2 class="text-2xl font-black font-head uppercase mb-1">
+          7. THIẾT KẾ CSDL: BẢNG, TRƯỜNG DỮ LIỆU, KHÓA CHÍNH/NGOẠI & QUAN HỆ
+        </h2>
+        <p class="text-xs text-muted">
+          Lược đồ CSDL quan hệ chuẩn hóa 3NF gồm 06 bảng thực thể và 02 SQL
+          Views tương thích
+        </p>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 my-auto">
+        <div class="card p-4 rounded-xl">
+          <span class="font-head font-bold text-xs accent-gold-deep block mb-2"
+            >BẢNG USERS & GOLD_TYPES</span
+          >
+          <div class="space-y-3 text-[11px] leading-snug">
+            <div>
+              <strong class="text-black block mb-0.5"
+                >■ users (Người dùng & Bảo mật)</strong
+              >
+              <p class="text-muted">
+                • id (INTEGER, PK, Auto-increment)<br />• username (VARCHAR(50),
+                Unique)<br />• email (VARCHAR(255), Unique)<br />• password_hash
+                (VARCHAR(255), Bcrypt)<br />• role (VARCHAR(10),
+                'user'/'admin')<br />• is_active (BOOL), created_at (DATETIME)
+              </p>
+            </div>
+            <div>
+              <strong class="text-black block mb-0.5"
+                >■ gold_types (Danh mục loại vàng)</strong
+              >
+              <p class="text-muted">
+                • id (INTEGER, PK, Auto-increment)<br />• code (VARCHAR(50),
+                Unique - XAU_VND_LUONG)<br />• name (VARCHAR(100)), unit
+                (VARCHAR(30))<br />• source (VARCHAR(100), Nguồn tham chiếu)
+              </p>
+            </div>
+          </div>
+        </div>
+        <div class="card p-4 rounded-xl">
+          <span class="font-head font-bold text-xs accent-gold-deep block mb-2"
+            >BẢNG GOLD_PRICES & ML_MODELS</span
+          >
+          <div class="space-y-3 text-[11px] leading-snug">
+            <div>
+              <strong class="text-black block mb-0.5"
+                >■ gold_prices (Nến lịch sử OHLCV)</strong
+              >
+              <p class="text-muted">
+                • id (INTEGER, PK, Auto-increment)<br />• gold_type_id (INTEGER,
+                FK -> gold_types.id)<br />• date (DATE, Index), open, high, low,
+                close<br />• volume, buy, sell (NUMERIC)<br />• Quan hệ: N - 1
+                với gold_types
+              </p>
+            </div>
+            <div>
+              <strong class="text-black block mb-0.5"
+                >■ ml_models (Quản lý mô hình AI)</strong
+              >
+              <p class="text-muted">
+                • id (INTEGER, PK, Auto-increment)<br />• name (VARCHAR(50)),
+                algorithm (VARCHAR(30))<br />• version (VARCHAR(20)),
+                artifact_path (VARCHAR)<br />• metrics (JSON: MAE, MSE, RMSE,
+                MAPE, R2)<br />• is_active (BOOL - trạng thái mặc định)
+              </p>
+            </div>
+          </div>
+        </div>
+        <div class="card p-4 rounded-xl">
+          <span class="font-head font-bold text-xs accent-gold-deep block mb-2"
+            >BẢNG PREDICTIONS & SQL VIEWS</span
+          >
+          <div class="space-y-3 text-[11px] leading-snug">
+            <div>
+              <strong class="text-black block mb-0.5"
+                >■ predictions & prediction_items</strong
+              >
+              <p class="text-muted">
+                • predictions: id [PK], user_id [FK], gold_type_id [FK],
+                ml_model_id [FK], horizon_days, created_at.<br />•
+                prediction_items: id [PK], prediction_id [FK], target_date,
+                predicted_price, lower_bound, upper_bound.<br />• Quan hệ: 1 - N
+                giữa lượt dự đoán và từng ngày.
+              </p>
+            </div>
+            <div>
+              <strong class="text-black block mb-0.5"
+                >■ 02 SQL Views Tương Thích Ngược</strong
+              >
+              <p class="text-muted">
+                • VIEW models: Ánh xạ 1-1 từ ml_models.<br />• VIEW
+                prediction_history: Ánh xạ từ predictions giúp khớp 100% tên 5
+                bảng theo đề cương.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 9: MINH CHỨNG THỰC HÀNH 1 (DARK) -->
+    <section class="slide theme-dark" data-num="09 / 11">
+      <div>
+        <div class="flex justify-between items-center mb-3">
+          <span
+            class="badge px-3 py-1 rounded-full text-xs font-bold font-head uppercase"
+            >MINH CHỨNG THỰC HÀNH · PHẦN 1</span
+          >
+          <span class="font-head font-bold text-sm accent-gold">09 / 11</span>
+        </div>
+        <h2 class="text-2xl font-black font-head uppercase mb-1">
+          8. DEMO CÁC CHỨC NĂNG KẾT NỐI DATABASE: THÊM, XEM, SỬA, XÓA (CRUD)
+        </h2>
+        <p class="text-xs text-muted">
+          Minh chứng thực tế thao tác dữ liệu hai chiều giữa Giao diện, Backend
+          và Database
+        </p>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-5 my-auto">
+        <div class="card p-5 rounded-2xl border-amber-600/50">
+          <h4 class="font-head font-bold text-xs accent-gold mb-3 uppercase">
+            CHỨC NĂNG 1: QUẢN TRỊ BẢNG GIÁ ADMIN (FULL CRUD)
+          </h4>
+          <div class="space-y-2.5 text-xs text-muted leading-relaxed">
+            <p>
+              <strong class="text-white">✔ XEM DỮ LIỆU (READ):</strong> Client
+              gọi GET /api/gold/history?order=desc -> Backend thực thi truy vấn
+              SQLAlchemy SELECT * FROM gold_prices -> Trả về danh sách nến và
+              render bảng giá.
+            </p>
+            <p>
+              <strong class="text-white">✔ THÊM MỚI (CREATE):</strong> Admin
+              nhập form thêm giá ngày mới gửi POST /api/admin/prices -> Backend
+              kiểm tra khóa trùng -> Thực thi INSERT INTO gold_prices -> Xóa
+              TTLCache và cập nhật bảng giá.
+            </p>
+            <p>
+              <strong class="text-white">✔ SỬA DỮ LIỆU (UPDATE):</strong> Bấm
+              nút 'Sửa' trên hàng dữ liệu, nhập giá Close mới -> Client gửi
+              PATCH /api/admin/prices/{id} -> Backend thực thi UPDATE
+              gold_prices SET close = :newClose WHERE id = :id -> Cập nhật thành
+              công.
+            </p>
+            <p>
+              <strong class="text-white">✔ XÓA DỮ LIỆU (DELETE):</strong> Bấm
+              nút 'Xóa', xác nhận dialog confirm -> Gửi DELETE
+              /api/admin/prices/{id} -> Backend thực thi DELETE FROM gold_prices
+              WHERE id = :id -> Bản ghi lập tức biến mất khỏi CSDL.
+            </p>
+          </div>
+        </div>
+        <div class="card p-5 rounded-2xl border-emerald-800/60">
+          <h4
+            class="font-head font-bold text-xs text-emerald-400 mb-3 uppercase"
+          >
+            CHỨC NĂNG 2: DỰ ĐOÁN AI & LƯU LỊCH SỬ CÁ NHÂN
+          </h4>
+          <div class="space-y-2.5 text-xs text-muted leading-relaxed">
+            <p>
+              <strong class="text-white">✔ GỬI THAM SỐ DỰ BÁO:</strong> Người
+              dùng chọn loại vàng, số ngày (7 ngày), chọn Model và bấm 'Kích
+              hoạt dự đoán' -> Gửi POST /api/predict kèm JWT Token.
+            </p>
+            <p>
+              <strong class="text-white">✔ MỞ TRANSACTION GHI CSDL:</strong>
+              Backend thực thi suy luận mô hình -> Mở transaction an toàn:
+              INSERT INTO predictions (user_id, gold_type_id, ml_model_id,
+              horizon_days, created_at) -> Sinh ra ID lượt dự đoán.
+            </p>
+            <p>
+              <strong class="text-white"
+                >✔ LƯU CHI TIẾT TỪNG PHIÊN (1-N):</strong
+              >
+              Vòng lặp ghi nhận 7 dòng kết quả tương ứng 7 ngày dự báo vào bảng
+              prediction_items (target_date, predicted_price, lower_bound,
+              upper_bound) -> Commit transaction.
+            </p>
+            <p>
+              <strong class="text-white">✔ TRUY VẤN LỊCH SỬ CÁ NHÂN:</strong>
+              Người dùng chuyển sang Tab 'Lịch sử' -> Gửi GET
+              /api/predictions/history -> Backend SELECT theo user_id đăng nhập
+              -> Hiển thị chính xác lượt dự đoán vừa tạo kèm nút xem chi tiết.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 10: MINH CHỨNG THỰC HÀNH 2 (LIGHT) -->
+    <section class="slide theme-light" data-num="10 / 11">
+      <div>
+        <div class="flex justify-between items-center mb-3">
+          <span
+            class="badge px-3 py-1 rounded-full text-xs font-bold font-head uppercase"
+            >MINH CHỨNG THỰC HÀNH · PHẦN 2</span
+          >
+          <span class="font-head font-bold text-sm accent-gold-deep"
+            >10 / 11</span
+          >
+        </div>
+        <h2 class="text-2xl font-black font-head uppercase mb-1">
+          9. CHỨNG MINH DỮ LIỆU THỰC SỰ LƯU TRONG DB & KẾT QUẢ KIỂM THỬ
+        </h2>
+        <p class="text-xs text-muted">
+          Đối chứng dữ liệu trực tiếp trong CSDL và kết quả kiểm thử tự động
+          toàn diện hệ thống
+        </p>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 my-auto">
+        <div class="card p-4 rounded-xl">
+          <span class="font-head font-bold text-xs accent-gold-deep block mb-2"
+            >ĐỐI CHỨNG TRUY VẤN SQL TRỰC TIẾP</span
+          >
+          <div class="text-[11px] space-y-2 leading-relaxed">
+            <p>• <strong>Kiểm tra bản ghi mới nhất trong Database:</strong></p>
+            <pre
+              class="font-mono-code text-[9.5px] bg-slate-200 p-1.5 rounded overflow-x-auto leading-tight"
+            >
+SELECT p.id, p.created_at, 
+       m.name, pi.target_date, 
+       pi.predicted_price
+FROM predictions p
+JOIN ml_models m ON p.ml_model_id = m.id
+JOIN prediction_items pi 
+  ON p.id = pi.prediction_id
+WHERE p.id = (SELECT MAX(id) FROM predictions);</pre>
+            <p>
+              • <strong>Kết quả:</strong> Trùng khớp 100% với mã lượt (#ID),
+              thời gian và các mốc giá dự báo hiển thị trên giao diện web.
+            </p>
+            <p>
+              • Dữ liệu lưu trữ persistent, không bị mất đi khi reload trang
+              hoặc restart máy chủ.
+            </p>
+          </div>
+        </div>
+        <div class="card p-4 rounded-xl">
+          <span class="font-head font-bold text-xs accent-gold-deep block mb-2"
+            >RÀNG BUỘC TOÀN VẸN & BẢO MẬT</span
+          >
+          <div class="text-[11px] space-y-2 leading-relaxed">
+            <p>
+              •
+              <strong>Ràng buộc khóa ngoại (Referential Integrity):</strong>
+              Không thể thêm bản ghi giá cho loại vàng chưa tồn tại trong
+              <code class="font-mono-code text-[10px]">gold_types</code>.
+            </p>
+            <p>
+              • <strong>Ràng buộc xóa (Cascade / Protect):</strong> Xóa một lượt
+              dự đoán trong
+              <code class="font-mono-code text-[10px]">predictions</code> sẽ tự
+              động dọn dẹp các dòng tương ứng trong
+              <code class="font-mono-code text-[10px]">prediction_items</code>.
+            </p>
+            <p>
+              • <strong>An toàn mật khẩu:</strong> Bảng
+              <code class="font-mono-code text-[10px]">users</code> lưu trữ mật
+              khẩu băm qua thuật toán Bcrypt (<code
+                class="font-mono-code text-[10px]"
+                >$2b$12$...</code
+              >), tuyệt đối không lưu plain text.
+            </p>
+          </div>
+        </div>
+        <div class="card p-4 rounded-xl">
+          <span class="font-head font-bold text-xs accent-green block mb-2"
+            >KẾT QUẢ KIỂM THỬ TỰ ĐỘNG (100% PASS)</span
+          >
+          <div class="text-[11px] space-y-2 leading-relaxed">
+            <p>
+              • <strong>Kiểm tra kiểu dữ liệu tĩnh Python (Mypy):</strong
+              ><br /><span class="text-emerald-700 font-bold font-mono-code"
+                >"Success: no issues found in 44 source files"</span
+              >
+            </p>
+            <p>
+              • <strong>Kiểm tra cú pháp JavaScript:</strong><br /><span
+                class="text-emerald-700 font-bold font-mono-code"
+                >"node --check app.js && data.js" -> PASS (0 lỗi)</span
+              >
+            </p>
+            <p>
+              • <strong>Kiểm thử tích hợp Backend & Auth:</strong><br /><span
+                class="text-emerald-700 font-bold font-mono-code"
+                >"backend/tests: 4 passed in 4.42s"</span
+              >
+            </p>
+            <p>
+              • <strong>Kiểm thử Machine Learning Pipeline:</strong><br /><span
+                class="text-emerald-700 font-bold font-mono-code"
+                >"ml/baseline/tests: 5 passed in 2.79s (100%)"</span
+              >
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 11: TỔNG KẾT & VẤN ĐÁP (DARK) -->
+    <section class="slide theme-dark" data-num="11 / 11">
+      <div>
+        <div class="flex justify-between items-center mb-3">
+          <span
+            class="badge px-3 py-1 rounded-full text-xs font-bold font-head uppercase"
+            >TỔNG KẾT ĐỒ ÁN · Q&A</span
+          >
+          <span class="font-head font-bold text-sm accent-gold">11 / 11</span>
+        </div>
+        <h2 class="text-2xl font-black font-head uppercase mb-1">
+          10. TỔNG KẾT ĐỒ ÁN & SẴN SÀNG VẤN ĐÁP KỸ THUẬT
+        </h2>
+        <p class="text-xs text-muted">
+          Hoàn thành xuất sắc mục tiêu đề ra, sẵn sàng tiến hành demo trực tiếp
+          theo yêu cầu của Hội đồng
+        </p>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-5 my-auto">
+        <div class="card p-5 rounded-2xl border-amber-600/50">
+          <h4 class="font-head font-bold text-xs accent-gold mb-3 uppercase">
+            KẾT QUẢ ĐẠT ĐƯỢC
+          </h4>
+          <ul class="text-xs text-muted space-y-2 leading-relaxed">
+            <li>
+              • Xây dựng thành công ứng dụng Web SPA phân tích và dự báo giá
+              vàng trực tuyến hoàn chỉnh.
+            </li>
+            <li>
+              • Tích hợp đồng bộ luồng: Frontend -> FastAPI Backend -> Mô hình
+              AI -> MySQL Database.
+            </li>
+            <li>
+              • Đáp ứng 100% đầy đủ 7 yêu cầu cốt lõi và các tiêu chí minh chứng
+              thực hành của đề tài.
+            </li>
+          </ul>
+        </div>
+        <div class="card p-5 rounded-2xl">
+          <h4 class="font-head font-bold text-xs accent-gold mb-3 uppercase">
+            ĐIỂM SẴN SÀNG KHI VẤN ĐÁP
+          </h4>
+          <ul class="text-xs text-muted space-y-2 leading-relaxed">
+            <li>
+              • <strong>Quy đổi giá vàng:</strong> Giải trình công thức chuẩn
+              quốc tế (GC=F * USDVND=X / 0.829426).
+            </li>
+            <li>
+              • <strong>Chống Target Leakage:</strong> Tính toán chỉ số kỹ thuật
+              lùi 1 phiên (.shift(1)) đảm bảo tính khách quan.
+            </li>
+            <li>
+              • <strong>Kiến trúc CSDL:</strong> Giải thích cấu trúc 3NF tách
+              biệt và 2 SQL Views tương thích ngược.
+            </li>
+          </ul>
+        </div>
+        <div class="card p-5 rounded-2xl">
+          <h4 class="font-head font-bold text-xs accent-gold mb-3 uppercase">
+            LỜI CẢM ƠN & PHẦN VẤN ĐÁP
+          </h4>
+          <div class="text-xs text-muted space-y-2 leading-relaxed">
+            <p>
+              Nhóm xin trân trọng cảm ơn Quý Thầy/Cô bộ môn đã tận tình hướng
+              dẫn trong suốt quá trình thực hiện đồ án!
+            </p>
+            <p>
+              Nhóm đã sẵn sàng khởi chạy hệ thống, demo các tính năng trực tiếp
+              và trả lời các câu hỏi vấn đáp của Quý Thầy/Cô.
+            </p>
+            <p class="accent-gold font-bold text-center pt-2">
+              Kính mời Quý Thầy/Cô đặt câu hỏi!
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <script>
+      const slides = document.querySelectorAll(".slide");
+      const indicator = document.getElementById("slideIndicator");
+      const prevBtn = document.getElementById("prevBtn");
+      const nextBtn = document.getElementById("nextBtn");
+      const fsBtn = document.getElementById("fsBtn");
+      let currentIdx = 0;
+
+      function showSlide(index) {
+        if (index < 0 || index >= slides.length) return;
+        slides[currentIdx].classList.remove("active");
+        currentIdx = index;
+        slides[currentIdx].classList.add("active");
+        indicator.textContent =
+          slides[currentIdx].getAttribute("data-num") ||
+          `${currentIdx + 1} / ${slides.length}`;
+        prevBtn.disabled = currentIdx === 0;
+        nextBtn.disabled = currentIdx === slides.length - 1;
+      }
+
+      prevBtn.addEventListener("click", () => showSlide(currentIdx - 1));
+      nextBtn.addEventListener("click", () => showSlide(currentIdx + 1));
+
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "ArrowRight" || e.key === " " || e.key === "PageDown") {
+          showSlide(currentIdx + 1);
+        } else if (e.key === "ArrowLeft" || e.key === "PageUp") {
+          showSlide(currentIdx - 1);
+        } else if (e.key === "f" || e.key === "F") {
+          toggleFullscreen();
+        }
+      });
+
+      function toggleFullscreen() {
+        if (!document.fullscreenElement) {
+          document.documentElement.requestFullscreen().catch(() => {});
+        } else {
+          if (document.exitFullscreen) document.exitFullscreen();
+        }
+      }
+      fsBtn.addEventListener("click", toggleFullscreen);
+
+      showSlide(0);
+    </script>
+  </body>
+</html>
