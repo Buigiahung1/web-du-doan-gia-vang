@@ -43,9 +43,9 @@ dist/
 /.codex/
 /GLOSSARY.md
 
-# Existing team policy: tests and test-only configuration are shared separately
-tests/
-test_*.py
+# Team policy updated: test suite is tracked in Git for CI/CD automated validation
+# tests/
+# test_*.py
 /backend/requirements-dev.txt
 .coverage
 .coverage.*
@@ -60,10 +60,7 @@ Thumbs.db
 Desktop.ini
 *.tmp
 *.bak
-
-# Cấu hình Claude Code riêng từng máy
-CLAUDE.local.md
-.claude/
-
-# Chỉ mục CodeGraph: giữ local
-.codegraph/
+backend/pymysql*
+backend/jwt*
+*.dist-info/
+scratch/

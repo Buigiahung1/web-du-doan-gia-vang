@@ -69,7 +69,14 @@ def update_user(
     return AdminUserOut.model_validate(target)
 
 
-def _validate_ohlc(o: float, h: float, l: float, c: float) -> None:
+def _validate_ohlc(
+    o: float,
+    h: float,
+    l: float,
+    c: float,
+    buy: float | None = None,
+    sell: float | None = None,
+) -> None:
     if any(not math.isfinite(v) or v <= 0 or v >= 1e16 for v in (o, h, l, c)):
         raise AppError(422, "VALIDATION_ERROR", "Giá OHLC phải hữu hạn và dương.")
     if not (l <= min(o, c) <= max(o, c) <= h):
@@ -78,11 +85,17 @@ def _validate_ohlc(o: float, h: float, l: float, c: float) -> None:
             "VALIDATION_ERROR",
             "Bất biến OHLC không hợp lệ (low <= min(open, close) <= max(open, close) <= high).",
         )
+    if buy is not None and sell is not None and buy > sell:
+        raise AppError(
+            422,
+            "VALIDATION_ERROR",
+            f"Bất biến giá mua/bán không hợp lệ: Giá mua ({buy:,.0f}) không được lớn hơn giá bán ({sell:,.0f}).",
+        )
 
 
 def create_price(db: Session, data: AdminPriceCreate) -> AdminPriceOut:
     gt = gold_service.require_type(db, data.gold_type)
-    _validate_ohlc(data.open, data.high, data.low, data.close)
+    _validate_ohlc(data.open, data.high, data.low, data.close, data.buy, data.sell)
     existing = db.scalar(
         select(GoldPrice).where(
             GoldPrice.gold_type_id == gt.id, GoldPrice.date == data.date
@@ -124,7 +137,9 @@ def update_price(db: Session, price_id: int, data: AdminPriceUpdate) -> AdminPri
     h = data.high if data.high is not None else row.high
     l = data.low if data.low is not None else row.low
     c = data.close if data.close is not None else row.close
-    _validate_ohlc(o, h, l, c)
+    b = data.buy if data.buy is not None else row.buy
+    s = data.sell if data.sell is not None else row.sell
+    _validate_ohlc(o, h, l, c, b, s)
     row.open, row.high, row.low, row.close = o, h, l, c
     for field in ("volume", "buy", "sell"):
         if field in data.model_fields_set:

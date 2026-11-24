@@ -1,0 +1,40 @@
+services:
+  db:
+    image: mysql:8.0
+    container_name: gold_ai_mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: gold_predict
+      MYSQL_USER: gold
+      MYSQL_PASSWORD: gold
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "gold", "-pgold"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: gold_ai_backend
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: "mysql+pymysql://gold:gold@db:3306/gold_predict"
+      JWT_SECRET: "gold-ai-production-super-secret-key-at-least-32-chars"
+      USE_STUB_MODEL: "false"
+      CORS_ORIGINS: "http://localhost:5173,http://localhost:3000,http://127.0.0.1:5500,http://127.0.0.1:8000,http://localhost:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  mysql_data:

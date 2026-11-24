@@ -64,6 +64,8 @@ CREATE TABLE gold_prices (
 	created_at DATETIME NOT NULL DEFAULT now(), 
 	PRIMARY KEY (id), 
 	CONSTRAINT uq_gold_prices_type_date UNIQUE (gold_type_id, date), 
+	CONSTRAINT chk_gold_prices_ohlc CHECK (low <= open AND open <= high AND low <= close AND close <= high AND low > 0),
+	CONSTRAINT chk_gold_prices_spread CHECK (buy IS NULL OR sell IS NULL OR buy <= sell),
 	FOREIGN KEY(gold_type_id) REFERENCES gold_types (id)
 )
 

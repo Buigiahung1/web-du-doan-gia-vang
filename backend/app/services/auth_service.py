@@ -4,7 +4,7 @@ import datetime as dt
 import importlib
 
 import jwt
-from sqlalchemy import or_, select
+from sqlalchemy import func, or_, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
@@ -23,31 +23,51 @@ def _bcrypt():
         ) from None
 
 
-def register(db: Session, data: UserRegister) -> None:
-    existing = db.scalar(
-        select(User).where(
-            or_(User.username == data.username, User.email == str(data.email))
-        )
+def register(db: Session, data: UserRegister) -> User:
+    username_clean = (data.username or "").strip()
+    email_clean = str(data.email or "").strip().lower()
+    if not username_clean:
+        raise AppError(400, "INVALID_USERNAME", "Tên đăng nhập không được để trống.")
+    if not email_clean:
+        raise AppError(400, "INVALID_EMAIL", "Email không được để trống.")
+
+    # Kiểm tra trùng lặp tách biệt để thông báo lỗi chính xác
+    user_by_name = db.scalar(
+        select(User).where(func.lower(User.username) == username_clean.lower())
     )
-    if existing:
-        raise AppError(409, "ACCOUNT_EXISTS", "Tên đăng nhập hoặc email đã tồn tại.")
+    if user_by_name:
+        raise AppError(
+            409, "USERNAME_EXISTS", f"Tên đăng nhập '{username_clean}' đã được sử dụng."
+        )
+
+    user_by_email = db.scalar(
+        select(User).where(func.lower(User.email) == email_clean)
+    )
+    if user_by_email:
+        raise AppError(
+            409, "EMAIL_EXISTS", f"Email '{email_clean}' đã được đăng ký tài khoản khác."
+        )
+
     bcrypt = _bcrypt()
     user = User(
-        username=data.username,
-        email=str(data.email),
-        full_name=data.full_name,
+        username=username_clean,
+        email=email_clean,
+        full_name=(data.full_name or username_clean).strip(),
         phone=data.phone,
         password_hash=bcrypt.hashpw(data.password.encode(), bcrypt.gensalt()).decode(),
         role="user",
+        is_active=True,
     )
     db.add(user)
     try:
         db.commit()
-    except IntegrityError:
+    except IntegrityError as exc:
         db.rollback()
         raise AppError(
-            409, "ACCOUNT_EXISTS", "Tên đăng nhập hoặc email đã tồn tại."
-        ) from None
+            409, "ACCOUNT_EXISTS", "Tên đăng nhập hoặc email đã tồn tại trong hệ thống."
+        ) from exc
+    db.refresh(user)
+    return user
 
 
 def login(db: Session, username: str, password: str) -> str:
@@ -58,7 +78,17 @@ def login(db: Session, username: str, password: str) -> str:
             "Máy chủ chưa cấu hình JWT_SECRET tối thiểu 32 ký tự.",
         )
     ident = (username or "").strip()
-    user = db.scalar(select(User).where(or_(User.username == ident, User.email == ident)))
+    if not ident:
+        raise AppError(400, "INVALID_CREDENTIALS", "Vui lòng nhập tên đăng nhập hoặc email.")
+
+    user = db.scalar(
+        select(User).where(
+            or_(
+                func.lower(User.username) == ident.lower(),
+                func.lower(User.email) == ident.lower(),
+            )
+        )
+    )
     valid = False
     if user and user.is_active and len(password.encode()) <= 72:
         try:
@@ -112,3 +142,14 @@ def change_password(db: Session, user: User, data: ChangePasswordRequest) -> Non
         data.new_password.encode(), bcrypt.gensalt()
     ).decode()
     db.commit()
+
+
+def reset_password(db: Session, identity: str, new_password: str) -> None:
+    ident = (identity or "").strip()
+    user = db.scalar(select(User).where(or_(User.username == ident, User.email == ident)))
+    if not user:
+        raise AppError(404, "USER_NOT_FOUND", "Không tìm thấy tài khoản với tên đăng nhập hoặc email này.")
+    bcrypt = _bcrypt()
+    user.password_hash = bcrypt.hashpw(new_password.encode(), bcrypt.gensalt()).decode()
+    db.commit()
+

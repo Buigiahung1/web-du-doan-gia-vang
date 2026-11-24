@@ -32,4 +32,13 @@ def directional_accuracy(y, p, last_close):
 
 def all_metrics(y, p) -> dict:
     y, p = np.asarray(y, float).ravel(), np.asarray(p, float).ravel()
-    return {"MAE": mae(y, p), "MSE": mse(y, p), "RMSE": rmse(y, p), "MAPE": mape(y, p), "R2": r2(y, p)}
+    metrics = {
+        "MAE": mae(y, p),
+        "MSE": mse(y, p),
+        "RMSE": rmse(y, p),
+        "MAPE": mape(y, p),
+        "R2": r2(y, p),
+    }
+    if len(y) > 1:
+        metrics["DA"] = float(np.mean(np.sign(np.diff(p)) == np.sign(np.diff(y))) * 100)
+    return metrics

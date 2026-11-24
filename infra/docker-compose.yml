@@ -1,0 +1,70 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: aurum_mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: RootPasswordSecure2026!
+      MYSQL_DATABASE: gold_predict
+      MYSQL_USER: gold_user
+      MYSQL_PASSWORD: SecureGoldPassword2026!
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "gold_user", "-pSecureGoldPassword2026!"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+
+  backend:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    container_name: aurum_backend
+    restart: always
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: mysql+pymysql://gold_user:SecureGoldPassword2026!@mysql:3306/gold_predict
+      JWT_SECRET_KEY: aurum_quant_production_secret_key_2026_at_least_32_chars_long!
+      CORS_ORIGINS: http://localhost,http://127.0.0.1,http://localhost:80
+      USE_STUB_MODEL: "false"
+    ports:
+      - "8000:8000"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/health')"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          memory: 1.5G
+
+  nginx:
+    image: nginx:alpine
+    container_name: aurum_nginx
+    restart: always
+    depends_on:
+      - backend
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+
+volumes:
+  mysql_data:

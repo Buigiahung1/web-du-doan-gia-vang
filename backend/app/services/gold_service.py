@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 from app.core.cache import TTLCache
 from app.core.config import settings
 from app.core.errors import AppError
+from app.core.timeutil import to_vn
 from app.repositories import gold_repo
 from app.schemas.gold import CandleOut, CurrentOut, HistoryOut, SummaryOut
 
@@ -70,8 +71,15 @@ def get_current(db: Session, code: str) -> CurrentOut:
         row = gold_repo.latest_price(db, gt.id)
         if row is None:
             raise _no_data(code)
-        return CurrentOut(gold_type=code, unit=gt.unit, date=row.date, close=row.close, buy=row.buy,
-                          sell=row.sell, updated_at=row.created_at)
+        buy = row.buy
+        sell = row.sell
+        if buy is None and row.close:
+            spread = float(row.close) * 0.015 if "USD" not in (gt.unit or "") else float(row.close) * 0.002
+            buy = round(float(row.close) - spread, 2 if "USD" in (gt.unit or "") else -3)
+        if sell is None and row.close:
+            sell = round(float(row.close), 2 if "USD" in (gt.unit or "") else -3)
+        return CurrentOut(gold_type=code, unit=gt.unit, date=row.date, close=row.close, buy=buy,
+                          sell=sell, updated_at=to_vn(row.created_at))
     return cache.get_or_set(("current", code), build)
 
 
@@ -90,5 +98,5 @@ def get_summary(db: Session, code: str) -> SummaryOut:
         ch = {n: _pct(row.close, gold_repo.price_on_or_before(db, gt.id, row.date - dt.timedelta(days=n)))
               for n in (1, 7, 30)}
         return SummaryOut(gold_type=code, unit=gt.unit, date=row.date, close=row.close, change_1d_pct=ch[1],
-                          change_7d_pct=ch[7], change_30d_pct=ch[30], updated_at=row.created_at)
+                          change_7d_pct=ch[7], change_30d_pct=ch[30], updated_at=to_vn(row.created_at))
     return cache.get_or_set(("summary", code), build)

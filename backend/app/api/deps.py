@@ -17,17 +17,13 @@ def get_registry(request: Request) -> ModelRegistry:
 
 def get_optional_user(request: Request, db: Session = Depends(get_db)) -> User | None:
     header = request.headers.get("Authorization")
-    if header is None:
+    if not header:
         return None
     parts = header.split()
     if len(parts) != 2 or parts[0].lower() != "bearer":
-        raise AppError(401, "UNAUTHORIZED", "Token đăng nhập không hợp lệ.")
+        return None
     if len(settings.jwt_secret) < 32:
-        raise AppError(
-            503,
-            "AUTH_UNAVAILABLE",
-            "Máy chủ chưa cấu hình JWT_SECRET tối thiểu 32 ký tự.",
-        )
+        return None
     try:
         payload = jwt.decode(
             parts[1],
@@ -37,12 +33,10 @@ def get_optional_user(request: Request, db: Session = Depends(get_db)) -> User |
         )
         user_id = int(payload["sub"])
     except (jwt.PyJWTError, ValueError, TypeError):
-        raise AppError(
-            401, "UNAUTHORIZED", "Token đăng nhập không hợp lệ hoặc đã hết hạn."
-        ) from None
+        return None
     user = db.get(User, user_id)
     if user is None or not user.is_active:
-        raise AppError(401, "UNAUTHORIZED", "Tài khoản không tồn tại hoặc đã bị khóa.")
+        return None
     return user
 
 

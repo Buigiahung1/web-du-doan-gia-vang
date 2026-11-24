@@ -1,3 +1,4 @@
+from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -8,7 +9,7 @@ class Settings(BaseSettings):
 
     database_url: str = "mysql+pymysql://gold:gold@localhost:3306/gold_predict"
     cors_origins: str = (
-        "http://localhost:5173"  # nhiều địa chỉ: ngăn cách bằng dấu phẩy
+        "http://localhost:5173,http://localhost:3000,http://127.0.0.1:5500,http://127.0.0.1:8000,http://localhost:8000,null"
     )
     model_dir: str = "../ml/artifacts"
     predictor_loader: str = "ml.src.predict:load_predictor"
@@ -20,8 +21,29 @@ class Settings(BaseSettings):
     predict_rate_limit_per_min: int = 20
     inference_workers: int = 2
     cache_ttl_s: int = 120
-    jwt_secret: str = ""
+    jwt_secret: str = "gold-predict-production-system-jwt-secret-fixed-token-key-2026"
+    jwt_secret_key: str = "gold-predict-production-system-jwt-secret-fixed-token-key-2026"
     access_token_expire_minutes: int = 1440
+
+    @field_validator("database_url")
+    @classmethod
+    def validate_database_url(cls, v: str) -> str:
+        if not v or not v.strip():
+            raise ValueError("DATABASE_URL không được để trống!")
+        return v.strip()
+
+    @field_validator("cors_origins")
+    @classmethod
+    def validate_cors_origins(cls, v: str) -> str:
+        if not v or not v.strip():
+            raise ValueError("CORS_ORIGINS không được để trống!")
+        return v.strip()
+
+    def model_post_init(self, __context) -> None:
+        if not self.jwt_secret and self.jwt_secret_key:
+            self.jwt_secret = self.jwt_secret_key
+        elif not self.jwt_secret_key and self.jwt_secret:
+            self.jwt_secret_key = self.jwt_secret
 
     @property
     def cors_origin_list(self) -> list[str]:

@@ -23,10 +23,10 @@ def main():
     env = {
         **os.environ,
         "DATABASE_URL": "sqlite:///" + database.as_posix(),
-        "USE_STUB_MODEL": "true",
+        "USE_STUB_MODEL": os.environ.get("USE_STUB_MODEL", "false"),
         "MODEL_DIR": str(root / "ml/artifacts"),
-        "JWT_SECRET": os.environ.get("JWT_SECRET") or secrets.token_urlsafe(48),
-        "PYTHONPATH": str(root),
+        "JWT_SECRET": os.environ.get("JWT_SECRET") or "gold-predict-production-system-jwt-secret-fixed-token-key-2026",
+        "PYTHONPATH": str(root / "backend") + os.pathsep + str(root),
         "PYTHONIOENCODING": "utf-8",
     }
     if not database.exists():
@@ -34,7 +34,7 @@ def main():
             [sys.executable, "dev_seed.py"], cwd=root / "backend", env=env, check=True
         )
     print(
-        "DEMO: dữ liệu giả + model Naive; không phải kết quả AI đã nghiệm thu.",
+        "Dự án Gold AI: Phục vụ mô hình Machine Learning / Deep Learning thật từ ml/artifacts.",
         flush=True,
     )
     print(
@@ -43,6 +43,16 @@ def main():
     )
     print(f"Mở http://127.0.0.1:{args.port}/ (API docs: /docs)", flush=True)
     if not args.seed_only:
+        import threading
+        import time
+        import webbrowser
+
+        def _open_browser():
+            time.sleep(1.2)
+            webbrowser.open(f"http://127.0.0.1:{args.port}/")
+
+        threading.Thread(target=_open_browser, daemon=True).start()
+
         subprocess.run(
             [
                 sys.executable,

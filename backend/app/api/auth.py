@@ -1,5 +1,6 @@
 """Authentication shared by the frontend and prediction routes (TV4)."""
 
+import anyio
 from fastapi import APIRouter, Depends, Request
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
@@ -10,6 +11,7 @@ from app.db.session import get_db
 from app.schemas.auth import (
     ChangePasswordRequest,
     ProfileUpdateRequest,
+    ResetPasswordRequest,
     UserRegister,
 )
 from app.services import auth_service
@@ -52,10 +54,23 @@ def change_password(
     return {"message": "Đổi mật khẩu thành công."}
 
 
+@router.post("/reset-password")
+def reset_password(data: ResetPasswordRequest, db: Session = Depends(get_db)):
+    auth_service.reset_password(db, data.identity, data.new_password)
+    return {"message": "Đặt lại mật khẩu thành công. Vui lòng đăng nhập bằng mật khẩu mới."}
+
+
+
 @router.post("/register", status_code=201)
 def register(data: UserRegister, db: Session = Depends(get_db)):
-    auth_service.register(db, data)
-    return {"message": "Đăng ký tài khoản thành công."}
+    user = auth_service.register(db, data)
+    token = auth_service.login(db, user.username, data.password)
+    return {
+        "message": f"Đăng ký tài khoản '{user.username}' thành công!",
+        "access_token": token,
+        "token_type": "bearer",
+        "user": _user_out(user),
+    }
 
 
 @router.post("/login")
@@ -69,20 +84,31 @@ async def login(request: Request, db: Session = Depends(get_db)):
         form = await request.form()
         ident = str(form.get("username") or form.get("email") or "")
         pwd = str(form.get("password") or "")
+    # Run CPU/DB-bound bcrypt & query in worker thread pool to avoid blocking the asyncio event loop
+    token = await anyio.to_thread.run_sync(auth_service.login, db, ident, pwd)
+    from sqlalchemy import or_, select
+    user = db.scalar(select(User).where(or_(User.username == ident.strip(), User.email == ident.strip())))
+    user_data = _user_out(user) if user else None
     return {
-        "access_token": auth_service.login(db, ident, pwd),
+        "access_token": token,
         "token_type": "bearer",
+        "user": user_data,
     }
 
 
 @router.post("/token")
 def login_token(form: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+    token = auth_service.login(db, form.username, form.password)
+    from sqlalchemy import or_, select
+    user = db.scalar(select(User).where(or_(User.username == form.username.strip(), User.email == form.username.strip())))
+    user_data = _user_out(user) if user else None
     return {
-        "access_token": auth_service.login(db, form.username, form.password),
+        "access_token": token,
         "token_type": "bearer",
+        "user": user_data,
     }
 
 
 @router.post("/logout")
-def logout(user: User = Depends(get_current_user)):
+def logout():
     return {"message": "Đăng xuất thành công."}

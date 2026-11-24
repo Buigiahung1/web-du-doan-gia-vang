@@ -24,10 +24,28 @@ class RateLimiter:
             if len(q) >= self.limit:
                 return False
             q.append(now)
+
+            # Phòng ngừa Unbounded Memory Leak: dọn dẹp các key hết hạn khi danh sách phình to
+            if len(self._hits) > 500:
+                expired = [
+                    k for k, dq in self._hits.items()
+                    if not dq or (now - dq[-1] > self.window_s)
+                ]
+                for k in expired:
+                    del self._hits[k]
+
             return True
 
 
 def predict_rate_limit(request: Request) -> None:
-    key = request.client.host if request.client else "unknown"
+    # Nhận diện IP thực khi chạy sau Reverse Proxy (Nginx, Traefik, Cloudflare)
+    forwarded = request.headers.get("x-forwarded-for")
+    if forwarded:
+        key = forwarded.split(",")[0].strip()
+    elif request.client:
+        key = request.client.host
+    else:
+        key = "unknown"
+
     if not request.app.state.predict_limiter.allow(key):
         raise AppError(429, "RATE_LIMITED", "Bạn thao tác quá nhanh, vui lòng thử lại sau ít phút.")

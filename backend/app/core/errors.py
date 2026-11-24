@@ -16,10 +16,17 @@ class AppError(Exception):
         super().__init__(message)
 
 
+import uuid
+
 def error_response(status_code: int, code: str, message: str, details=None) -> JSONResponse:
-    body: dict = {"error": {"code": code, "message": message}}
-    if details:
-        body["error"]["details"] = details
+    body: dict = {
+        "error": {
+            "code": code,
+            "message": message,
+            "details": details if details is not None else [],
+            "request_id": str(uuid.uuid4()),
+        }
+    }
     return JSONResponse(status_code=status_code, content=body)
 
 

@@ -76,3 +76,14 @@ class ChangePasswordRequest(BaseModel):
     @classmethod
     def new_password_bytes(cls, value: str) -> str:
         return _check_password_bytes(value)
+
+
+class ResetPasswordRequest(BaseModel):
+    identity: str = Field(min_length=3, max_length=255, description="Tên đăng nhập hoặc email")
+    new_password: str = Field(min_length=8)
+
+    @field_validator("new_password")
+    @classmethod
+    def new_password_bytes(cls, value: str) -> str:
+        return _check_password_bytes(value)
+

@@ -79,6 +79,8 @@ def to_inference_frame(rows) -> pd.DataFrame:
 
 
 def _model_ref(m) -> ModelRef:
+    if m is None:
+        return ModelRef(id=1, name="LightGBM Quant", version="v1")
     return ModelRef(id=m.id, name=m.name, version=m.version)
 
 
@@ -209,12 +211,15 @@ def history_for_user(
     )
     items = []
     for p in rows:
+        if not p.items:
+            continue
         final = p.items[-1]
+        gt_code = p.gold_type.code if p.gold_type else "XAU_VND_LUONG"
         items.append(
             PredictionSummaryOut(
                 id=p.id,
                 created_at=to_vn(p.created_at),
-                gold_type=p.gold_type.code,
+                gold_type=gt_code,
                 model=_model_ref(p.ml_model),
                 horizon_days=p.horizon_days,
                 final_target_date=final.target_date,
@@ -231,10 +236,11 @@ def detail(db: Session, prediction_id: int, user) -> PredictionDetailOut:
     # Người khác (không phải chủ sở hữu, không phải admin) nhận 404 để không lộ sự tồn tại của bản ghi
     if p is None or (p.user_id != user.id and user.role != "admin"):
         raise AppError(404, "PREDICTION_NOT_FOUND", "Không tìm thấy lượt dự đoán.")
+    gt_code = p.gold_type.code if p.gold_type else "XAU_VND_LUONG"
     return PredictionDetailOut(
         id=p.id,
         created_at=to_vn(p.created_at),
-        gold_type=p.gold_type.code,
+        gold_type=gt_code,
         model=_model_ref(p.ml_model),
         horizon_days=p.horizon_days,
         items=[

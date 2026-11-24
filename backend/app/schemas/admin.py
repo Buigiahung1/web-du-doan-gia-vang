@@ -2,7 +2,7 @@ import datetime as dt
 import html
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 
 def _sanitize_text(value: str | None) -> str | None:
@@ -52,6 +52,16 @@ class AdminPriceCreate(BaseModel):
     buy: float | None = Field(default=None, gt=0)
     sell: float | None = Field(default=None, gt=0)
 
+    @model_validator(mode="after")
+    def validate_financial_invariants(self) -> "AdminPriceCreate":
+        if not (self.low <= self.open <= self.high):
+            raise ValueError(f"Vi phạm bất biến OHLC: low ({self.low}) <= open ({self.open}) <= high ({self.high})")
+        if not (self.low <= self.close <= self.high):
+            raise ValueError(f"Vi phạm bất biến OHLC: low ({self.low}) <= close ({self.close}) <= high ({self.high})")
+        if self.buy is not None and self.sell is not None and self.buy > self.sell:
+            raise ValueError(f"Vi phạm chênh lệch giá: Giá mua ({self.buy}) không được lớn hơn giá bán ({self.sell})")
+        return self
+
 
 class AdminPriceUpdate(BaseModel):
     open: float | None = Field(default=None, gt=0)
@@ -61,6 +71,12 @@ class AdminPriceUpdate(BaseModel):
     volume: float | None = Field(default=None, ge=0)
     buy: float | None = Field(default=None, gt=0)
     sell: float | None = Field(default=None, gt=0)
+
+    @model_validator(mode="after")
+    def validate_update_invariants(self) -> "AdminPriceUpdate":
+        if self.buy is not None and self.sell is not None and self.buy > self.sell:
+            raise ValueError(f"Vi phạm chênh lệch giá: Giá mua ({self.buy}) không được lớn hơn giá bán ({self.sell})")
+        return self
 
 
 class AdminPriceOut(BaseModel):

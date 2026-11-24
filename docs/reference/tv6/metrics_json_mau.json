@@ -1,0 +1,62 @@
+{
+  "model_name": "GRU",
+  "framework": "keras",
+  "target": "vnd_price",
+  "unit": "VND/luong",
+  "target_mode": "return",
+  "lookback": 60,
+  "horizon": 30,
+  "features": [
+    "vnd_price",
+    "sma_7",
+    "sma_21",
+    "rsi_14",
+    "volatility_14"
+  ],
+  "test_next_day": {
+    "MAE": 310146,
+    "MSE": 154237737944,
+    "RMSE": 392731,
+    "MAPE": 0.7378,
+    "R2": 0.9917,
+    "DirectionalAccuracy": 0.5672
+  },
+  "test_all_horizons": {
+    "MAE": 1327669,
+    "MSE": 2871038043040,
+    "RMSE": 1694414,
+    "MAPE": 3.261,
+    "R2": 0.8211
+  },
+  "validation": {
+    "MAE": 1656051,
+    "MSE": 4706063916996,
+    "RMSE": 2169346,
+    "MAPE": 3.7541,
+    "R2": 0.4105
+  },
+  "naive_baseline": {
+    "MAE": 310565,
+    "MSE": 152376603912,
+    "RMSE": 390354,
+    "MAPE": 0.7386,
+    "R2": 0.9918
+  },
+  "confidence_interval": {
+    "level": 0.9,
+    "coverage_test_next_day": 0.9202,
+    "coverage_test_all": 0.8067
+  },
+  "data_range": {
+    "start": "2019-01-02",
+    "end": "2025-11-25",
+    "rows_raw": 1800,
+    "rows_featurized": 1780
+  },
+  "trained_at": "2026-11-05T11:12:28",
+  "versions": {
+    "python": "3.12.3",
+    "tensorflow": "2.21.0",
+    "keras": "3.15.1"
+  }
+}

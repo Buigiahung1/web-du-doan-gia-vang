@@ -120,6 +120,18 @@ def _build_feature_row(price_series: pd.Series, date_str: str) -> pd.DataFrame:
 
 # ── Public API ────────────────────────────────────────────────────────────────
 
+def _directional_accuracy(y_true: np.ndarray, y_pred: np.ndarray) -> float:
+    """
+    Tính tỉ lệ đoán đúng chiều biến động (Directional Accuracy / Hit Ratio) (%).
+    Đo lường xác suất mô hình dự đoán đúng xu hướng tăng hay giảm của giá.
+    """
+    if len(y_true) < 2:
+        return 0.0
+    true_diff = np.diff(y_true)
+    pred_diff = np.diff(y_pred)
+    return float(np.mean(np.sign(true_diff) == np.sign(pred_diff)) * 100.0)
+
+
 def _compute_metrics(y_true: np.ndarray, y_pred: np.ndarray) -> dict[str, float]:
     mse = float(mean_squared_error(y_true, y_pred))
     return {
@@ -128,6 +140,7 @@ def _compute_metrics(y_true: np.ndarray, y_pred: np.ndarray) -> dict[str, float]
         "rmse": float(np.sqrt(mse)),
         "mape": _mape(y_true, y_pred),
         "r2": float(r2_score(y_true, y_pred)),
+        "da": _directional_accuracy(y_true, y_pred),
     }
 
 

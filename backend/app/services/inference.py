@@ -44,3 +44,10 @@ def run_inference(predictor, df: pd.DataFrame, horizon: int, timeout_s: float) -
         logger.error("Đầu ra model không hợp lệ: %s", vals)
         raise AppError(500, "PREDICTION_FAILED", "Mô hình trả về kết quả không hợp lệ.")
     return vals[:horizon]  # model có thể luôn trả 7 ngày, chỉ lấy số ngày người dùng chọn
+
+
+def shutdown_inference_pool() -> None:
+    """Tắt ThreadPoolExecutor khi server dừng để giải phóng tài nguyên CPU threads."""
+    logger.info("Đang tắt inference thread pool...")
+    _pool.shutdown(wait=False, cancel_futures=True)
+

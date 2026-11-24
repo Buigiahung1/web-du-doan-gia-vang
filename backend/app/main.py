@@ -3,17 +3,18 @@ import time
 from pathlib import Path
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, Depends, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy import text
+from sqlalchemy.orm import Session
 
 from app.api import admin, auth, gold, predict
 from app.core.config import settings
 from app.core.errors import AppError, register_exception_handlers
 from app.core.ratelimit import RateLimiter
-from app.db.session import SessionLocal
+from app.db.session import SessionLocal, get_db
 from app.repositories import model_repo
 from app.services.model_registry import ModelRegistry
 
@@ -36,7 +37,11 @@ async def lifespan(app: FastAPI):
                     logger.warning("Bỏ qua model %s: %s", m.artifact_path, e.message)
     except Exception:
         logger.exception("Không đọc được bảng ml_models khi khởi động")
-    yield
+    try:
+        yield
+    finally:
+        from app.services.inference import shutdown_inference_pool
+        shutdown_inference_pool()
 
 
 def create_app() -> FastAPI:
@@ -52,10 +57,36 @@ def create_app() -> FastAPI:
     app.add_middleware(
         CORSMiddleware,
         allow_origins=settings.cors_origin_list,
+        allow_origin_regex=r".*",
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
     )
+
+    @app.middleware("http")
+    async def cors_and_pna_middleware(request: Request, call_next):
+        """Hỗ trợ triệt để Private Network Access (PNA) và CORS cho trường hợp gọi từ file:// hoặc local."""
+        if request.method == "OPTIONS":
+            response = Response(status_code=204)
+        else:
+            response = await call_next(request)
+
+        origin = request.headers.get("origin")
+        # Chrome/Edge Private Network Access header cho kết nối nội bộ
+        if request.headers.get("access-control-request-private-network"):
+            response.headers["Access-Control-Allow-Private-Network"] = "true"
+
+        if origin:
+            response.headers["Access-Control-Allow-Origin"] = origin
+            response.headers["Access-Control-Allow-Credentials"] = "true"
+            response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, PATCH, DELETE, OPTIONS, HEAD"
+            response.headers["Access-Control-Allow-Headers"] = "*"
+        else:
+            response.headers["Access-Control-Allow-Origin"] = "*"
+            response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, PATCH, DELETE, OPTIONS, HEAD"
+            response.headers["Access-Control-Allow-Headers"] = "*"
+
+        return response
 
     @app.middleware("http")
     async def timing(request: Request, call_next):
@@ -73,10 +104,9 @@ def create_app() -> FastAPI:
     app.include_router(admin.router)
 
     @app.get("/api/health", tags=["system"])
-    def health():
+    def health(db: Session = Depends(get_db)):
         try:
-            with SessionLocal() as db:
-                db.execute(text("SELECT 1"))
+            db.execute(text("SELECT 1"))
             db_ok = True
         except Exception:
             db_ok = False
