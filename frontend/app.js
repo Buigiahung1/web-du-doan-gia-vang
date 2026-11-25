@@ -41,6 +41,56 @@ function handleRoleSwitch(role) {
 window.handleRoleSwitch = handleRoleSwitch;
 
 
+function applyTheme(theme) {
+  const isDark = theme === "dark";
+  document.documentElement.setAttribute("data-theme", isDark ? "dark" : "light");
+  document.documentElement.classList.toggle("dark", isDark);
+  try {
+    localStorage.setItem("theme", isDark ? "dark" : "light");
+  } catch {}
+
+  const icon = document.getElementById("themeToggleIcon");
+  const label = document.getElementById("themeToggleLabel");
+  if (icon) {
+    icon.className = isDark
+      ? "fa-solid fa-sun text-amber-400"
+      : "fa-solid fa-moon text-[#C59B27]";
+  }
+  if (label) {
+    label.textContent = isDark ? "Sáng" : "Tối";
+  }
+
+  const gridColor = isDark ? "rgba(148, 163, 184, 0.14)" : "rgba(0, 0, 0, 0.05)";
+  const tickColor = isDark ? "#94A3B8" : "#71717A";
+  const legendColor = isDark ? "#CBD5E1" : "#52525B";
+  if (typeof AppState !== "undefined" && AppState.chartInstances) {
+    Object.values(AppState.chartInstances).forEach((chart) => {
+      if (!chart || !chart.options) return;
+      if (chart.options.plugins?.legend?.labels) {
+        chart.options.plugins.legend.labels.color = legendColor;
+      }
+      ["x", "y"].forEach((axis) => {
+        if (chart.options.scales?.[axis]) {
+          if (chart.options.scales[axis].grid) {
+            chart.options.scales[axis].grid.color = gridColor;
+          }
+          if (chart.options.scales[axis].ticks) {
+            chart.options.scales[axis].ticks.color = tickColor;
+          }
+        }
+      });
+      chart.update("none");
+    });
+  }
+}
+
+function toggleTheme() {
+  const current = document.documentElement.getAttribute("data-theme") || "light";
+  applyTheme(current === "dark" ? "light" : "dark");
+}
+window.applyTheme = applyTheme;
+window.toggleTheme = toggleTheme;
+
 function safeAddListener(id, event, handler) {
   try {
     const el = document.getElementById(id);
@@ -1463,7 +1513,11 @@ document.addEventListener("DOMContentLoaded", async () => {
   // Safe initialization under both live HTTP and local engine modes
 
   // 1. Phục hồi phiên làm việc qua AuthService
-  await AuthService.restoreSession();
+  try {
+    await AuthService.restoreSession();
+  } catch (err) {
+    console.warn("restoreSession error:", err);
+  }
 
   updateAuthUI();
   setBackendStatus(false); // Initialize green "Engine Ready" state immediately
@@ -1481,7 +1535,11 @@ document.addEventListener("DOMContentLoaded", async () => {
       }
     }
   } catch (_) {}
-  renderHeroSparkline();
+  try {
+    renderHeroSparkline();
+  } catch (err) {
+    console.warn("renderHeroSparkline error:", err);
+  }
 
   // Navigation
   safeAddListener("navLogoBtn", "click", () => switchTab("tabHome"));
@@ -1745,15 +1803,18 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   // Password Toggles
   const setupToggle = (btnId, inputId) => {
-    document.getElementById(btnId).addEventListener("click", () => {
+    const btn = document.getElementById(btnId);
+    if (!btn) return;
+    btn.addEventListener("click", () => {
       const input = document.getElementById(inputId);
-      const icon = document.getElementById(btnId).querySelector("i");
+      if (!input) return;
+      const icon = btn.querySelector("i");
       if (input.type === "password") {
         input.type = "text";
-        icon.className = "fa-solid fa-eye-slash";
+        if (icon) icon.className = "fa-solid fa-eye-slash";
       } else {
         input.type = "password";
-        icon.className = "fa-solid fa-eye";
+        if (icon) icon.className = "fa-solid fa-eye";
       }
     });
   };
@@ -1944,7 +2005,10 @@ document.addEventListener("DOMContentLoaded", async () => {
               });
               consoleLog.textContent = JSON.stringify(updated, null, 2);
               showToast(`Đã đổi quyền ${u.username} thành ${nextRole}`);
-              document.getElementById("btnFetchAdminUsers").click();
+              (
+                document.getElementById("btnAdminFetchUsers") ||
+                document.getElementById("btnFetchAdminUsers")
+              )?.click();
             } catch (err) {
               showToast(err.message, "error");
             }
@@ -1967,7 +2031,10 @@ document.addEventListener("DOMContentLoaded", async () => {
               showToast(
                 `${updated.is_active ? "Đã mở khóa" : "Đã khóa"} ${u.username}`
               );
-              document.getElementById("btnFetchAdminUsers").click();
+              (
+                document.getElementById("btnAdminFetchUsers") ||
+                document.getElementById("btnFetchAdminUsers")
+              )?.click();
             } catch (err) {
               showToast(err.message, "error");
             }
@@ -2158,7 +2225,10 @@ document.addEventListener("DOMContentLoaded", async () => {
                 });
                 consoleLog.textContent = JSON.stringify(updated, null, 2);
                 showToast(`Đã kích hoạt model ${m.name}`);
-                document.getElementById("btnTestAdminToken").click();
+                (
+                  document.getElementById("btnAdminFetchModels") ||
+                  document.getElementById("btnTestAdminToken")
+                )?.click();
                 if (typeof loadGoldCurrentAndHistory === "function") {
                   loadGoldCurrentAndHistory();
                 }
@@ -2224,44 +2294,47 @@ document.addEventListener("DOMContentLoaded", async () => {
     adminTableContainer.appendChild(wrap);
   }
 
-  safeAddListener("btnFetchAdminUsers", "click", async () => {
-      consoleLog.textContent = "Đang gọi GET /api/admin/users...";
-      try {
-        const res = await apiRequest("/api/admin/users");
-        consoleLog.textContent = JSON.stringify(res, null, 2);
-        renderAdminUsersTable(res.items || []);
-        showToast("Tải danh sách users thành công!");
-      } catch (e) {
-        consoleLog.textContent = `Lỗi: ${e.message}\n(Lưu ý: Chỉ tài khoản có vai trò 'admin' mới được cấp quyền truy cập)`;
-        showToast("Lỗi API Admin: " + e.message, "error");
-      }
-    });
+  const handleFetchAdminUsers = async () => {
+    consoleLog.textContent = "Đang gọi GET /api/admin/users...";
+    try {
+      const res = await apiRequest("/api/admin/users");
+      consoleLog.textContent = JSON.stringify(res, null, 2);
+      renderAdminUsersTable(res.items || []);
+      showToast("Tải danh sách users thành công!");
+    } catch (e) {
+      consoleLog.textContent = `Lỗi: ${e.message}\n(Lưu ý: Chỉ tài khoản có vai trò 'admin' mới được cấp quyền truy cập)`;
+      showToast("Lỗi API Admin: " + e.message, "error");
+    }
+  };
+  safeAddListener("btnAdminFetchUsers", "click", handleFetchAdminUsers);
+  safeAddListener("btnFetchAdminUsers", "click", handleFetchAdminUsers);
 
-  safeAddListener("btnTestAdminToken", "click", async () => {
-      consoleLog.textContent = "Đang gọi GET /api/admin/models...";
-      try {
-        const res = await apiRequest("/api/admin/models");
-        consoleLog.textContent = JSON.stringify(res, null, 2);
-        renderAdminModelsTable(Array.isArray(res) ? res : []);
-        showToast("Tải danh sách models thành công!");
-      } catch (e) {
-        consoleLog.textContent = `Lỗi: ${e.message}`;
-        showToast(e.message, "error");
-      }
-    });
+  const handleFetchAdminModels = async () => {
+    consoleLog.textContent = "Đang gọi GET /api/admin/models...";
+    try {
+      const res = await apiRequest("/api/admin/models");
+      consoleLog.textContent = JSON.stringify(res, null, 2);
+      renderAdminModelsTable(Array.isArray(res) ? res : []);
+      showToast("Tải danh sách models thành công!");
+    } catch (e) {
+      consoleLog.textContent = `Lỗi: ${e.message}`;
+      showToast(e.message, "error");
+    }
+  };
+  safeAddListener("btnAdminFetchModels", "click", handleFetchAdminModels);
+  safeAddListener("btnTestAdminToken", "click", handleFetchAdminModels);
 
-  const btnAdminPrices = document.getElementById("btnAdminLoadPrices");
-  if (btnAdminPrices) {
-    btnAdminPrices.addEventListener("click", () => {
-      loadAndRenderAdminPrices();
-    });
-  }
+  const handleLoadAdminPrices = async () => {
+    await loadAndRenderAdminPrices();
+    if (typeof loadGoldCurrentAndHistory === "function") {
+      loadGoldCurrentAndHistory();
+    }
+  };
+  safeAddListener("btnAdminSyncData", "click", handleLoadAdminPrices);
+  safeAddListener("btnAdminLoadPrices", "click", handleLoadAdminPrices);
 
-  
   // 3. Kiểm tra tính toàn vẹn dữ liệu (Data Integrity Audit)
-  const btnCheckIntegrity = document.getElementById("btnAdminCheckDataIntegrity");
-  if (btnCheckIntegrity) {
-    btnCheckIntegrity.addEventListener("click", () => {
+  const handleCheckDataIntegrity = () => {
       consoleLog.textContent = "Đang chạy kiểm định tính toàn vẹn dữ liệu (Audit Invariants)...";
 
       const records = AppState.historicalPrices && AppState.historicalPrices.length > 0
@@ -2335,21 +2408,9 @@ document.addEventListener("DOMContentLoaded", async () => {
         </div>
       `;
       showToast("Kiểm tra tính toàn vẹn dữ liệu hoàn tất: Điểm chuẩn 100%!");
-    });
-  }
-
-  // 4. Cập nhật dữ liệu mới (Realtime Sync)
-  const btnSyncData = document.getElementById("btnAdminSyncData");
-  if (btnSyncData) {
-    btnSyncData.addEventListener("click", () => {
-      // Không tự tạo phiên giá: dữ liệu thật chỉ vào CSDL qua script thu thập của TV5.
-      consoleLog.textContent = JSON.stringify({
-        status: "NOT_CONNECTED",
-        message: "Giao diện không tự đồng bộ giá. Chạy scripts/update_daily_data.py (hoặc scripts/schedule_daily_update.ps1) để thu thập GC=F và USDVND=X, hoặc thêm từng phiên ở mục CRUD giá vàng.",
-      }, null, 2);
-      showToast("Chưa nối nguồn dữ liệu tự động; xem hướng dẫn trong bảng điều khiển.", "error");
-    });
-  }
+  };
+  safeAddListener("btnAdminCheckData", "click", handleCheckDataIntegrity);
+  safeAddListener("btnAdminCheckDataIntegrity", "click", handleCheckDataIntegrity);
 
   // 7. Xem các chỉ số đánh giá mô hình
   const btnModelMetrics = document.getElementById("btnAdminViewModelMetrics");
@@ -2470,20 +2531,22 @@ document.addEventListener("DOMContentLoaded", async () => {
       }
     });
 
-  safeAddListener("btnCheckHealth", "click", async () => {
-      consoleLog.textContent = "Đang gọi GET /api/health...";
-      try {
-        const res = await apiRequest("/api/health");
-        consoleLog.textContent = JSON.stringify(res, null, 2);
-        showToast(
-          res.db ? "Database phản hồi." : "Database chưa sẵn sàng.",
-          res.db ? "success" : "error"
-        );
-      } catch (e) {
-        consoleLog.textContent = `Lỗi: ${e.message}`;
-        showToast(e.message, "error");
-      }
-    });
+  const handleCheckHealth = async () => {
+    consoleLog.textContent = "Đang gọi GET /api/health...";
+    try {
+      const res = await apiRequest("/api/health");
+      consoleLog.textContent = JSON.stringify(res, null, 2);
+      showToast(
+        res.db ? "Database phản hồi." : "Database chưa sẵn sàng.",
+        res.db ? "success" : "error"
+      );
+    } catch (e) {
+      consoleLog.textContent = `Lỗi: ${e.message}`;
+      showToast(e.message, "error");
+    }
+  };
+  safeAddListener("btnAdminPingDb", "click", handleCheckHealth);
+  safeAddListener("btnCheckHealth", "click", handleCheckHealth);
 
   const formProf = document.getElementById("formProfile") || document.getElementById("formUpdateProfile");
   if (formProf) {
@@ -2593,6 +2656,11 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
   const chartNotice = document.getElementById("chartDependencyNotice");
   if (chartNotice) chartNotice.hidden = typeof Chart !== "undefined";
+  try {
+    applyTheme(localStorage.getItem("theme") || "light");
+  } catch {
+    applyTheme("light");
+  }
 });
 
   // ESC key listener for all modals

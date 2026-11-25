@@ -345,3 +345,151 @@ tr:hover td {
   .lg\:block { display: block !important; }
   .lg\:hidden { display: none !important; }
 }
+
+/* ==========================================================================
+   DARK MODE THEME (html[data-theme="dark"]) — Institutional Obsidian & Gold
+   ========================================================================== */
+html[data-theme="dark"] {
+  color-scheme: dark;
+  --brand-bg: #0B1120;
+  --brand-surface: #111827;
+  --brand-card: #111827;
+  --brand-card-subtle: #1E293B;
+  --brand-border: #1E293B;
+  --brand-border-focus: #D4AF37;
+  --brand-border-subtle: #1E293B;
+  --brand-text-primary: #F8FAFC;
+  --brand-text-secondary: #CBD5E1;
+  --brand-text-muted: #94A3B8;
+  --brand-gold: #D4AF37;
+  --brand-gold-light: rgba(212, 175, 55, 0.14);
+  --brand-gold-dark: #F3D578;
+}
+
+html[data-theme="dark"],
+html[data-theme="dark"] body {
+  background-color: #0B1120 !important;
+  color: #F1F5F9 !important;
+}
+
+html[data-theme="dark"] header {
+  background-color: rgba(15, 23, 42, 0.92) !important;
+  border-color: #1E293B !important;
+}
+
+html[data-theme="dark"] footer {
+  background-color: #0F172A !important;
+  border-color: #1E293B !important;
+}
+
+/* Dark Surfaces & Cards */
+html[data-theme="dark"] .bg-white,
+html[data-theme="dark"] .bg-\[\#FFFFFF\] {
+  background-color: #111827 !important;
+}
+
+html[data-theme="dark"] .bg-\[\#FAF8F5\],
+html[data-theme="dark"] .bg-\[\#FAF8F5\]\/90,
+html[data-theme="dark"] .bg-neutral-50 {
+  background-color: #0F172A !important;
+}
+
+html[data-theme="dark"] .bg-\[\#F8F5EE\],
+html[data-theme="dark"] .bg-\[\#F6F1E8\],
+html[data-theme="dark"] .bg-\[\#EFE8DC\],
+html[data-theme="dark"] .bg-\[\#F2ECE1\],
+html[data-theme="dark"] .bg-\[\#FBF9F4\],
+html[data-theme="dark"] .bg-neutral-100 {
+  background-color: #1E293B !important;
+}
+
+html[data-theme="dark"] .bg-\[\#F4EFE6\] {
+  background-color: rgba(212, 175, 55, 0.14) !important;
+}
+
+/* Dark Borders */
+html[data-theme="dark"] .border-\[\#EAE2D5\],
+html[data-theme="dark"] .border-\[\#D5C7B0\],
+html[data-theme="dark"] .border-\[\#F0EAE1\],
+html[data-theme="dark"] .border-neutral-200,
+html[data-theme="dark"] .border-neutral-300 {
+  border-color: #1E293B !important;
+}
+
+/* High-Contrast Typography */
+html[data-theme="dark"] .text-neutral-900,
+html[data-theme="dark"] .text-neutral-950,
+html[data-theme="dark"] .text-neutral-800,
+html[data-theme="dark"] .text-black {
+  color: #F8FAFC !important;
+}
+
+html[data-theme="dark"] .text-neutral-700,
+html[data-theme="dark"] .text-neutral-600 {
+  color: #CBD5E1 !important;
+}
+
+html[data-theme="dark"] .text-neutral-500,
+html[data-theme="dark"] .text-neutral-400 {
+  color: #94A3B8 !important;
+}
+
+html[data-theme="dark"] .text-\[\#8F6B12\] {
+  color: #F3D578 !important;
+}
+
+/* Form Controls */
+html[data-theme="dark"] input[type="text"],
+html[data-theme="dark"] input[type="password"],
+html[data-theme="dark"] input[type="email"],
+html[data-theme="dark"] input[type="tel"],
+html[data-theme="dark"] input[type="number"],
+html[data-theme="dark"] input[type="date"],
+html[data-theme="dark"] select,
+html[data-theme="dark"] textarea {
+  background-color: #0F172A !important;
+  border-color: #334155 !important;
+  color: #F8FAFC !important;
+}
+
+/* Tables */
+html[data-theme="dark"] th {
+  background-color: #1E293B !important;
+  color: #CBD5E1 !important;
+  border-bottom-color: #334155 !important;
+}
+
+html[data-theme="dark"] td {
+  background-color: #111827 !important;
+  color: #E2E8F0 !important;
+  border-bottom-color: #1E293B !important;
+}
+
+html[data-theme="dark"] tr:hover td {
+  background-color: #1E293B !important;
+}
+
+/* Hover states in Dark Mode */
+html[data-theme="dark"] .hover\:bg-\[\#F2ECE1\]:hover,
+html[data-theme="dark"] .hover\:bg-\[\#FAF8F5\]:hover {
+  background-color: #1E293B !important;
+}
+
+html[data-theme="dark"] .hover\:text-neutral-900:hover,
+html[data-theme="dark"] .hover\:text-neutral-950:hover,
+html[data-theme="dark"] .hover\:text-black:hover {
+  color: #FFFFFF !important;
+}
+
+/* Scrollbar in Dark Mode */
+html[data-theme="dark"] ::-webkit-scrollbar-track {
+  background: #0B1120;
+}
+
+html[data-theme="dark"] ::-webkit-scrollbar-thumb {
+  background: #334155;
+}
+
+html[data-theme="dark"] ::-webkit-scrollbar-thumb:hover {
+  background: #D4AF37;
+}
