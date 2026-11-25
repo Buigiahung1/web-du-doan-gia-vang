@@ -75,9 +75,9 @@ def main(force: bool = False):
                 metrics={"mae": 3355572.89, "mse": 15339462702319.71, "rmse": 3916562.61, "mape": 2.53, "r2": 0.723}
             ))
             db.add(MlModel(
-                name="Bi-LSTM Deep Learning (v1)", algorithm="LSTM", version="v1",
+                name="LSTM (v1)", algorithm="LSTM", version="v1",
                 artifact_path="lstm_v1", is_active=True, trained_at=utcnow_naive(),
-                metrics={"mae": 1326219.0, "mse": 3196856056361.0, "rmse": 1787981.0, "mape": 0.98, "r2": 0.961, "directional_accuracy": 0.45}
+                metrics={"mae": 1326219.0, "mse": 3196876544869.39, "rmse": 1787981.14, "mape": 0.98, "r2": 0.9125, "directional_accuracy": 0.45}
             ))
         if not db.query(Prediction).count():
             u1 = db.query(User).filter_by(username="user1").first()
