@@ -83,6 +83,21 @@ OUTPUT_COLUMNS = [
 ]
 
 
+MAX_DEVIATION_FROM_MEDIAN = 0.20  # phiên lệch quá 20% so với trung vị 5 phiên quanh nó coi là lỗi dữ liệu
+
+
+def drop_price_outliers(df: pd.DataFrame) -> pd.DataFrame:
+    """Loại phiên có Close lệch quá MAX_DEVIATION_FROM_MEDIAN so với trung vị 5 phiên lân cận (lỗi nhập/lỗi nguồn)."""
+    if len(df) < 5:
+        return df
+    close = df["close"]
+    median = close.rolling(5, center=True, min_periods=3).median()
+    bad = ((close / median) - 1).abs() > MAX_DEVIATION_FROM_MEDIAN
+    if bad.any():
+        logger.warning("Loại %d phiên giá bất thường: %s", int(bad.sum()), list(df.index[bad]))
+    return df[~bad]
+
+
 def merge_gold_fx(gold_df: pd.DataFrame, fx_df: pd.DataFrame) -> pd.DataFrame:
     """
     Quy đổi nến GC=F (USD/oz) sang VNĐ/lượng theo từng phiên vàng.
@@ -91,6 +106,7 @@ def merge_gold_fx(gold_df: pd.DataFrame, fx_df: pd.DataFrame) -> pd.DataFrame:
     - Tỷ giá thiếu lấy giá trị GẦN NHẤT TRƯỚC ĐÓ (ffill). Không back-fill
       từ tương lai: phiên chưa có tỷ giá quá khứ bị loại.
     - Open/High/Low/Close nhân cùng một hệ số nên giữ đúng thứ tự nến.
+    - Phiên có Close bất thường (lệch > 20% so với trung vị 5 phiên quanh nó) bị loại và ghi cảnh báo.
     """
     fx_rate = fx_df["close"].rename("fx_rate")
     all_days = gold_df.index.union(fx_rate.index)
@@ -99,6 +115,7 @@ def merge_gold_fx(gold_df: pd.DataFrame, fx_df: pd.DataFrame) -> pd.DataFrame:
     merged = gold_df[list(PRICE_COLUMNS) + ["volume"]].copy()
     merged["fx_rate"] = fx_on_gold
     merged = merged.dropna(subset=["fx_rate", *PRICE_COLUMNS]).sort_index()
+    merged = drop_price_outliers(merged)
 
     factor = merged["fx_rate"] / OUNCE_PER_LUONG
     merged["usd_close"] = merged["close"]

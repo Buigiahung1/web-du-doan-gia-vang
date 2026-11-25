@@ -88,6 +88,8 @@ npm run check:js
 npm run test
 ```
 
+Cập nhật dữ liệu giá hằng ngày: `scripts/update_daily_data.py` thu thập và ghi vào SQLite TV5 và DB backend; chạy tay hoặc đăng ký lịch Windows bằng `powershell -File scripts/schedule_daily_update.ps1 -Time 07:30` (gỡ bằng `-Remove`). Bộ thu thập loại các phiên có giá đóng cửa lệch quá 20% so với trung vị 5 phiên quanh nó.
+
 Node chỉ dùng cho công cụ phát triển. Hook Husky chạy lint-staged/Prettier → mypy → kiểm tra cú pháp JS → pytest. Wrapper test ép SQLite cô lập và tắt stub. Tests/test-only config và QA giữ local theo chính sách nhóm; checkout khác phải nhận bộ test local trước khi dùng hook, không âm thầm bỏ qua khi thiếu. DL tùy chọn: cài `ml/requirements-dl.txt` vào cùng `.venv`.
 
 Lượt sắp xếp ngày 06/11/2026 đã cài được Husky/lint-staged/Prettier, tạo lockfile và kích hoạt hook Git. Clone mới có thể dùng `npm ci` sau khi nhận bộ test/dev-requirements local. Kết quả hook/commit/push thực tế được ghi trong handoff local; phần kiểm chứng ứng dụng/dữ liệu vẫn theo các giới hạn bên dưới.
