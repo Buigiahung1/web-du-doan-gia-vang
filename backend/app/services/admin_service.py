@@ -137,14 +137,14 @@ def update_price(db: Session, price_id: int, data: AdminPriceUpdate) -> AdminPri
     def _f(x):
         return None if x is None else float(x)
 
-    o = float(data.open if data.open is not None else row.open)
-    h = float(data.high if data.high is not None else row.high)
-    l = float(data.low if data.low is not None else row.low)
-    c = float(data.close if data.close is not None else row.close)
-    b = _f(data.buy if data.buy is not None else row.buy)
-    s = _f(data.sell if data.sell is not None else row.sell)
+    raw = {
+        k: (getattr(data, k) if getattr(data, k) is not None else getattr(row, k))
+        for k in ("open", "high", "low", "close", "buy", "sell")
+    }
+    o, h, l, c = (float(raw[k]) for k in ("open", "high", "low", "close"))
+    b, s = _f(raw["buy"]), _f(raw["sell"])
     _validate_ohlc(o, h, l, c, b, s)
-    row.open, row.high, row.low, row.close = Decimal(str(o)), Decimal(str(h)), Decimal(str(l)), Decimal(str(c))
+    row.open, row.high, row.low, row.close = (Decimal(str(raw[k])) for k in ("open", "high", "low", "close"))
     for field in ("volume", "buy", "sell"):
         if field in data.model_fields_set:
             setattr(row, field, getattr(data, field))

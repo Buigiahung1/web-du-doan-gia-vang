@@ -464,7 +464,7 @@
           <div class="p-3.5 rounded-xl bg-[#FAF8F5] border border-[#EAE2D5]">
             <span class="text-xs text-neutral-500 block">Mô hình định lượng</span>
             <p id="homeLiveModelName" class="text-base font-bold text-neutral-900 mt-1 truncate">
-              LightGBM / Bi-LSTM
+              LightGBM / LSTM / GRU
             </p>
             <span id="homeLiveMAPE" class="text-[11px] text-emerald-700 font-mono mt-0.5 block truncate">MAPE: 2.53% | R²: 0.723</span>
           </div>
@@ -701,7 +701,7 @@
                 Kết Quả Dự Báo Từ Mô Hình
               </h3>
               <span id="predOutConfidence" class="text-xs font-mono px-3 py-1 rounded-full bg-[#FAF8F5] text-neutral-600 border border-[#D5C7B0] font-semibold">
-                Khoảng tin cậy: 95% (±1.96σ)
+                Khoảng sai số theo mô hình
               </span>
             </div>
 
@@ -733,7 +733,7 @@
 
             <!-- Forecast Chart Canvas -->
             <div class="space-y-2">
-              <span class="text-xs font-semibold text-neutral-700">Đường Biểu Diễn Dự Báo Kèm Khoảng Tin Cậy (±1.96σ):</span>
+              <span class="text-xs font-semibold text-neutral-700">Đường Biểu Diễn Dự Báo Kèm Khoảng Sai Số:</span>
               <div class="relative h-64 w-full bg-[#FAF8F5] rounded-2xl p-2 border border-[#EAE2D5]">
                 <canvas id="forecastChartCanvas"></canvas>
               </div>
@@ -939,7 +939,7 @@
           </div>
         </div>
 
-        <!-- Model 2: Bi-LSTM Attention -->
+        <!-- Model 2: LSTM / GRU -->
         <div class="rounded-3xl bg-white border border-[#EAE2D5] p-6 shadow-sm space-y-4">
           <div class="flex items-center justify-between pb-3 border-b border-[#EAE2D5]">
             <h3 class="text-lg font-serif font-bold text-neutral-900">LSTM / GRU (Deep Learning)</h3>

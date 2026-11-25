@@ -788,7 +788,7 @@ async function loadPredictionHistory(page = AppState.historyPage || 1) {
         {
           id: 102,
           gold_type_code: "XAU_VND_LUONG",
-          model_name: "Bi-LSTM Attention",
+          model_name: "LSTM",
           horizon_days: 14,
           predicted_price: 121450000,
           lower_bound: 119200000,
@@ -856,7 +856,7 @@ function renderHistoryTable() {
               <i class="fa-solid fa-chart-line text-base"></i>
             </div>
             <p class="text-sm font-semibold text-neutral-800">Chưa có lượt dự đoán nào trong tài khoản</p>
-            <p class="text-xs text-neutral-500">Bạn có thể tạo lượt dự đoán mới bằng mô hình học máy (LightGBM / Bi-LSTM).</p>
+            <p class="text-xs text-neutral-500">Bạn có thể tạo lượt dự đoán mới bằng mô hình học máy (LightGBM / LSTM / GRU).</p>
             <button type="button" onclick="switchTab('tabPredict')" class="btn-pill-primary text-xs py-2 px-4 shadow-sm mt-1">
               Bắt đầu dự đoán giá vàng
             </button>
@@ -956,7 +956,7 @@ async function openDetailModal(id) {
         created_at: new Date().toISOString(),
         gold_type: AppState.goldType || "XAU/USD",
         horizon_days: 7,
-        model: { name: "Bi-LSTM / LightGBM Quant", version: "v1.2" },
+        model: { name: "Mô hình dự báo", version: "" },
         items: [{
           predicted_price: 85950000,
           lower: 85100000,
@@ -988,11 +988,11 @@ async function openDetailModal(id) {
       }
     }
 
-    document.getElementById("detModel").textContent = item.model?.name || "Bi-LSTM / LightGBM Quant (v1.2)";
+    document.getElementById("detModel").textContent = item.model?.name || "Mô hình dự báo";
     document.getElementById("detMargin").textContent =
       final.lower != null && final.upper != null
         ? `${priceText(final.lower, unit)} – ${priceText(final.upper, unit)}`
-        : `±1.96σ (Độ tin cậy 95%)`;
+        : "Chưa có khoảng sai số";
 
     openModal("modalDetail");
   } catch (error) {
@@ -1220,7 +1220,7 @@ async function submitPrediction(event) {
 
       const confEl = document.getElementById("predOutConfidence");
       if (confEl) {
-        confEl.textContent = "Khoảng tin cậy: 95% (±1.96σ)";
+        confEl.textContent = "Khoảng sai số theo mô hình";
       }
     }
 

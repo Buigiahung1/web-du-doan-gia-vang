@@ -1814,6 +1814,14 @@ document.addEventListener("DOMContentLoaded", async () => {
       return;
     }
 
+    if (!(AppState.jwtToken || localStorage.getItem("gp_token"))) {
+      if (errIdent) {
+        errIdent.textContent = "Chỉ quản trị viên đã đăng nhập được đặt lại mật khẩu. Hãy liên hệ quản trị viên.";
+        errIdent.classList.remove("hidden");
+      }
+      return;
+    }
+
     btn.disabled = true;
     btn.textContent = "Đang xử lý qua API...";
 
@@ -2333,60 +2341,39 @@ document.addEventListener("DOMContentLoaded", async () => {
   // 4. Cập nhật dữ liệu mới (Realtime Sync)
   const btnSyncData = document.getElementById("btnAdminSyncData");
   if (btnSyncData) {
-    btnSyncData.addEventListener("click", async () => {
-      consoleLog.textContent = "Đang kết nối API nguồn dữ liệu liên ngân hàng (SJC, DOJI, XAU/USD, VCB)...";
-
-      const newDate = new Date().toISOString().split("T")[0];
-      const newSession = {
-        gold_type: "XAU_VND_LUONG",
-        date: newDate,
-        open: 85500000,
-        high: 86100000,
-        low: 85400000,
-        close: 85950000,
-        buy_price: 85500000,
-        sell_price: 87500000,
-        volume: 2450,
-        source: "SJC_INTERBANK_SYNC_V1",
-        sync_timestamp: new Date().toISOString()
-      };
-
-      try {
-        await apiRequest("/api/admin/prices", {
-          method: "POST",
-          body: JSON.stringify(newSession)
-        }).catch(() => null);
-      } catch (err) {}
-
+    btnSyncData.addEventListener("click", () => {
+      // Không tự tạo phiên giá: dữ liệu thật chỉ vào CSDL qua script thu thập của TV5.
       consoleLog.textContent = JSON.stringify({
-        status: "SUCCESS",
-        message: "Đồng bộ giá vàng mới nhất thành công từ hệ thống thị trường liên ngân hàng.",
-        synced_session: newSession,
-        sources: [
-          "SJC TP.HCM: 85.500.000 / 87.500.000 đ/lượng",
-          "DOJI Hà Nội: 85.400.000 / 87.400.000 đ/lượng",
-          "Spot XAU/USD: $2,714.50/oz",
-          "Tỷ giá USD/VND (Vietcombank): 25.420 VND"
-        ]
+        status: "NOT_CONNECTED",
+        message: "Giao diện không tự đồng bộ giá. Chạy scripts/update_daily_data.py (hoặc scripts/schedule_daily_update.ps1) để thu thập GC=F và USDVND=X, hoặc thêm từng phiên ở mục CRUD giá vàng.",
       }, null, 2);
-
-      showToast("Đã đồng bộ giá vàng mới nhất thành công!");
+      showToast("Chưa nối nguồn dữ liệu tự động; xem hướng dẫn trong bảng điều khiển.", "error");
     });
   }
 
   // 7. Xem các chỉ số đánh giá mô hình
   const btnModelMetrics = document.getElementById("btnAdminViewModelMetrics");
   if (btnModelMetrics) {
-    btnModelMetrics.addEventListener("click", () => {
+    btnModelMetrics.addEventListener("click", async () => {
       consoleLog.textContent = "Đang truy xuất bảng chỉ số kiểm định chất lượng mô hình (Model Verification Matrix)...";
 
-      const metrics = [
-        { model: "Bi-LSTM Deep Learning", type: "Recurrent Neural Net", mae: "0.42%", mse: "0.24", rmse: "348.500 đ", mape: "0.38%", r2: "0.9842", dir_acc: "84.6%", sha256: "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855" },
-        { model: "GRU Multi-Horizon", type: "Gated Recurrent Unit", mae: "0.45%", mse: "0.28", rmse: "365.200 đ", mape: "0.41%", r2: "0.9815", dir_acc: "83.1%", sha256: "9f83c12b772c11867160914a8080fe16090c29df622955f1118fa391de7c78ff" },
-        { model: "LightGBM Quant", type: "Gradient Boosted Trees", mae: "0.51%", mse: "0.35", rmse: "412.000 đ", mape: "0.47%", r2: "0.9760", dir_acc: "81.4%", sha256: "5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8" },
-        { model: "Random Forest FinTech", type: "Ensemble Trees", mae: "0.58%", mse: "0.44", rmse: "468.300 đ", mape: "0.53%", r2: "0.9692", dir_acc: "79.8%", sha256: "4b227777d4dd1fc61c6f884f48641d02b4d121d3fd328cb08b5531fcacdabf8a" },
-        { model: "Naive Persistence", type: "Random Walk Baseline", mae: "1.12%", mse: "1.85", rmse: "920.000 đ", mape: "1.08%", r2: "0.8920", dir_acc: "50.2%", sha256: "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad" },
-      ];
+      const fmt = (v, d = 0) => (v == null ? "Chưa có" : Number(v).toLocaleString("vi-VN", { maximumFractionDigits: d }));
+      let metrics = [];
+      try {
+        const models = await apiRequest("/api/admin/models");
+        metrics = (models || []).map((m) => ({
+          model: m.name,
+          type: m.algorithm,
+          mae: fmt(m.metrics?.mae),
+          rmse: fmt(m.metrics?.rmse),
+          mape: m.metrics?.mape == null ? "Chưa có" : fmt(m.metrics.mape, 2) + "%",
+          r2: fmt(m.metrics?.r2, 4),
+          dir_acc: fmt(m.metrics?.directional_accuracy, 3),
+        }));
+      } catch (err) {
+        consoleLog.textContent = "Không lấy được chỉ số mô hình: " + err.message;
+        return;
+      }
 
       consoleLog.textContent = JSON.stringify(metrics, null, 2);
 
