@@ -896,11 +896,11 @@ function updatePasswordMeter(password) {
   const updateRuleUI = (ruleId, passed) => {
     const el = document.getElementById(ruleId);
     if (!el) return;
-    const baseLabel = el.dataset.label || el.textContent.replace(/^[✓\s]+/, "");
+    const baseLabel = el.dataset.label || el.textContent.replace(/^\s+/, "");
     el.dataset.label = baseLabel;
     if (passed) {
       el.className = "text-emerald-600 font-semibold";
-      el.innerHTML = '<span class="inline-block mr-0.5">✓</span>' + baseLabel;
+      el.innerHTML = '<i class="fa-solid fa-check mr-0.5"></i>' + baseLabel;
     } else {
       el.className = "text-neutral-400 font-normal";
       el.innerHTML = baseLabel;
@@ -1054,7 +1054,7 @@ window.handleRegisterSubmit = async function(e) {
 
   if (btn) {
     btn.disabled = true;
-    btn.innerHTML = '<span class="inline-block animate-spin mr-1">⚙</span> Đang đăng ký tài khoản...';
+    btn.innerHTML = '<i class="fa-solid fa-gear fa-spin mr-1"></i> Đang đăng ký tài khoản...';
   }
 
   try {
@@ -1831,7 +1831,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       openModal("modalLogin");
     } catch (apiErr) {
       if (errIdent) {
-        errIdent.textContent = apiErr.message || "Không thể đặt lại mật khẩu.";
+        errIdent.textContent = "Chỉ quản trị viên được đặt lại mật khẩu. Hãy liên hệ quản trị viên. (" + (apiErr.message || "Không thể đặt lại mật khẩu.") + ")";
         errIdent.classList.remove("hidden");
       }
     } finally {

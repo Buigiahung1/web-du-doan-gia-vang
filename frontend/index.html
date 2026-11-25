@@ -152,13 +152,7 @@
         <div class="ticker-move flex items-center gap-6 font-mono font-medium">
           <span class="flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> <strong>XAU/USD:</strong> <span class="tabular-nums" id="topTickerPrice">$2,648.50</span> <span class="text-emerald-400 font-semibold">+0.68%</span></span>
           <span class="text-neutral-600">|</span>
-          <span><strong>SJC Bán Ra:</strong> <span class="tabular-nums">124.640.000 đ</span> <span class="text-rose-400 font-semibold">▼ 0,26%</span></span>
-          <span class="text-neutral-600">|</span>
-          <span><strong>PNJ Bán Ra:</strong> <span class="tabular-nums">123.010.000 đ</span> <span class="text-rose-400 font-semibold">▼ 0,40%</span></span>
-          <span class="text-neutral-600">|</span>
-          <span><strong>Nhẫn 9999:</strong> <span class="tabular-nums">122.300.000 đ</span> <span class="text-rose-400 font-semibold">▼ 0,26%</span></span>
-          <span class="text-neutral-600">|</span>
-          <span><strong>Mô Hình:</strong> <span class="text-[#D4AF37]">LightGBM & Bi-LSTM</span> (MAPE 2.53%)</span>
+          <span><strong>Mô Hình:</strong> <span class="text-[#D4AF37]">LightGBM & LSTM/GRU</span></span>
         </div>
       </div>
     </div>
@@ -367,13 +361,13 @@
         <div class="lg:col-span-5">
           <div class="rounded-3xl bg-white border border-[#EAE2D5] p-6 shadow-sm hover:shadow-md transition space-y-4">
             <div class="flex items-center justify-between text-xs tracking-wider text-neutral-500 font-semibold uppercase">
-              <span>SJC · BÁN RA · 90 NGÀY</span>
+              <span>VÀNG QUY ĐỔI · GIÁ ĐÓNG CỬA</span>
               <span class="text-neutral-400 font-sans font-normal lowercase">VND/lượng</span>
             </div>
 
             <div class="flex items-baseline justify-between">
-              <span class="text-4xl sm:text-5xl font-serif font-bold text-neutral-900 tabular-nums">
-                124.640.000
+              <span class="text-4xl sm:text-5xl font-serif font-bold text-neutral-900 tabular-nums" id="heroGoldPrice">
+                —
               </span>
             </div>
 
@@ -405,77 +399,6 @@
           </a>
         </div>
 
-        <!-- 3 Latest Price Cards Grid -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
-          <!-- Card 1: SJC -->
-          <div class="rounded-2xl bg-white border border-[#EAE2D5] p-5 shadow-sm hover:border-[#C59B27] transition space-y-4">
-            <div class="flex items-center justify-between">
-              <span class="text-xl font-serif font-bold text-neutral-900">SJC</span>
-              <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-rose-50 text-rose-700 border border-rose-200 tabular-nums">
-                ▼ 0,26%
-              </span>
-            </div>
-            <div class="grid grid-cols-2 gap-4">
-              <div>
-                <span class="text-[11px] uppercase tracking-wider text-neutral-400 font-semibold block mb-0.5">MUA VÀO</span>
-                <span class="text-lg font-bold font-mono text-neutral-900 tabular-nums">122.640.000</span>
-              </div>
-              <div>
-                <span class="text-[11px] uppercase tracking-wider text-neutral-400 font-semibold block mb-0.5">BÁN RA</span>
-                <span class="text-lg font-bold font-mono text-neutral-900 tabular-nums">124.640.000</span>
-              </div>
-            </div>
-            <div class="pt-2 border-t border-[#F0EAE1] text-[11px] text-neutral-400 font-sans">
-              VND/lượng · Cập nhật 22/11/2026
-            </div>
-          </div>
-
-          <!-- Card 2: PNJ -->
-          <div class="rounded-2xl bg-white border border-[#EAE2D5] p-5 shadow-sm hover:border-[#C59B27] transition space-y-4">
-            <div class="flex items-center justify-between">
-              <span class="text-xl font-serif font-bold text-neutral-900">PNJ</span>
-              <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-rose-50 text-rose-700 border border-rose-200 tabular-nums">
-                ▼ 0,40%
-              </span>
-            </div>
-            <div class="grid grid-cols-2 gap-4">
-              <div>
-                <span class="text-[11px] uppercase tracking-wider text-neutral-400 font-semibold block mb-0.5">MUA VÀO</span>
-                <span class="text-lg font-bold font-mono text-neutral-900 tabular-nums">121.410.000</span>
-              </div>
-              <div>
-                <span class="text-[11px] uppercase tracking-wider text-neutral-400 font-semibold block mb-0.5">BÁN RA</span>
-                <span class="text-lg font-bold font-mono text-neutral-900 tabular-nums">123.010.000</span>
-              </div>
-            </div>
-            <div class="pt-2 border-t border-[#F0EAE1] text-[11px] text-neutral-400 font-sans">
-              VND/lượng · Cập nhật 22/11/2026
-            </div>
-          </div>
-
-          <!-- Card 3: Nhẫn 9999 -->
-          <div class="rounded-2xl bg-white border border-[#EAE2D5] p-5 shadow-sm hover:border-[#C59B27] transition space-y-4">
-            <div class="flex items-center justify-between">
-              <span class="text-xl font-serif font-bold text-neutral-900">Nhẫn 9999</span>
-              <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-rose-50 text-rose-700 border border-rose-200 tabular-nums">
-                ▼ 0,26%
-              </span>
-            </div>
-            <div class="grid grid-cols-2 gap-4">
-              <div>
-                <span class="text-[11px] uppercase tracking-wider text-neutral-400 font-semibold block mb-0.5">MUA VÀO</span>
-                <span class="text-lg font-bold font-mono text-neutral-900 tabular-nums">121.100.000</span>
-              </div>
-              <div>
-                <span class="text-[11px] uppercase tracking-wider text-neutral-400 font-semibold block mb-0.5">BÁN RA</span>
-                <span class="text-lg font-bold font-mono text-neutral-900 tabular-nums">122.300.000</span>
-              </div>
-            </div>
-            <div class="pt-2 border-t border-[#F0EAE1] text-[11px] text-neutral-400 font-sans">
-              VND/lượng · Cập nhật 22/11/2026
-            </div>
-          </div>
-        </div>
       </div>
 
       <!-- Real Live Data Fetched from Backend API (/api/gold/current & /api/model/evaluation) -->
@@ -1019,32 +942,44 @@
         <!-- Model 2: Bi-LSTM Attention -->
         <div class="rounded-3xl bg-white border border-[#EAE2D5] p-6 shadow-sm space-y-4">
           <div class="flex items-center justify-between pb-3 border-b border-[#EAE2D5]">
-            <h3 class="text-lg font-serif font-bold text-neutral-900">Bi-LSTM + Multi-Head Attention</h3>
+            <h3 class="text-lg font-serif font-bold text-neutral-900">LSTM / GRU (Deep Learning)</h3>
             <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200">
               Deep Learning
             </span>
           </div>
           <p class="text-xs text-neutral-600 leading-relaxed">
-            Mạng nơ-ron hồi quy hai chiều Bidirectional Long Short-Term Memory kết hợp cơ chế tập trung chú ý (Multi-Head Attention) nắm bắt tương quan phi tuyến và ngữ cảnh dài hạn.
+            Mạng nơ-ron hồi quy chuỗi thời gian LSTM hoặc GRU: hai lớp 64 đơn vị xen Dropout 0,2, cửa sổ đầu vào 30 phiên, dự báo nhiều bước (tối đa 7 ngày), khoảng sai số lấy từ phân vị phần dư trên tập validation. Chỉ số bên dưới đọc từ tệp đánh giá của mô hình đang đăng ký.
           </p>
           <div class="grid grid-cols-4 gap-2 text-center text-xs pt-2">
             <div class="p-2 rounded-xl bg-[#FAF8F5] border border-[#EAE2D5]">
               <span class="text-[10px] text-neutral-400 block font-mono">MAE</span>
-              <span class="font-bold font-mono text-neutral-900 tabular-nums">19.80</span>
+              <span class="font-bold font-mono text-neutral-900 tabular-nums" id="introDlMae">—</span>
             </div>
             <div class="p-2 rounded-xl bg-[#FAF8F5] border border-[#EAE2D5]">
               <span class="text-[10px] text-neutral-400 block font-mono">RMSE</span>
-              <span class="font-bold font-mono text-neutral-900 tabular-nums">25.30</span>
+              <span class="font-bold font-mono text-neutral-900 tabular-nums" id="introDlRmse">—</span>
             </div>
             <div class="p-2 rounded-xl bg-[#FAF8F5] border border-[#EAE2D5]">
               <span class="text-[10px] text-neutral-400 block font-mono">MAPE</span>
-              <span class="font-bold font-mono text-emerald-700 tabular-nums">2.68%</span>
+              <span class="font-bold font-mono text-emerald-700 tabular-nums" id="introDlMape">—</span>
             </div>
             <div class="p-2 rounded-xl bg-[#FAF8F5] border border-[#EAE2D5]">
               <span class="text-[10px] text-neutral-400 block font-mono">R²</span>
-              <span class="font-bold font-mono text-emerald-700 tabular-nums">0.710</span>
+              <span class="font-bold font-mono text-emerald-700 tabular-nums" id="introDlR2">—</span>
             </div>
           </div>
+        </div>
+      </div>
+
+      <!-- Biểu đồ đánh giá mô hình (đọc series trên tập test từ /api/model/evaluation) -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="rounded-3xl bg-white border border-[#EAE2D5] p-6 shadow-sm space-y-3">
+          <h3 class="text-sm font-bold text-neutral-900">Giá thực tế và giá dự báo (tập test)</h3>
+          <div class="relative h-64"><canvas id="evalComparisonChartCanvas"></canvas></div>
+        </div>
+        <div class="rounded-3xl bg-white border border-[#EAE2D5] p-6 shadow-sm space-y-3">
+          <h3 class="text-sm font-bold text-neutral-900">Sai số dự báo (thực tế trừ dự báo)</h3>
+          <div class="relative h-64"><canvas id="evalErrorChartCanvas"></canvas></div>
         </div>
       </div>
 
