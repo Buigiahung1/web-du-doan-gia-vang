@@ -25,7 +25,7 @@ def main():
         "DATABASE_URL": "sqlite:///" + database.as_posix(),
         "USE_STUB_MODEL": os.environ.get("USE_STUB_MODEL", "false"),
         "MODEL_DIR": str(root / "ml/artifacts"),
-        "JWT_SECRET": os.environ.get("JWT_SECRET") or "gold-predict-production-system-jwt-secret-fixed-token-key-2026",
+        "JWT_SECRET": os.environ.get("JWT_SECRET") or secrets.token_urlsafe(48),
         "PYTHONPATH": str(root / "backend") + os.pathsep + str(root),
         "PYTHONIOENCODING": "utf-8",
     }

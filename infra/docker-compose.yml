@@ -35,7 +35,7 @@ services:
         condition: service_healthy
     environment:
       DATABASE_URL: mysql+pymysql://gold_user:SecureGoldPassword2026!@mysql:3306/gold_predict
-      JWT_SECRET_KEY: aurum_quant_production_secret_key_2026_at_least_32_chars_long!
+      JWT_SECRET_KEY: "${JWT_SECRET_KEY:?Đặt JWT_SECRET_KEY (>= 32 ký tự ngẫu nhiên) trong file .env}"
       CORS_ORIGINS: http://localhost,http://127.0.0.1,http://localhost:80
       USE_STUB_MODEL: "false"
     ports:
