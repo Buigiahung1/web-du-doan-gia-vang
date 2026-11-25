@@ -1,5 +1,6 @@
 """Admin CRUD business rules (users, gold prices, models)."""
 
+from decimal import Decimal
 import math
 
 from sqlalchemy import func, select
@@ -133,14 +134,17 @@ def update_price(db: Session, price_id: int, data: AdminPriceUpdate) -> AdminPri
     row = db.get(GoldPrice, price_id)
     if row is None:
         raise AppError(404, "PRICE_NOT_FOUND", "Không tìm thấy bản ghi giá vàng.")
-    o = data.open if data.open is not None else row.open
-    h = data.high if data.high is not None else row.high
-    l = data.low if data.low is not None else row.low
-    c = data.close if data.close is not None else row.close
-    b = data.buy if data.buy is not None else row.buy
-    s = data.sell if data.sell is not None else row.sell
+    def _f(x):
+        return None if x is None else float(x)
+
+    o = float(data.open if data.open is not None else row.open)
+    h = float(data.high if data.high is not None else row.high)
+    l = float(data.low if data.low is not None else row.low)
+    c = float(data.close if data.close is not None else row.close)
+    b = _f(data.buy if data.buy is not None else row.buy)
+    s = _f(data.sell if data.sell is not None else row.sell)
     _validate_ohlc(o, h, l, c, b, s)
-    row.open, row.high, row.low, row.close = o, h, l, c
+    row.open, row.high, row.low, row.close = Decimal(str(o)), Decimal(str(h)), Decimal(str(l)), Decimal(str(c))
     for field in ("volume", "buy", "sell"):
         if field in data.model_fields_set:
             setattr(row, field, getattr(data, field))
