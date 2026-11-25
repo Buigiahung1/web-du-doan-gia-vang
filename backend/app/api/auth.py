@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, Request
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 
-from app.api.deps import get_current_user
+from app.api.deps import get_current_user, require_admin
 from app.models import User
 from app.db.session import get_db
 from app.schemas.auth import (
@@ -55,7 +55,8 @@ def change_password(
 
 
 @router.post("/reset-password")
-def reset_password(data: ResetPasswordRequest, db: Session = Depends(get_db)):
+def reset_password(data: ResetPasswordRequest, db: Session = Depends(get_db), _admin: User = Depends(require_admin)):
+    """Chỉ quản trị viên đặt lại mật khẩu (hệ thống chưa có kênh email để xác minh chủ tài khoản)."""
     auth_service.reset_password(db, data.identity, data.new_password)
     return {"message": "Đặt lại mật khẩu thành công. Vui lòng đăng nhập bằng mật khẩu mới."}
 
@@ -64,7 +65,7 @@ def reset_password(data: ResetPasswordRequest, db: Session = Depends(get_db)):
 @router.post("/register", status_code=201)
 def register(data: UserRegister, db: Session = Depends(get_db)):
     user = auth_service.register(db, data)
-    token = auth_service.login(db, user.username, data.password)
+    token = auth_service.login(db, user.username or data.username, data.password)
     return {
         "message": f"Đăng ký tài khoản '{user.username}' thành công!",
         "access_token": token,

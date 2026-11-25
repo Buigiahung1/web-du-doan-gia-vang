@@ -39,6 +39,4 @@ def all_metrics(y, p) -> dict:
         "MAPE": mape(y, p),
         "R2": r2(y, p),
     }
-    if len(y) > 1:
-        metrics["DA"] = float(np.mean(np.sign(np.diff(p)) == np.sign(np.diff(y))) * 100)
     return metrics

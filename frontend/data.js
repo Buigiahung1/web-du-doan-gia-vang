@@ -16,17 +16,9 @@ async function loadGoldCurrentAndHistory(goldTypeCode) {
     types = await apiRequest("/api/gold/types");
     models = await apiRequest("/api/model");
   } catch (e) {
-    // High-fidelity fallback dataset for instant resilient standalone display
-    types = [
-      { code: "XAU_VND_LUONG", name: "Vàng Thế Giới (Quy đổi VNĐ/lượng)", unit: "VND/luong", source: "Yahoo Finance & FX" },
-      { code: "SJC_HCM", name: "Vàng miếng SJC 999.9 (TP.HCM)", unit: "VND/luong", source: "SJC Official" },
-      { code: "DOJI_HN", name: "Vàng DOJI Hà Nội", unit: "VND/luong", source: "DOJI Group" },
-      { code: "PNJ_24K", name: "Vàng Nữ Trang PNJ 24K", unit: "VND/luong", source: "PNJ Official" }
-    ];
-    models = [
-      { id: 2, name: "LightGBM Quant (v1)", algorithm: "lightgbm", version: "v1", is_active: true },
-      { id: 3, name: "Bi-LSTM Deep Learning (v1)", algorithm: "lstm", version: "v1", is_active: true }
-    ];
+    // Không có API: chỉ giữ loại vàng mặc định, không dựng mô hình hay thương hiệu mẫu.
+    types = [{ code: "XAU_VND_LUONG", name: "Vàng thế giới quy đổi (VNĐ/lượng)", unit: "VND/luong", source: "Chưa kết nối máy chủ" }];
+    models = [];
   }
 
   // Loại bỏ hoàn toàn mọi model giả lập/stub
@@ -101,6 +93,7 @@ async function loadGoldCurrentAndHistory(goldTypeCode) {
       updateModelEvaluation(e.target.value);
     };
     updateModelEvaluation(select.value);
+    loadDlIntroMetrics();
   }
 
   try {
@@ -150,6 +143,8 @@ async function loadGoldCurrentAndHistory(goldTypeCode) {
 
   // Cập nhật giá đóng cửa (Close)
   document.getElementById("homeLiveClosePrice").textContent = priceText(current.close);
+  const heroPriceEl = document.getElementById("heroGoldPrice");
+  if (heroPriceEl) heroPriceEl.textContent = Number(current.close).toLocaleString("vi-VN");
   const topTicker = document.getElementById("topTickerPrice");
   if (topTicker) topTicker.textContent = priceText(current.close);
 
@@ -484,6 +479,24 @@ function updateScorecardMetrics(evaluation) {
   }
 }
 
+// Thẻ "LSTM / GRU" ở trang Giới thiệu: chỉ số lấy từ tệp đánh giá của mô hình học sâu đang đăng ký.
+async function loadDlIntroMetrics() {
+  const set = (id, text) => { const el = document.getElementById(id); if (el) el.textContent = text; };
+  try {
+    const models = await apiRequest("/api/model");
+    const dl = (models || []).find((m) => ["lstm", "gru"].includes((m.algorithm || "").toLowerCase()));
+    if (!dl) return;
+    const m = (await apiRequest(`/api/model/evaluation?model_id=${encodeURIComponent(dl.id)}`)).metrics || {};
+    const num = (v, f) => (v == null ? "Chưa có số liệu" : f(Number(v)));
+    set("introDlMae", num(m.mae, (v) => v.toLocaleString("vi-VN")));
+    set("introDlRmse", num(m.rmse, (v) => v.toLocaleString("vi-VN")));
+    set("introDlMape", num(m.mape, (v) => v.toFixed(2) + "%"));
+    set("introDlR2", num(m.r2, (v) => v.toFixed(4)));
+  } catch {
+    /* giữ dấu "—" khi không lấy được số liệu */
+  }
+}
+
 async function updateModelEvaluation(modelId) {
   try {
     const evalUrl = modelId
@@ -614,6 +627,21 @@ async function updateModelEvaluation(modelId) {
           },
         },
       });
+
+      const errCanvas = document.getElementById("evalErrorChartCanvas");
+      if (errCanvas) {
+        AppState.chartInstances.evalErrorChart?.destroy();
+        const errors = series.actual.map((a, k) => (a == null || series.predicted[k] == null ? null : a - series.predicted[k]));
+        AppState.chartInstances.evalErrorChart = new Chart(errCanvas, {
+          type: "bar",
+          data: { labels: series.dates, datasets: [{ label: "Sai số (thực tế - dự báo)", data: errors, backgroundColor: errors.map((e) => (e != null && e < 0 ? "rgba(220, 38, 38, 0.6)" : "rgba(16, 185, 129, 0.6)")) }] },
+          options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: { tooltip: { callbacks: { label: (c) => `Sai số: ${Number(c.raw).toLocaleString("vi-VN")} VNĐ/lượng` } } },
+            scales: { y: { ticks: { callback: (v) => Number(v).toLocaleString("vi-VN") } }, x: { ticks: { maxTicksLimit: 10 } } },
+          },
+        });
+      }
     }
 
     // Bảng Đối Chuẩn Baseline Models
@@ -705,32 +733,13 @@ async function updateModelEvaluation(modelId) {
       }
     }
   } catch {
-    const fallbackMetrics = {
-      mae: 425000,
-      mse: 285000000000,
-      rmse: 533850,
-      mape: 0.49,
-      r2: 0.9842,
-    };
-    for (const [id, key] of [
-      ["introMae", "mae"],
-      ["introMse", "mse"],
-      ["introRmse", "rmse"],
-      ["introMape", "mape"],
-      ["introR2", "r2"],
-    ]) {
+    // Không có API thì không hiển thị số liệu mẫu: chỉ báo chưa có số liệu.
+    for (const id of ["introMae", "introMse", "introRmse", "introMape", "introR2"]) {
       const el = document.getElementById(id);
-      if (el) {
-        if (key === "r2") el.textContent = fallbackMetrics.r2.toFixed(4);
-        else if (key === "mape") el.textContent = fallbackMetrics.mape.toFixed(2) + "%";
-        else if (key === "mse") el.textContent = fallbackMetrics.mse.toLocaleString("vi-VN");
-        else el.textContent = fallbackMetrics[key].toLocaleString("vi-VN");
-      }
+      if (el) el.textContent = "Chưa có số liệu";
     }
     const homeMapeEl = document.getElementById("homeLiveMAPE");
-    if (homeMapeEl) {
-      homeMapeEl.textContent = "MAPE: 0.49% · RMSE: 533.850 · R²: 0.9842 · DA: 83.5%";
-    }
+    if (homeMapeEl) homeMapeEl.textContent = "Chưa kết nối được máy chủ để lấy chỉ số mô hình.";
   }
 }
 
@@ -779,7 +788,7 @@ async function loadPredictionHistory(page = AppState.historyPage || 1) {
         {
           id: 102,
           gold_type_code: "XAU_VND_LUONG",
-          model_name: "Bi-LSTM Attention",
+          model_name: "LSTM",
           horizon_days: 14,
           predicted_price: 121450000,
           lower_bound: 119200000,
@@ -847,7 +856,7 @@ function renderHistoryTable() {
               <i class="fa-solid fa-chart-line text-base"></i>
             </div>
             <p class="text-sm font-semibold text-neutral-800">Chưa có lượt dự đoán nào trong tài khoản</p>
-            <p class="text-xs text-neutral-500">Bạn có thể tạo lượt dự đoán mới bằng mô hình học máy (LightGBM / Bi-LSTM).</p>
+            <p class="text-xs text-neutral-500">Bạn có thể tạo lượt dự đoán mới bằng mô hình học máy (LightGBM / LSTM / GRU).</p>
             <button type="button" onclick="switchTab('tabPredict')" class="btn-pill-primary text-xs py-2 px-4 shadow-sm mt-1">
               Bắt đầu dự đoán giá vàng
             </button>
@@ -947,7 +956,7 @@ async function openDetailModal(id) {
         created_at: new Date().toISOString(),
         gold_type: AppState.goldType || "XAU/USD",
         horizon_days: 7,
-        model: { name: "Bi-LSTM / LightGBM Quant", version: "v1.2" },
+        model: { name: "Mô hình dự báo", version: "" },
         items: [{
           predicted_price: 85950000,
           lower: 85100000,
@@ -967,16 +976,23 @@ async function openDetailModal(id) {
 
     const trendEl = document.getElementById("detTrend");
     if (trendEl) {
-      const isUp = item.trend === "UP" || item.trend === "TĂNG" || (final.predicted_price >= 85000000);
-      trendEl.textContent = isUp ? "▲ TĂNG (BULLISH)" : "▼ GIẢM (BEARISH)";
-      trendEl.className = isUp ? "font-bold text-emerald-400 text-xs font-mono" : "font-bold text-rose-400 text-xs font-mono";
+      const pts = (item.items || []).map((x) => x.predicted_price);
+      const delta = pts.length > 1 ? pts[pts.length - 1] - pts[0] : null;
+      if (delta == null || delta === 0) {
+        trendEl.textContent = "— ĐI NGANG / CHƯA ĐỦ ĐIỂM";
+        trendEl.className = "font-bold text-neutral-400 text-xs font-mono";
+      } else {
+        const isUp = delta > 0;
+        trendEl.textContent = isUp ? "▲ TĂNG (trong kỳ dự báo)" : "▼ GIẢM (trong kỳ dự báo)";
+        trendEl.className = isUp ? "font-bold text-emerald-400 text-xs font-mono" : "font-bold text-rose-400 text-xs font-mono";
+      }
     }
 
-    document.getElementById("detModel").textContent = item.model?.name || "Bi-LSTM / LightGBM Quant (v1.2)";
+    document.getElementById("detModel").textContent = item.model?.name || "Mô hình dự báo";
     document.getElementById("detMargin").textContent =
       final.lower != null && final.upper != null
         ? `${priceText(final.lower, unit)} – ${priceText(final.upper, unit)}`
-        : `±1.96σ (Độ tin cậy 95%)`;
+        : "Chưa có khoảng sai số";
 
     openModal("modalDetail");
   } catch (error) {
@@ -1204,7 +1220,7 @@ async function submitPrediction(event) {
 
       const confEl = document.getElementById("predOutConfidence");
       if (confEl) {
-        confEl.textContent = "Khoảng tin cậy: 95% (±1.96σ)";
+        confEl.textContent = "Khoảng sai số theo mô hình";
       }
     }
 
@@ -1237,7 +1253,7 @@ async function submitPrediction(event) {
               labels,
               datasets: [
                 {
-                  label: "Cận trên (+95%)",
+                  label: "Cận trên (khoảng sai số)",
                   borderColor: "rgba(16, 185, 129, 0.6)",
                   borderDash: [4, 4],
                   pointRadius: 2,
@@ -1255,7 +1271,7 @@ async function submitPrediction(event) {
                   fill: false,
                 },
                 {
-                  label: "Cận dưới (-95%)",
+                  label: "Cận dưới (khoảng sai số)",
                   borderColor: "rgba(220, 38, 38, 0.6)",
                   borderDash: [4, 4],
                   pointRadius: 2,

@@ -3,7 +3,7 @@ import time
 from pathlib import Path
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, Request, Depends, Response
+from fastapi import FastAPI, Request, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -57,36 +57,10 @@ def create_app() -> FastAPI:
     app.add_middleware(
         CORSMiddleware,
         allow_origins=settings.cors_origin_list,
-        allow_origin_regex=r".*",
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
     )
-
-    @app.middleware("http")
-    async def cors_and_pna_middleware(request: Request, call_next):
-        """Hỗ trợ triệt để Private Network Access (PNA) và CORS cho trường hợp gọi từ file:// hoặc local."""
-        if request.method == "OPTIONS":
-            response = Response(status_code=204)
-        else:
-            response = await call_next(request)
-
-        origin = request.headers.get("origin")
-        # Chrome/Edge Private Network Access header cho kết nối nội bộ
-        if request.headers.get("access-control-request-private-network"):
-            response.headers["Access-Control-Allow-Private-Network"] = "true"
-
-        if origin:
-            response.headers["Access-Control-Allow-Origin"] = origin
-            response.headers["Access-Control-Allow-Credentials"] = "true"
-            response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, PATCH, DELETE, OPTIONS, HEAD"
-            response.headers["Access-Control-Allow-Headers"] = "*"
-        else:
-            response.headers["Access-Control-Allow-Origin"] = "*"
-            response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, PATCH, DELETE, OPTIONS, HEAD"
-            response.headers["Access-Control-Allow-Headers"] = "*"
-
-        return response
 
     @app.middleware("http")
     async def timing(request: Request, call_next):

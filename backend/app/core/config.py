@@ -21,8 +21,9 @@ class Settings(BaseSettings):
     predict_rate_limit_per_min: int = 20
     inference_workers: int = 2
     cache_ttl_s: int = 120
-    jwt_secret: str = "gold-predict-production-system-jwt-secret-fixed-token-key-2026"
-    jwt_secret_key: str = "gold-predict-production-system-jwt-secret-fixed-token-key-2026"
+    # Không có mặc định: phải đặt JWT_SECRET (>= 32 ký tự ngẫu nhiên) mới đăng nhập được.
+    jwt_secret: str = ""
+    jwt_secret_key: str = ""
     access_token_expire_minutes: int = 1440
 
     @field_validator("database_url")

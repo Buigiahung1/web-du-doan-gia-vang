@@ -170,7 +170,8 @@ def predict(
             for r in gold_repo.list_range(db, gt.id, dates[0], dates[-1])
         }
         for item in items:
-            item["actual_price"] = actual.get(item["target_date"])
+            value = actual.get(item["target_date"])
+            item["actual_price"] = None if value is None else float(value)
         saved = prediction_repo.save(
             db,
             user_id=user_id,
@@ -187,9 +188,9 @@ def predict(
         gold_type=gt.code,
         model=_model_ref(row),
         generated_at=now_vn(),
-        last_actual=LastActual(date=last.date, price=round(last.close, 2)),
+        last_actual=LastActual(date=last.date, price=round(float(last.close), 2)),
         trend=compute_trend(
-            round(last.close, 2), items[-1]["predicted_price"]
+            round(float(last.close), 2), items[-1]["predicted_price"]
         ),  # cùng độ làm tròn 2 bên
         items=[
             PredictItemOut(
